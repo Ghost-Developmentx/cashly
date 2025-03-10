@@ -6,7 +6,7 @@ module Ai
       @insights = []
 
       # Get recent transactions
-      @recent_transactions = current_user.transaction.order(date: :desc).limit(100)
+      @recent_transactions = current_user.transactions.order(date: :desc).limit(100)
 
       # Only proceed if we have any transactions
       if @recent_transactions.present?
@@ -30,7 +30,7 @@ module Ai
     def forecast
       @forecast = {}
 
-      @historical_transactions = current_user.transaction.order(date: :asc)
+      @historical_transactions = current_user.transactions.order(date: :asc)
 
       # Only proceed if there are transactions
       if @historical_transactions.present?
@@ -54,10 +54,10 @@ module Ai
       @budget_recommendations = {}
 
       # Get user transactions for budget analysis
-      @budget_transactions = current_user.transaction.where("date >= ?", 3.months.ago)
+      @budget_transactions = current_user.transactions.where("date >= ?", 3.months.ago)
 
       # Calculate monthly income (only positive transactions)
-      monthly_income = current_user.transaction.where("date >= ? AND amount > 0", 1.month.ago).sum(:amount)
+      monthly_income = current_user.transactions.where("date >= ? AND amount > 0", 1.month.ago).sum(:amount)
 
       # Only proceed if we have transactions and income
       if @budget_transactions.present? && monthly_income > 0

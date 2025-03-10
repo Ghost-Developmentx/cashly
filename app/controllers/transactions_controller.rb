@@ -53,8 +53,34 @@ class TransactionsController < ApplicationController
   end
 
   def update
+    respond_to do |format|
+      if @transaction.update(transaction_params)
+        format.html { redirect_to @transaction, notice: "Transaction was successfully updated." }
+        format.json { render :show, status: :ok, location: @transaction }
+      else
+        @accounts = current_user.accounts
+        @categories = Category.all
+        format.html { render :edit }
+        format.json { render json: @transaction.errors, status: :unprocessable_content }
+      end
+    end
   end
 
   def destroy
+    @transaction.destroy
+    respond_to do |format|
+      format.html { redirect_to transactions_url, notice: "Transaction was successfully destroyed." }
+      format.json { head :no_content }
+    end
+  end
+
+  private
+
+  def set_transaction
+    @transaction = current_user.transactions.find(params[:id])
+  end
+
+  def transaction_params
+    params.expect(:account_id, :amount, :date, :description, :category_id, :recurring)
   end
 end
