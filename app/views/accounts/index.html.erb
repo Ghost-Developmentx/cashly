@@ -1,2 +1,51 @@
-<h1>Accounts#index</h1>
-<p>Find me in app/views/accounts/index.html.erb</p>
+<!-- app/views/accounts/index.html.erb -->
+<div class="accounts-container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Your Accounts</h1>
+    <%= link_to "Add New Account", new_account_path, class: "btn btn-primary" %>
+  </div>
+
+  <div class="row">
+    <% if @accounts.any? %>
+      <% @accounts.each do |account| %>
+        <div class="col-md-4 mb-4">
+          <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0"><%= account.name %></h5>
+              <span class="badge <%= account.balance.to_f >= 0 ? 'bg-success' : 'bg-danger' %>">
+                <%= account.account_type %>
+              </span>
+            </div>
+            <div class="card-body">
+              <h3 class="mb-3 <%= account.balance.to_f >= 0 ? 'text-success' : 'text-danger' %>">
+                <%= number_to_currency(account.balance) %>
+              </h3>
+              <p class="card-text text-muted">
+                <small>
+                  Institution: <%= account.institution.presence || 'Not specified' %><br>
+                  Last synced: <%= account.last_synced&.strftime('%Y-%m-%d %H:%M') || 'Never' %>
+                </small>
+              </p>
+            </div>
+            <div class="card-footer bg-transparent">
+              <div class="btn-group w-100">
+                <%= link_to "View", account_path(account), class: "btn btn-outline-primary" %>
+                <%= link_to "Edit", edit_account_path(account), class: "btn btn-outline-secondary" %>
+                <%= link_to "Delete", account_path(account),
+                            method: :delete,
+                            data: { confirm: "Are you sure you want to delete this account?" },
+                            class: "btn btn-outline-danger" %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="col-12">
+        <div class="alert alert-info">
+          <p class="mb-0">You don't have any accounts yet. <%= link_to "Add your first account", new_account_path %>.</p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

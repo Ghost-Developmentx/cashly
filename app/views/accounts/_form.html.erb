@@ -1,0 +1,56 @@
+<!-- app/views/accounts/_form.html.erb -->
+<%= form_with(model: account, local: true) do |form| %>
+  <% if account.errors.any? %>
+    <div class="alert alert-danger">
+      <h4><%= pluralize(account.errors.count, "error") %> prohibited this account from being saved:</h4>
+      <ul>
+        <% account.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-group mb-3">
+    <%= form.label :name %>
+    <%= form.text_field :name, class: "form-control", placeholder: "e.g. Chase Checking, Business Savings" %>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= form.label :account_type %>
+    <%= form.select :account_type,
+                    [
+                      %w[Checking checking],
+                      %w[Savings savings],
+                      ["Credit Card", "credit_card"],
+                      %w[Investment investment],
+                      %w[Loan loan],
+                      %w[Other other]
+                    ],
+                    { include_blank: "Select an account type" },
+                    class: "form-control" %>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= form.label :balance %>
+    <%= form.number_field :balance, step: 0.01, class: "form-control" %>
+    <small class="form-text text-muted">Current balance of the account</small>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= form.label :institution %>
+    <%= form.text_field :institution, class: "form-control", placeholder: "e.g. Chase Bank, Wells Fargo" %>
+    <small class="form-text text-muted">The financial institution for this account</small>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= form.label :last_synced, "Last Synced (optional)" %>
+    <%= form.datetime_field :last_synced, class: "form-control" %>
+    <small class="form-text text-muted">When this account was last updated with the financial institution</small>
+  </div>
+
+  <div class="actions">
+    <%= form.submit class: "btn btn-primary" %>
+    <%= link_to "Cancel", accounts_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>
