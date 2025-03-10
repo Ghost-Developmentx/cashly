@@ -1,0 +1,10 @@
+<%= form_with(model: @transaction, local: true) do |form| %>
+  <div class="alert alert-danger">
+    <h4><%= pluralize(@transaction.errors.count, "error") %> prohibited this transaction from being saved:</h4>
+    <ul>
+      <% @transaction.errors.full_messages.each do |message| %>
+      <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

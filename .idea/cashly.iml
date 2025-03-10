@@ -72,6 +72,10 @@
     <orderEntry type="library" scope="PROVIDED" name="jbuilder (v2.13.0, rbenv: 3.4.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="json (v2.10.1, rbenv: 3.4.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="kamal (v2.5.3, rbenv: 3.4.2) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="kaminari (v1.2.2, rbenv: 3.4.2) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="kaminari-actionview (v1.2.2, rbenv: 3.4.2) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="kaminari-activerecord (v1.2.2, rbenv: 3.4.2) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="kaminari-core (v1.2.2, rbenv: 3.4.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="language_server-protocol (v3.17.0.4, rbenv: 3.4.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="lint_roller (v1.1.0, rbenv: 3.4.2) [gem]" level="application" />
     <orderEntry type="library" scope="PROVIDED" name="logger (v1.6.6, rbenv: 3.4.2) [gem]" level="application" />

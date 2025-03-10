@@ -5,7 +5,7 @@ class TransactionsController < ApplicationController
   def index
     @transactions = current_user.transactions.order(date: :desc).includes(:account, :category)
                                 .page(params[:page])
-                                .limit(20)
+                                .per(20)
   end
 
   def show
