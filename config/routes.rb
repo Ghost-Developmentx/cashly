@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   devise_for :users
-  root 'dashboard#index'
+  root "dashboard#index"
 
   resources :accounts
   resources :transactions
@@ -8,12 +8,11 @@ Rails.application.routes.draw do
   resources :budgets
   resources :categories
 
-  get 'dashboard', to: 'dashboard#index'
+  get "dashboard", to: "dashboard#index"
 
   namespace :ai do
-    get 'insights', to: 'insights#index'
-    get 'forecast', to: 'insights#forecast'
-    get 'recommendation', to: 'insights#recommendation'
+    get "insights", to: "insights#index"
+    get "forecast", to: "insights#forecast"
+    get "recommendation", to: "insights#recommendation"
   end
-
 end
