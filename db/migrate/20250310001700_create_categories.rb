@@ -3,7 +3,7 @@ class CreateCategories < ActiveRecord::Migration[8.0]
     create_table :categories do |t|
       t.string :name
       t.text :description
-      t.references :parent_category, null: false, foreign_key: true
+      t.references :parent_category, null: true, foreign_key: { to_table: :categories }
 
       t.timestamps
     end
