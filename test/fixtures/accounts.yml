@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  name: MyString
+  account_type: MyString
+  balance: 9.99
+  institution: MyString
+  last_synced: 2025-03-09 20:18:51
+
+two:
+  user: two
+  name: MyString
+  account_type: MyString
+  balance: 9.99
+  institution: MyString
+  last_synced: 2025-03-09 20:18:51
