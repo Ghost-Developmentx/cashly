@@ -1,2 +1,61 @@
-<h1>Transactions#show</h1>
-<p>Find me in app/views/transactions/show.html.erb</p>
+<!-- app/views/transactions/show.html.erb -->
+<div class="container">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h1 class="h4 mb-0">Transaction Details</h1>
+          <div>
+            <%= link_to "Edit", edit_transaction_path(@transaction), class: "btn btn-sm btn-outline-primary" %>
+            <%= link_to "Back to List", transactions_path, class: "btn btn-sm btn-outline-secondary" %>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="transaction-details">
+            <div class="row mb-3">
+              <div class="col-md-4 fw-bold">Description:</div>
+              <div class="col-md-8"><%= @transaction.description %></div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 fw-bold">Amount:</div>
+              <div class="col-md-8 <%= @transaction.amount >= 0 ? 'text-success' : 'text-danger' %>">
+                <%= number_to_currency(@transaction.amount) %>
+              </div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 fw-bold">Date:</div>
+              <div class="col-md-8"><%= @transaction.date.strftime('%Y-%m-%d') %></div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 fw-bold">Account:</div>
+              <div class="col-md-8"><%= @transaction.account.name %></div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 fw-bold">Category:</div>
+              <div class="col-md-8"><%= @transaction.category&.name || 'Uncategorized' %></div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 fw-bold">Recurring:</div>
+              <div class="col-md-8"><%= @transaction.recurring? ? 'Yes' : 'No' %></div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 fw-bold">Created at:</div>
+              <div class="col-md-8"><%= @transaction.created_at.strftime('%Y-%m-%d %H:%M') %></div>
+            </div>
+
+            <div class="row mb-3">
+              <div class="col-md-4 fw-bold">Last updated:</div>
+              <div class="col-md-8"><%= @transaction.updated_at.strftime('%Y-%m-%d %H:%M') %></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

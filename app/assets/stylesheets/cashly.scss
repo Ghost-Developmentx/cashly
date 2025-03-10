@@ -1,0 +1,109 @@
+// Dashboard styles
+.dashboard-container {
+  padding: 20px;
+}
+
+.dashboard-summary {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.summary-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 15px;
+  width: 30%;
+}
+
+.summary-card h3 {
+  margin-top: 0;
+  font-size: 16px;
+  color: #555;
+}
+
+.summary-card p {
+  margin-bottom: 0;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.positive { color: #28a745; }
+.negative { color: #dc3545; }
+.income { color: #28a745; }
+.expenses { color: #dc3545; }
+
+.chart-container {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 15px;
+  margin-bottom: 20px;
+  min-height: 300px;
+}
+
+.chart-container h3 {
+  margin-top: 0;
+  font-size: 16px;
+  color: #555;
+}
+
+.insights-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.insight-card {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 15px;
+  width: calc(50% - 15px);
+  border-left: 4px solid #ccc;
+}
+
+.insight-card.warning {
+  border-left-color: #ffc107;
+}
+
+.insight-card.alert {
+  border-left-color: #dc3545;
+}
+
+.insight-card.info {
+  border-left-color: #17a2b8;
+}
+
+.insight-card.success {
+  border-left-color: #28a745;
+}
+
+.insight-card h4 {
+  margin-top: 0;
+  font-size: 16px;
+}
+
+.insight-card p {
+  margin-bottom: 0;
+  color: #666;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.placeholder-text {
+  color: #999;
+  text-align: center;
+  margin-top: 120px;
+}
+
+// Transaction styles
+.transactions-container {
+  padding: 20px;
+}

@@ -1,10 +1,58 @@
-<%= form_with(model: @transaction, local: true) do |form| %>
-  <div class="alert alert-danger">
-    <h4><%= pluralize(@transaction.errors.count, "error") %> prohibited this transaction from being saved:</h4>
-    <ul>
-      <% @transaction.errors.full_messages.each do |message| %>
-      <li><%= message %></li>
-      <% end %>
-    </ul>
+<!-- app/views/transactions/_form.html.erb -->
+<%= form_with(model: transaction, local: true) do |form| %>
+  <% if transaction.errors.any? %>
+    <div class="alert alert-danger">
+      <h4><%= pluralize(transaction.errors.count, "error") %> prohibited this transaction from being saved:</h4>
+      <ul>
+        <% transaction.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-group mb-3">
+    <%= form.label :account_id %>
+    <%= form.collection_select :account_id, @accounts, :id, :name, {}, class: "form-control" %>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= form.label :description %>
+    <%= form.text_field :description, class: "form-control" %>
+    <small class="form-text text-muted">Provide a description to help categorize this transaction</small>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= form.label :amount %>
+    <%= form.number_field :amount, step: 0.01, class: "form-control" %>
+    <small class="form-text text-muted">Use positive numbers for income, negative for expenses</small>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= form.label :date %>
+    <%= form.date_field :date, class: "form-control" %>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= form.label :category_id %>
+    <%= form.collection_select :category_id,
+                               @categories,
+                               :id,
+                               :name,
+                               { include_blank: "Select a category (or leave blank for auto-categorization)" },
+                               class: "form-control" %>
+
+    <small class="form-text text-muted">If left blank, we'll use AI to categorize your transaction</small>
+  </div>
+
+  <div class="form-check mb-3">
+    <%= form.check_box :recurring, class: "form-check-input" %>
+    <%= form.label :recurring, class: "form-check-label" %>
+    <small class="form-text text-muted d-block">Check if this is a recurring transaction</small>
+  </div>
+
+  <div class="actions">
+    <%= form.submit class: "btn btn-primary" %>
+    <%= link_to "Cancel", transactions_path, class: "btn btn-secondary" %>
   </div>
 <% end %>
