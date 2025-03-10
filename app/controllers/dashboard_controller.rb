@@ -8,17 +8,17 @@ class DashboardController < ApplicationController
     month_start = Time.now.beginning_of_month
     month_end = Time.now.end_of_month
 
-    @monthly_income = current_user.transaction
+    @monthly_income = current_user.transactions
                                   .where("date >= ? AND date <= ? AND amount > 0", month_start, month_end)
                                   .sum(:amount)
 
-    @monthly_expenses = current_user.transaction
+    @monthly_expenses = current_user.transactions
                                     .where("date >= ? AND date <= ? AND amount < 0", month_start, month_end)
                                     .sum(:amount).abs
 
     # Get financial insights from AI service if we have transactions
-    if current_user.transaction.exists?
-      recent_transactions = current_user.transaction.order(date: :desc).limit(100)
+    if current_user.transactions.exists?
+      recent_transactions = current_user.transactions.order(date: :desc).limit(100)
 
       trends_response = AiService.analyze_trends(
         current_user.user_id,

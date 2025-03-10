@@ -1,2 +1,186 @@
-<h1>Dashboard#index</h1>
-<p>Find me in app/views/dashboard/index.html.erb</p>
+<div class="dashboard-container">
+  <h1>Cashly Dashboard</h1>
+
+  <div class="dashboard-summary">
+    <div class="summary-card">
+      <h3>Current Balance</h3>
+      <p class="balance <%= @total_balance.to_f >= 0 ? "positive" : "negative" %>">
+        <%= number_to_currency(@total_balance || 0) %>
+      </p>
+    </div>
+
+    <div class="summary-card">
+      <h3>Monthly Income</h3>
+      <p class="income">
+        <%= number_to_currency(@monthly_income || 0) %>
+      </p>
+    </div>
+
+    <div class="summary-card">
+      <h3>Monthly Expenses</h3>
+      <p class="expenses">
+        <%= number_to_currency(@monthly_expenses || 0) %>
+      </p>
+    </div>
+  </div>
+
+  <div class="dashboard-charts row">
+    <div class="col-md-8">
+      <div class="chart-container">
+        <h3>Cash Flow Forecast</h3>
+        <div id="cash-flow-chart"></div>
+      </div>
+    </div>
+
+    <div class="dashboard-charts row">
+      <div class="col-md-8">
+        <div class="chart-container">
+          <h3>Cash Flow Forecast</h3>
+          <div id="cash-flow-chart"></div>
+        </div>
+      </div>
+
+      <div class="dashboard-insights">
+        <h3>AI Insights</h3>
+        <div class="insights-container">
+          <% if @insights.present? %>
+            <% @insights.each do |insight| %>
+              <div class="insight-card <%= insight['type'] %>">
+                <h4><%= insight['title'] %></h4>
+                <p><%= insight['description'] %></p>
+              </div>
+            <% end %>
+          <% else %>
+            <p>Start adding your transactions to get personalized financial insights!</p>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="dashboard-actions">
+        <h3>Quick Actions</h3>
+        <div class="action-buttons">
+          <%= link_to "Add Transaction", new_transaction_path, class: "btn btn-primary" %>
+          <%= link_to "View Transactions", transactions_path, class: "btn btn-secondary" %>
+          <%= link_to "View Budget", budgets_path, class: "btn btn-secondary" %>
+          <%= link_to "View Cash Flow Forecast", ai_forecast_path, class: "btn btn-secondary" %>
+        </div>
+      </div>
+    </div>
+</div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+      document.getElementById('cash-flow-chart').innerHTML =
+          '<p class="placeholder-text">Cash flow chat will appear here</p>';
+
+      document.getElementById('expense-chart').innerHTML =
+          '<p class="placeholder-text">Expense breakdown chart will appear here</p>';
+  });
+</script>
+
+<style>
+    .dashboard-container {
+        padding: 20px;
+    }
+
+    .dashboard-summary {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 30px;
+    }
+
+    .summary-card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 15px;
+        width: 30%;
+    }
+
+    .summary-card h3 {
+        margin-top: 0;
+        font-size: 16px;
+        color: #555;
+    }
+
+    .summary-card p {
+        margin-bottom: 0;
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .positive { color: #28a745; }
+    .negative { color: #dc3545; }
+    .income { color: #28a745; }
+    .expenses { color: #dc3545; }
+
+    .chart-container {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 15px;
+        margin-bottom: 20px;
+        min-height: 300px;
+    }
+
+    .chart-container h3 {
+        margin-top: 0;
+        font-size: 16px;
+        color: #555;
+    }
+
+    .insights-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .insight-card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 15px;
+        width: calc(50% - 15px);
+        border-left: 4px solid #ccc;
+    }
+
+    .insight-card.warning {
+        border-left-color: #ffc107;
+    }
+
+    .insight-card.alert {
+        border-left-color: #dc3545;
+    }
+
+    .insight-card.info {
+        border-left-color: #17a2b8;
+    }
+
+    .insight-card.success {
+        border-left-color: #28a745;
+    }
+
+    .insight-card h4 {
+        margin-top: 0;
+        font-size: 16px;
+    }
+
+    .insight-card p {
+        margin-bottom: 0;
+        color: #666;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .placeholder-text {
+        color: #999;
+        text-align: center;
+        margin-top: 120px;
+    }
+</style>
