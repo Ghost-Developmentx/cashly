@@ -1,2 +1,153 @@
-<h1>Categories#show</h1>
-<p>Find me in app/views/categories/show.html.erb</p>
+<!-- app/views/categories/show.html.erb -->
+<div class="category-details">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><%= @category.name %></h1>
+    <div>
+      <%= link_to "Edit Category", edit_category_path(@category), class: "btn btn-outline-primary" %>
+      <%= link_to "Back to Categories", categories_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Category Information</h5>
+        </div>
+        <div class="card-body">
+          <% if @category.description.present? %>
+            <p><%= @category.description %></p>
+          <% else %>
+            <p class="text-muted">No description provided.</p>
+          <% end %>
+
+          <% if @category.parent_category %>
+            <p>
+              <strong>Parent Category:</strong>
+              <%= link_to @category.parent_category.name, category_path(@category.parent_category) %>
+            </p>
+          <% end %>
+
+          <% subcategories = Category.where(parent_category_id: @category.id) %>
+          <% if subcategories.any? %>
+            <p><strong>Subcategories:</strong></p>
+            <ul>
+              <% subcategories.each do |subcat| %>
+                <li><%= link_to subcat.name, category_path(subcat) %></li>
+              <% end %>
+            </ul>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Spending Summary</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <p class="text-muted mb-1">Total Spent</p>
+            <h4 class="text-danger"><%= number_to_currency(@total_spent) %></h4>
+          </div>
+
+          <div>
+            <p class="text-muted mb-1">Monthly Average</p>
+            <h4 class="text-danger"><%= number_to_currency(@monthly_average) %></h4>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Budget Status</h5>
+        </div>
+        <div class="card-body">
+          <% if @budget %>
+            <div class="mb-3">
+              <p class="text-muted mb-1">Monthly Budget</p>
+              <h4><%= number_to_currency(@budget.amount) %></h4>
+            </div>
+
+            <%
+              # Calculate percentage of budget used
+              month_spent = Transaction.joins(:account)
+                                       .where(category: @category,
+                                              accounts: { user_id: current_user.id },
+                                              date: Date.today.beginning_of_month..Date.today.end_of_month)
+                                       .where('amount < 0')
+                                       .sum(:amount).abs
+
+              percent_used = @budget.amount > 0 ? (month_spent / @budget.amount) * 100 : 0
+            %>
+
+            <div>
+              <p class="text-muted mb-1">
+                This Month: <%= number_to_currency(month_spent) %>
+                (<%= number_to_percentage(percent_used, precision: 0) %>)
+              </p>
+              <div class="progress">
+                <div class="progress-bar <%= percent_used > 100 ? 'bg-danger' : 'bg-success' %>"
+                     role="progressbar"
+                     style="width: <%= [percent_used, 100].min %>%"
+                     aria-valuenow="<%= percent_used %>"
+                     aria-valuemin="0"
+                     aria-valuemax="100">
+                </div>
+              </div>
+            </div>
+          <% else %>
+            <p>No budget set for this category.</p>
+            <%= link_to "Create Budget", new_budget_path(category_id: @category.id), class: "btn btn-primary" %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Recent Transactions</h5>
+    </div>
+    <div class="card-body">
+      <% if @transactions.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Account</th>
+              <th>Amount</th>
+              <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <% @transactions.each do |transaction| %>
+              <tr>
+                <td><%= transaction.date.strftime('%Y-%m-%d') %></td>
+                <td><%= transaction.description %></td>
+                <td><%= transaction.account.name %></td>
+                <td class="<%= transaction.amount >= 0 ? 'text-success' : 'text-danger' %>">
+                  <%= number_to_currency(transaction.amount) %>
+                </td>
+                <td>
+                  <%= link_to "View", transaction_path(transaction), class: "btn btn-sm btn-outline-primary" %>
+                </td>
+              </tr>
+            <% end %>
+            </tbody>
+          </table>
+        </div>
+        <div class="d-flex justify-content-center">
+          <%= paginate @transactions if @transactions.respond_to?(:total_pages) %>
+        </div>
+      <% else %>
+        <p class="text-center">No transactions found in this category.</p>
+      <% end %>
+    </div>
+  </div>
+</div>
