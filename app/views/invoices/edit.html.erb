@@ -1,0 +1,15 @@
+<!-- app/views/invoices/edit.html.erb -->
+<div class="container">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      <div class="card">
+        <div class="card-header">
+          <h1 class="h4 mb-0">Edit Invoice: <%= sprintf("INV-%05d", @invoice.id) %></h1>
+        </div>
+        <div class="card-body">
+          <%= render 'form', invoice: @invoice %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

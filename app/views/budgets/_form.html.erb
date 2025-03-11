@@ -1,0 +1,54 @@
+<!-- app/views/budgets/_form.html.erb -->
+
+<%= form_with(model: @budget, local: true) do |form| %>
+  <% if @budget.errors.any? %>
+    <div class="alert alert-danger">
+      <h4><%= pluralize(@budget.errors.count, "error") %> prohibited this budget from being saved:</h4>
+      <ul>
+        <% @budget.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-group mb-3">
+    <%= form.label :category_id %>
+    <%= form.collection_select :category_id, @categories, :id, :name,
+                               { prompt: "Select a category" },
+                               class: "form-control" %>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= form.label :amount, "Monthly Budget Amount" %>
+    <div class="input-group">
+      <span class="input-group-text">$</span>
+      <%= form.number_field :amount, step: 0.01, class: "form-control" %>
+    </div>
+
+    <% if @suggested_amount.present? %>
+      <div class="form-text">
+        <small class="text-info">
+          <i class="bi bi-lightbulb"></i> Suggested amount based on your spending: <%= number_to_currency(@suggested_amount) %>
+        </small>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= form.label :period_start, "Period Start (optional)" %>
+    <%= form.date_field :period_start, class: "form-control" %>
+    <small class="form-text text-muted">If left blank, budget will apply to all periods</small>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= form.label :period_end, "Period End (optional)" %>
+    <%= form.date_field :period_end, class: "form-control" %>
+    <small class="form-text text-muted">If left blank, budget will not expire</small>
+  </div>
+
+  <div class="actions">
+    <%= form.submit class: "btn btn-primary" %>
+    <%= link_to "Cancel", budgets_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

@@ -1,2 +1,137 @@
-<h1>Budgets#show</h1>
-<p>Find me in app/views/budgets/show.html.erb</p>
+<!-- app/views/budgets/show.html.erb -->
+<div class="budget-details">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Budget: <%= @budget.category.name %></h1>
+    <div>
+      <%= link_to "Edit Budget", edit_budget_path(@budget), class: "btn btn-outline-primary" %>
+      <%= link_to "Back to Budgets", budgets_path, class: "btn btn-outline-secondary" %>
+    </div>
+  </div>
+
+  <div class="row mb-4">
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Budget Summary</h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <p class="text-muted mb-1">Monthly Budget</p>
+            <h3><%= number_to_currency(@budget.amount) %></h3>
+          </div>
+
+          <div class="mb-3">
+            <p class="text-muted mb-1">Spent This Month</p>
+            <h3 class="text-danger"><%= number_to_currency(@spent_amount) %></h3>
+          </div>
+
+          <div class="mb-3">
+            <p class="text-muted mb-1">Remaining</p>
+            <h3 class="<%= @remaining_amount >= 0 ? 'text-success' : 'text-danger' %>">
+              <%= number_to_currency(@remaining_amount) %>
+            </h3>
+          </div>
+
+          <div class="mt-4">
+            <p class="text-muted mb-1">
+              Budget Usage (<%= number_to_percentage(@percent_used, precision: 0) %>)
+            </p>
+            <div class="progress">
+              <div class="progress-bar <%= @percent_used > 100 ? 'bg-danger' : 'bg-success' %>"
+                   role="progressbar"
+                   style="width: <%= [@percent_used, 100].min %>%"
+                   aria-valuenow="<%= @percent_used %>"
+                   aria-valuemin="0"
+                   aria-valuemax="100">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="mb-0">Monthly Spending History</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+              <tr>
+                <th>Month</th>
+                <th>Spent</th>
+                <th>Budget</th>
+                <th>Status</th>
+              </tr>
+              </thead>
+              <tbody>
+              <% @months_history.each do |month| %>
+                <tr>
+                  <td><%= month[:month] %></td>
+                  <td><%= number_to_currency(month[:spent]) %></td>
+                  <td><%= number_to_currency(month[:budget]) %></td>
+                  <td>
+                    <div class="progress">
+                      <div class="progress-bar <%= month[:percent] > 100 ? 'bg-danger' : 'bg-success' %>"
+                           role="progressbar"
+                           style="width: <%= [month[:percent], 100].min %>%"
+                           aria-valuenow="<%= month[:percent] %>"
+                           aria-valuemin="0"
+                           aria-valuemax="100">
+                        <%= number_to_percentage(month[:percent], precision: 0) %>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">This Month's Transactions</h5>
+      <%= link_to "View All", transactions_path(category_id: @budget.category_id), class: "btn btn-sm btn-outline-primary" %>
+    </div>
+    <div class="card-body">
+      <% if @month_transactions.any? %>
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Account</th>
+              <th>Amount</th>
+              <th></th>
+            </tr>
+            </thead>
+            <tbody>
+            <% @month_transactions.each do |transaction| %>
+              <tr>
+                <td><%= transaction.date.strftime('%Y-%m-%d') %></td>
+                <td><%= transaction.description %></td>
+                <td><%= transaction.account.name %></td>
+                <td class="<%= transaction.amount >= 0 ? 'text-success' : 'text-danger' %>">
+                  <%= number_to_currency(transaction.amount) %>
+                </td>
+                <td>
+                  <%= link_to "View", transaction_path(transaction), class: "btn btn-sm btn-outline-primary" %>
+                </td>
+              </tr>
+            <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="text-center">No transactions for this category in the current month.</p>
+      <% end %>
+    </div>
+  </div>
+</div>

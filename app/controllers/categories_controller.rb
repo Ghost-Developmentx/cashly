@@ -89,6 +89,6 @@ class CategoriesController < ApplicationController
   end
 
   def category_params
-    params.expect(:name, :description, :parent_category_id)
+    params.expect(category: [ :name, :description, :parent_category_id ])
   end
 end

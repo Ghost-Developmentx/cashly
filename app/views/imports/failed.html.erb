@@ -1,0 +1,65 @@
+<!-- app/views/imports/failed.html.erb -->
+<div class="container">
+  <div class="row">
+    <div class="col-md-10 offset-md-1">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h1 class="h4 mb-0">Failed Import Transactions</h1>
+          <%= link_to "Back to Transactions", transactions_path, class: "btn btn-outline-secondary" %>
+        </div>
+        <div class="card-body">
+          <% if @failed_imports.any? %>
+            <div class="alert alert-warning">
+              <p>The following transactions could not be imported due to errors. Please review and try again.</p>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                <tr>
+                  <th>Date</th>
+                  <th>Description</th>
+                  <th>Amount</th>
+                  <th>Error</th>
+                </tr>
+                </thead>
+                <tbody>
+                <% @failed_imports.each do |import| %>
+                  <tr>
+                    <td>
+                      <%= import['row']['date'] || import['row']['Date'] %>
+                    </td>
+                    <td>
+                      <%= import['row']['description'] || import['row']['Description'] ||
+                            import['row']['name'] || import['row']['Name'] %>
+                    </td>
+                    <td>
+                      <%= import['row']['amount'] || import['row']['Amount'] %>
+                    </td>
+                    <td class="text-danger">
+                      <%= import['errors'] %>
+                    </td>
+                  </tr>
+                <% end %>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mt-4">
+              <p>Common import issues:</p>
+              <ul>
+                <li>Invalid date formats - Try using YYYY-MM-DD format</li>
+                <li>Missing required fields - Ensure date and amount columns exist</li>
+                <li>Invalid amount formats - Use numbers with optional decimal places</li>
+              </ul>
+            </div>
+          <% else %>
+            <div class="alert alert-info">
+              <p>There are no failed imports to display.</p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

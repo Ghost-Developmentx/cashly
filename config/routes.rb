@@ -8,6 +8,11 @@ Rails.application.routes.draw do
   resources :budgets
   resources :categories
 
+  resources :imports, only: [ :new, :create ] do
+    collection do
+      get "failed"
+    end
+  end
   get "dashboard", to: "dashboard#index"
 
   namespace :ai do

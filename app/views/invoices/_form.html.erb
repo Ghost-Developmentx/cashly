@@ -1,0 +1,53 @@
+<!-- app/views/invoices/_form.html.erb -->
+<%= form_with(model: @invoice, local: true) do |form| %>
+  <% if @invoice.errors.any? %>
+    <div class="alert alert-danger">
+      <h4><%= pluralize(@invoice.errors.count, "error") %> prohibited this invoice from being saved:</h4>
+      <ul>
+        <% @invoice.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-group mb-3">
+    <%= form.label :client_name %>
+    <%= form.text_field :client_name, class: "form-control", placeholder: "Client name or company" %>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= form.label :amount %>
+    <div class="input-group">
+      <span class="input-group-text">$</span>
+      <%= form.number_field :amount, step: 0.01, class: "form-control" %>
+    </div>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= form.label :issue_date %>
+    <%= form.date_field :issue_date, class: "form-control" %>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= form.label :due_date %>
+    <%= form.date_field :due_date, class: "form-control" %>
+  </div>
+
+  <div class="form-group mb-3">
+    <%= form.label :status %>
+    <%= form.select :status,
+                    [
+                      %w[Pending pending],
+                      %w[Paid paid],
+                      %w[Cancelled cancelled]
+                    ],
+                    { include_blank: "Select a status" },
+                    class: "form-control" %>
+  </div>
+
+  <div class="actions">
+    <%= form.submit class: "btn btn-primary" %>
+    <%= link_to "Cancel", invoices_path, class: "btn btn-secondary" %>
+  </div>
+<% end %>

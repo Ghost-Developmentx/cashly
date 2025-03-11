@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title><%= content_for(:title) || "Cashly" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -30,8 +30,15 @@
           <li class="nav-item">
             <%= link_to "Dashboard", dashboard_path, class: "nav-link" %>
           </li>
-          <li class="nav-item">
-            <%= link_to "Transactions", transactions_path, class: "nav-link" %>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="transactionsDropdown" role="button" data-bs-toggle="dropdown">
+              Transactions
+            </a>
+            <div class="dropdown-menu">
+              <%= link_to "View Transactions", transactions_path, class: "dropdown-item" %>
+              <%= link_to "Add Transaction", new_transaction_path, class: "dropdown-item" %>
+              <%= link_to "Import Transactions", new_import_path, class: "dropdown-item" %>
+            </div>
           </li>
           <li class="nav-item">
             <%= link_to "Accounts", accounts_path, class: "nav-link" %>
@@ -42,6 +49,9 @@
           <li class="nav-item">
             <%= link_to "Budgets", budgets_path, class: "nav-link" %>
           </li>
+          <li class="nav-item">
+            <%= link_to "Categories", categories_path, class: "nav-link" %>
+          </li>
         </ul>
         <ul class="navbar-nav ms-auto">
           <% if user_signed_in? %>
@@ -51,6 +61,7 @@
               </a>
               <div class="dropdown-menu dropdown-menu-end">
                 <%= link_to "Edit Profile", edit_user_registration_path, class: "dropdown-item" %>
+                <div class="dropdown-divider"></div>
                 <%= button_to "Log Out", destroy_user_session_path, method: :delete, class: "dropdown-item" %>
               </div>
             </li>
@@ -69,13 +80,27 @@
 
   <div class="container">
     <% if notice %>
-      <div class="alert alert-success"><%= notice %></div>
+      <div class="alert alert-success alert-dismissible fade show">
+        <%= notice %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
     <% end %>
     <% if alert %>
-      <div class="alert alert-danger"><%= alert %></div>
+      <div class="alert alert-danger alert-dismissible fade show">
+        <%= alert %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
     <% end %>
 
     <%= yield %>
   </div>
+
+  <footer class="py-4 mt-5 bg-light">
+    <div class="container text-center">
+      <p class="text-muted mb-0">
+        &copy; <%= Date.today.year %> Cashly - Intelligent Cash Flow Management
+      </p>
+    </div>
+  </footer>
   </body>
 </html>
