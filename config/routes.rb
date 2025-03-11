@@ -20,4 +20,12 @@ Rails.application.routes.draw do
     get "forecast", to: "insights#forecast"
     get "recommendation", to: "insights#recommendation"
   end
+
+  resources :plaid, only: [] do
+    collection do
+      post "create_link_token"
+      post "exchange_public_token"
+      post "sync"
+    end
+  end
 end

@@ -8,4 +8,5 @@ class User < ApplicationRecord
   has_many :transactions, through: :accounts
   has_many :invoices, dependent: :destroy
   has_many :budgets, dependent: :destroy
+  has_many :plaid_tokens, dependent: :destroy
 end

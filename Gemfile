@@ -73,3 +73,5 @@ gem "sassc-rails", "~> 2.1"
 gem "csv", "~> 3.3"
 
 gem "plaid", "~> 36.1"
+
+gem "attr_encrypted", "~> 4.2"

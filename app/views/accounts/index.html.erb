@@ -2,7 +2,10 @@
 <div class="accounts-container">
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>Your Accounts</h1>
-    <%= link_to "Add New Account", new_account_path, class: "btn btn-primary" %>
+    <div>
+      <%= link_to "Add Manual Account", new_account_path, class: "btn btn-outline-primary" %>
+      <button id="plaid-link-button" class="btn btn-primary ms-2">Connect Bank</button>
+    </div>
   </div>
 
   <div class="row">
