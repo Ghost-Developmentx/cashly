@@ -1,3 +1,5 @@
+require "plaid"
+
 class PlaidService
   def initialize(user)
     @user = user
