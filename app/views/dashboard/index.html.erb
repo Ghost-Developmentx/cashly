@@ -1,5 +1,5 @@
 <div class="dashboard-container">
-  <h1>Cashly Dashboard</h1>
+  <h1>Welcome to <%= current_user.company_name.present? ? current_user.company_name : "Cashly" %> Dashboard</h1>
 
   <div class="dashboard-summary">
     <div class="summary-card">
@@ -68,6 +68,10 @@
     </div>
 </div>
 </div>
+
+<% if @show_tutorial %>
+  <%= render "shared/tutorial" %>
+<% end %>
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {

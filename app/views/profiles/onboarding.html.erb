@@ -1,0 +1,158 @@
+<!-- app/views/profiles/onboarding.html.erb -->
+<div class="container my-5">
+  <div class="row">
+    <div class="col-md-10 offset-md-1">
+      <div class="card shadow-lg">
+        <div class="card-body p-lg-5">
+          <div class="text-center mb-5">
+            <h1 class="h3 mb-3">Welcome to Cashly</h1>
+            <p class="text-muted">Let's set up your profile to get the most out of your financial management experience.</p>
+          </div>
+
+          <%= form_with(model: @user, url: complete_onboarding_profile_path, method: :patch) do |form| %>
+            <% if @user.errors.any? %>
+              <div class="alert alert-danger">
+                <h5>Please fix the following errors:</h5>
+                <ul>
+                  <% @user.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                  <% end %>
+                </ul>
+              </div>
+            <% end %>
+
+            <div class="row mb-5">
+              <div class="col-12">
+                <h4>About You</h4>
+                <div class="border-bottom mb-3"></div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <%= form.label :first_name, class: "form-label fw-bold" %>
+                <%= form.text_field :first_name, class: "form-control", required: true %>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <%= form.label :last_name, class: "form-label fw-bold" %>
+                <%= form.text_field :last_name, class: "form-control", required: true %>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <%= form.label :phone_number, class: "form-label fw-bold" %>
+                <%= form.telephone_field :phone_number, class: "form-control" %>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <%= form.label :timezone, class: "form-label fw-bold" %>
+                <%= form.time_zone_select :timezone, ActiveSupport::TimeZone.all.sort, { default: "UTC" }, { class: "form-select" } %>
+              </div>
+            </div>
+
+            <div class="row mb-5">
+              <div class="col-12">
+                <h4>Your Business</h4>
+                <div class="border-bottom mb-3"></div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <%= form.label :company_name, class: "form-label fw-bold" %>
+                <%= form.text_field :company_name, class: "form-control", required: true %>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <%= form.label :business_type, class: "form-label fw-bold" %>
+                <%= form.select :business_type,
+                                [
+                                  ["Sole Proprietorship", "sole_proprietorship"],
+                                  %w[LLC llc],
+                                  %w[Partnership partnership],
+                                  %w[Corporation corporation],
+                                  ["S Corporation", "s_corporation"],
+                                  %w[Nonprofit nonprofit],
+                                  %w[Other other]
+                                ],
+                                { include_blank: "Select Business Type" },
+                                { class: "form-select", required: true } %>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <%= form.label :industry, class: "form-label fw-bold" %>
+                <%= form.select :industry,
+                                [
+                                  %w[Technology technology],
+                                  %w[Finance finance],
+                                  %w[Healthcare healthcare],
+                                  %w[Retail retail],
+                                  %w[Manufacturing manufacturing],
+                                  %w[Education education],
+                                  %w[Services services],
+                                  %w[Hospitality hospitality],
+                                  %w[Construction construction],
+                                  ["Real Estate", "real_estate"],
+                                  %w[Other other]
+                                ],
+                                { include_blank: "Select Industry" },
+                                { class: "form-select", required: true } %>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <%= form.label :company_size, class: "form-label fw-bold" %>
+                <%= form.select :company_size,
+                                [
+                                  ["1 (Solo)", "solo"],
+                                  ["2-10 employees", "small"],
+                                  ["11-50 employees", "medium"],
+                                  ["51-200 employees", "large"],
+                                  ["201+ employees", "enterprise"]
+                                ],
+                                { include_blank: "Select Company Size" },
+                                { class: "form-select", required: true } %>
+              </div>
+            </div>
+
+            <div class="row mb-5">
+              <div class="col-12">
+                <h4>Financial Preferences</h4>
+                <div class="border-bottom mb-3"></div>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <%= form.label :currency, class: "form-label fw-bold" %>
+                <%= form.select :currency,
+                                [
+                                  ["USD - US Dollar", "USD"],
+                                  ["EUR - Euro", "EUR"],
+                                  ["GBP - British Pound", "GBP"],
+                                  ["CAD - Canadian Dollar", "CAD"],
+                                  ["AUD - Australian Dollar", "AUD"],
+                                  ["JPY - Japanese Yen", "JPY"]
+                                ],
+                                {},
+                                { class: "form-select" } %>
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <%= form.label :fiscal_year_start, "Fiscal Year Start", class: "form-label fw-bold" %>
+                <%= form.date_field :fiscal_year_start, class: "form-control", value: Date.today.beginning_of_year %>
+                <div class="form-text">When does your financial year begin? This helps with annual reporting.</div>
+              </div>
+            </div>
+
+            <div class="d-grid gap-2">
+              <%= form.submit "Complete Setup & Continue", class: "btn btn-lg btn-primary" %>
+              <p class="text-muted text-center mt-2">
+                You can always edit your profile information later.
+              </p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+</style>

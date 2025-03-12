@@ -81,6 +81,6 @@ class TransactionsController < ApplicationController
   end
 
   def transaction_params
-    params.expect(:account_id, :amount, :date, :description, :category_id, :recurring)
+    params.expect(transaction: [ :account_id, :amount, :date, :description, :category_id, :recurring ])
   end
 end

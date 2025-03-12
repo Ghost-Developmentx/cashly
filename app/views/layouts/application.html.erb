@@ -57,11 +57,17 @@
         <ul class="navbar-nav ms-auto">
           <% if user_signed_in? %>
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                <%= current_user.email %>
+              <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                <div class="user-avatar me-2">
+                  <span><%= current_user.initials %></span>
+                </div>
+                <span><%= current_user.full_name %></span>
               </a>
               <div class="dropdown-menu dropdown-menu-end">
-                <%= link_to "Edit Profile", edit_user_registration_path, class: "dropdown-item" %>
+                <%= link_to "View Profile", profile_path, class: "dropdown-item" %>
+                <%= link_to "Edit Profile", edit_profile_path, class: "dropdown-item" %>
+                <div class="dropdown-divider"></div>
+                <%= link_to "Account Settings", edit_user_registration_path, class: "dropdown-item" %>
                 <div class="dropdown-divider"></div>
                 <%= button_to "Log Out", destroy_user_session_path, method: :delete, class: "dropdown-item" %>
               </div>

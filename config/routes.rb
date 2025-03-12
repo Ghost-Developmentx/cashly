@@ -1,5 +1,7 @@
 Rails.application.routes.draw do
-  devise_for :users
+  devise_for :users, controllers:
+    { registrations: "users/registrations" }
+
   root "dashboard#index"
 
   resources :accounts
@@ -14,13 +16,17 @@ Rails.application.routes.draw do
     end
   end
   get "dashboard", to: "dashboard#index"
-  get "plaid/debug", to: "plaid#debug"
-  get "plaid/force_sync", to: "plaid#force_sync"
 
   namespace :ai do
     get "insights", to: "insights#index"
     get "forecast", to: "insights#forecast"
     get "recommendation", to: "insights#recommendation"
+  end
+
+  resource :profile, only: [ :show, :edit, :update  ] do
+    get "onboarding", on: :collection
+    patch "complete_onboarding", on: :collection
+    post "complete_tutorial", on: :collection
   end
 
   resources :plaid, only: [] do

@@ -76,6 +76,6 @@ class AccountsController < ApplicationController
   end
 
   def account_params
-    params.expect(:name, :account_type, :balance, :institution, :last_synced)
+    params.expect(account: [ :name, :account_type, :balance, :institution, :last_synced ])
   end
 end

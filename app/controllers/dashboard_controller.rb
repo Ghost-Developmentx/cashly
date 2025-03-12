@@ -35,5 +35,7 @@ class DashboardController < ApplicationController
     else
       @insights = []
     end
+
+    @show_tutorial = current_user.onboarding_completed? && !current_user.tutorial_completed?
   end
 end

@@ -107,3 +107,59 @@
 .transactions-container {
   padding: 20px;
 }
+
+// User Avatar
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #0d6efd;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.user-avatar-lg {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: #0d6efd;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 32px;
+  margin: 0 auto;
+}
+
+.profile-progress {
+  margin-top: 20px;
+}
+
+.profile-progress .progress {
+  height: 10px;
+  border-radius: 5px;
+}
+
+.profile-menu .list-group-item.active {
+  background-color: #f8f9fa;
+  color: #0d6efd;
+  border-color: #dee2e6;
+  border-left: 3px solid #0d6efd;
+  font-weight: bold;
+}
+
+.profile-menu .list-group-item {
+  border-left: 3px solid transparent;
+}
+
+.profile-header {
+  background-color: #f8f9fa;
+  padding: 20px 0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #dee2e6;
+}
