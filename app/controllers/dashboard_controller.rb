@@ -21,7 +21,7 @@ class DashboardController < ApplicationController
       recent_transactions = current_user.transactions.order(date: :desc).limit(100)
 
       trends_response = AiService.analyze_trends(
-        current_user.user_id,
+        current_user.id,
         recent_transactions,
         "3m"
       )

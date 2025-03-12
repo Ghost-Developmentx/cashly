@@ -14,6 +14,8 @@ Rails.application.routes.draw do
     end
   end
   get "dashboard", to: "dashboard#index"
+  get "plaid/debug", to: "plaid#debug"
+  get "plaid/force_sync", to: "plaid#force_sync"
 
   namespace :ai do
     get "insights", to: "insights#index"

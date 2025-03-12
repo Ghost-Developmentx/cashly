@@ -3,7 +3,7 @@ class Account < ApplicationRecord
   has_many :transactions, dependent: :destroy
 
   # Scope for plaid accounts
-  scope :plaid_accounts, -> { where.not(plaid_token: nil) }
+  scope :plaid_accounts, -> { where.not(plaid_account_id: nil) }
 
   def plaid_linked?
     plaid_account_id.present?
