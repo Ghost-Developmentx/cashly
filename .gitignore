@@ -34,3 +34,8 @@
 /config/master.key
 
 /node_modules/*
+
+.env
+
+.env.development
+.env.test
