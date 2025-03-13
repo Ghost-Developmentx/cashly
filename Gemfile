@@ -81,3 +81,11 @@ gem "plaid", "~> 36.1"
 gem "attr_encrypted", "~> 4.2"
 
 gem "country_select", "~> 10.0"
+
+gem "omniauth-google-oauth2", "~> 1.2"
+
+gem "omniauth-rails_csrf_protection", "~> 1.0"
+
+gem "twilio-ruby", "~> 7.5"
+
+gem "devise-two-factor", "~> 6.1"

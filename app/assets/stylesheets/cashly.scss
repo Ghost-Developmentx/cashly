@@ -1,21 +1,42 @@
-// Dashboard styles
+// -------------------------------
+// Base & Layout Components
+// -------------------------------
+
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  padding: 20px;
+}
+
 .dashboard-container {
   padding: 20px;
 }
 
+.transactions-container {
+  padding: 20px;
+}
+
+.profile-header {
+  background-color: #f8f9fa;
+  padding: 20px 0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+// -------------------------------
+// Cards & Shared Components
+// -------------------------------
+
 .card {
   transition: all 0.2s ease;
-}
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
-}
-
-.dashboard-summary {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 30px;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
+  }
 }
 
 .summary-card {
@@ -24,45 +45,18 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   padding: 15px;
   width: 30%;
-}
 
-.summary-card h3 {
-  margin-top: 0;
-  font-size: 16px;
-  color: #555;
-}
+  h3 {
+    margin-top: 0;
+    font-size: 16px;
+    color: #555;
+  }
 
-.summary-card p {
-  margin-bottom: 0;
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.positive { color: #28a745; }
-.negative { color: #dc3545; }
-.income { color: #28a745; }
-.expenses { color: #dc3545; }
-
-.chart-container {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  padding: 15px;
-  margin-bottom: 20px;
-  min-height: 300px;
-}
-
-.chart-container h3 {
-  margin-top: 0;
-  font-size: 16px;
-  color: #555;
-}
-
-.insights-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-bottom: 30px;
+  p {
+    margin-bottom: 0;
+    font-size: 24px;
+    font-weight: bold;
+  }
 }
 
 .insight-card {
@@ -72,51 +66,119 @@
   padding: 15px;
   width: calc(50% - 15px);
   border-left: 4px solid #ccc;
+
+  h4 {
+    margin-top: 0;
+    font-size: 16px;
+  }
+
+  p {
+    margin-bottom: 0;
+    color: #666;
+  }
+
+  // Variants
+  &.warning {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+  }
+  &.alert {
+    background-color: #f8d7da;
+    border-left: 4px solid #dc3545;
+  }
+  &.info {
+    background-color: #d1ecf1;
+    border-left: 4px solid #17a2b8;
+  }
+  &.success {
+    background-color: #d4edda;
+    border-left: 4px solid #28a745;
+  }
 }
 
-.insight-card.warning {
-  background-color: #fff3cd;
-  border-left: 4px solid #ffc107;
-}
+// -------------------------------
+// Dashboard Specific
+// -------------------------------
 
-.insight-card.alert {
-  background-color: #f8d7da;
-  border-left: 4px solid #dc3545;
-}
-
-.insight-card.info {
-  background-color: #d1ecf1;
-  border-left: 4px solid #17a2b8;
-}
-
-.insight-card.success {
-  background-color: #d4edda;
-  border-left: 4px solid #28a745;
-}
-
-.insight-card h4 {
-  margin-top: 0;
-  font-size: 16px;
-}
-
-.insight-card p {
-  margin-bottom: 0;
-  color: #666;
-}
-
-.action-buttons {
+.dashboard-summary {
   display: flex;
-  gap: 10px;
-  margin-top: 10px;
+  justify-content: space-between;
+  margin-bottom: 30px;
 }
 
-.placeholder-text {
-  color: #999;
-  text-align: center;
-  margin-top: 120px;
+.chart-container {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 15px;
+  margin-bottom: 20px;
+  min-height: 300px;
+
+  h3 {
+    margin-top: 0;
+    font-size: 16px;
+    color: #555;
+  }
 }
 
-/* Floating Onboarding Button Styles */
+.insights-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+// -------------------------------
+// User Profile Components
+// -------------------------------
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #0d6efd;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+
+  &-lg {
+    width: 80px;
+    height: 80px;
+    font-size: 32px;
+    margin: 0 auto;
+  }
+}
+
+.profile-progress {
+  margin-top: 20px;
+
+  .progress {
+    height: 10px;
+    border-radius: 5px;
+  }
+}
+
+.profile-menu {
+  .list-group-item {
+    border-left: 3px solid transparent;
+
+    &.active {
+      background-color: #f8f9fa;
+      color: #0d6efd;
+      border-color: #dee2e6;
+      border-left: 3px solid #0d6efd;
+      font-weight: bold;
+    }
+  }
+}
+
+// -------------------------------
+// Onboarding Components
+// -------------------------------
+
 .onboarding-button {
   position: fixed;
   bottom: 20px;
@@ -132,46 +194,13 @@
   cursor: pointer;
   z-index: 1000;
   transition: all 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+  }
 }
 
-.onboarding-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
-}
-
-.progress-ring {
-  position: relative;
-  width: 50px;
-  height: 50px;
-}
-
-.progress-ring-circle-bg {
-  fill: transparent;
-  stroke: rgba(255, 255, 255, 0.3);
-  stroke-width: 5;
-}
-
-.progress-ring-circle {
-  fill: transparent;
-  stroke: white;
-  stroke-width: 5;
-  stroke-dasharray: 126;
-  transform: rotate(-90deg);
-  transform-origin: center;
-  transition: stroke-dashoffset 0.3s ease;
-}
-
-.progress-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-/* Onboarding Popup Styles */
 .onboarding-popup {
   position: fixed;
   bottom: 90px;
@@ -181,143 +210,278 @@
   border-radius: 10px;
   box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
   z-index: 1010;
-  visibility: visible;
-  opacity: 1;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  transform: translateY(0);
   max-height: 80vh;
   overflow: hidden;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+
+  &[style*="display: none"] {
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  &-header {
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  &-body {
+    padding: 0;
+    max-height: calc(80vh - 60px);
+    overflow-y: auto;
+  }
+
+  &:after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    right: 30px;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid white;
+  }
 }
 
-.onboarding-popup[style*="display: none"] {
-  visibility: hidden;
-  opacity: 0;
-  transform: translateY(20px);
-}
+// -------------------------------
+// Authentication Components
+// -------------------------------
 
-.onboarding-popup-header {
-  padding: 15px 20px;
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #dee2e6;
+.auth-container {
+  min-height: 100vh;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-}
-
-.onboarding-popup-header h5 {
-  margin: 0;
-  font-weight: 600;
-  color: #0d6efd;
-}
-
-.onboarding-popup-body {
-  padding: 0;
-  max-height: calc(80vh - 60px);
-  overflow-y: auto;
-}
-
-// Transaction styles
-.transactions-container {
+  justify-content: center;
+  background-color: #f8f9fa;
   padding: 20px;
 }
 
-// User Avatar
-.user-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: #0d6efd;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 14px;
+.auth-card {
+  width: 100%;
+  max-width: 500px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 40px;
 }
 
-.user-avatar-lg {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background-color: #0d6efd;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 32px;
-  margin: 0 auto;
-}
-
-.profile-progress {
-  margin-top: 20px;
-}
-
-.profile-progress .progress {
-  height: 10px;
-  border-radius: 5px;
-}
-
-.profile-menu .list-group-item.active {
-  background-color: #f8f9fa;
+.verification-icon {
+  font-size: 50px;
   color: #0d6efd;
-  border-color: #dee2e6;
-  border-left: 3px solid #0d6efd;
-  font-weight: bold;
 }
 
-.profile-menu .list-group-item {
-  border-left: 3px solid transparent;
+.auth-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 8px;
 }
 
-.profile-header {
-  background-color: #f8f9fa;
-  padding: 20px 0;
-  margin-bottom: 20px;
+.auth-subtitle {
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #6c757d;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
   border-bottom: 1px solid #dee2e6;
 }
 
-.task-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
+.divider::before {
+  margin-right: 12px;
+}
+
+.divider::after {
+  margin-left: 12px;
+}
+
+.divider-text {
+  padding: 0 10px;
   font-size: 14px;
 }
 
-.list-group-item {
-  border-left: 0;
-  border-right: 0;
-  padding: 0.75rem 1rem;
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
 }
 
-.list-group-item:first-child {
-  border-top: 0;
+.btn-primary:hover {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
 }
 
-.list-group-item.list-group-item-success {
-  background-color: #f8f9fa;
-  border-color: #dee2e6;
+.auth-footer {
+  color: #6c757d;
 }
 
-.list-group-item.list-group-item-success .task-icon {
-  background-color: #28a745 !important;
+@media (max-width: 576px) {
+  .auth-card {
+    padding: 25px;
+  }
 }
 
-.onboarding-popup:after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  right: 30px;
-  width: 0;
-  height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-top: 10px solid white;
+.auth-card {
+  width: 100%;
+  max-width: 600px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 40px;
+
+  .auth-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 8px;
+  }
+
+  .auth-subtitle {
+    color: #6c757d;
+    margin-bottom: 0;
+  }
+}
+
+.btn-google {
+  background-color: #fff;
+  color: #212529;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
+
+  .google-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 10px;
+  }
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  color: #6c757d;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  &::before { margin-right: 12px; }
+  &::after { margin-left: 12px; }
+
+  &-text {
+    padding: 0 10px;
+    font-size: 14px;
+  }
+}
+
+ .confirmation-container {
+   min-height: 100vh;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   background-color: #f8f9fa;
+   padding: 20px;
+ }
+
+.confirmation-card {
+  width: 100%;
+  max-width: 600px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  padding: 40px;
+  text-align: center;
+}
+
+.confirmation-header {
+  margin-bottom: 30px;
+}
+
+.confirmation-icon {
+  font-size: 80px;
+  color: #28a745;
+  margin-bottom: 20px;
+}
+
+.confirmation-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 10px;
+}
+
+.confirmation-content {
+  margin-bottom: 30px;
+  font-size: 18px;
+  color: #495057;
+}
+
+.confirmation-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin: 30px 0;
+}
+
+.confirmation-footer {
+  color: #6c757d;
+  font-size: 14px;
+}
+
+@media (min-width: 576px) {
+  .confirmation-actions {
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+  }
+}
+
+// -------------------------------
+// Utilities & States
+// -------------------------------
+
+.positive, .income { color: #28a745; }
+.negative, .expenses { color: #dc3545; }
+
+.placeholder-text {
+  color: #999;
+  text-align: center;
+  margin-top: 120px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+// -------------------------------
+// Responsive Adjustments
+// -------------------------------
+
+@media (max-width: 576px) {
+  .auth-card {
+    padding: 25px;
+  }
 }

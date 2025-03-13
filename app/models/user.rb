@@ -1,8 +1,7 @@
 class User < ApplicationRecord
-  # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+         :recoverable, :rememberable, :validatable,
+         :confirmable, :omniauthable, omniauth_providers: [ :google_oauth2 ]
 
   has_many :accounts, dependent: :destroy
   has_many :transactions, through: :accounts
@@ -15,6 +14,17 @@ class User < ApplicationRecord
   validates :phone_number, format: { with: /\A\+?\d+\z/, message: "only allows numbers and optionally a leading +" },
             allow_blank: true
   validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
+
+  # OAuth methods
+  def self.from_omniauth(auth)
+    where(provider: auth.provider, uid: auth.uid).first_or_create do |user|
+      user.email = auth.info.email
+      user.password = Devise.friendly_token[0, 20]
+      user.first_name = auth.info.first_name
+      user.last_name = auth.info.last_name
+      user.skip_confirmation!
+    end
+  end
 
   # Helper methods
   def full_name
