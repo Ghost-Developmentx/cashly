@@ -1,12 +1,11 @@
 <div class="auth-container">
   <div class="auth-card">
     <div class="auth-header text-center mb-4">
-      <!-- Logo can be added here -->
       <h1 class="auth-title">Welcome Back</h1>
       <p class="auth-subtitle">Sign in to your Cashly account</p>
     </div>
 
-    <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "auth-form" }) do |f| %>
+    <% if devise_mapping.omniauthable? %>
       <div class="social-auth mb-4">
         <%= button_to user_google_oauth2_omniauth_authorize_path, class: "btn btn-google w-100", data: { turbo: false } do %>
           <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-icon">
@@ -17,7 +16,9 @@
       <div class="divider mb-4">
         <span class="divider-text">or sign in with email</span>
       </div>
+    <% end %>
 
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "auth-form" }) do |f| %>
       <% if flash[:alert] %>
         <div class="alert alert-danger">
           <%= flash[:alert] %>
@@ -26,7 +27,7 @@
 
       <div class="mb-3">
         <%= f.label :email, class: "form-label" %>
-        <%= f.email_field :email, autocomplete: "email", class: "form-control", placeholder: "you@example.com" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control", placeholder: "you@example.com" %>
       </div>
 
       <div class="mb-3">
