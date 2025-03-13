@@ -26,6 +26,16 @@
   border-bottom: 1px solid #dee2e6;
 }
 
+.task-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: white;
+}
+
 // -------------------------------
 // Cards & Shared Components
 // -------------------------------
@@ -126,6 +136,42 @@
   flex-wrap: wrap;
   gap: 15px;
   margin-bottom: 30px;
+}
+
+.progress-ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+}
+
+.progress-ring-circle-bg {
+  fill: transparent;
+  stroke: rgba(255, 255, 255, 0.3);
+  stroke-width: 4px;
+}
+
+.progress-ring-circle {
+  fill: transparent;
+  stroke: white;
+  stroke-width: 4px;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  stroke-dasharray: 126; /* 2 * 20 * π, approximately */
+}
+
+.progress-text {
+  position: absolute;
+  font-size: 14px;
+  font-weight: bold;
+  color: white;
+}
+
+.progress-ring-circle {
+  transition: stroke-dashoffset 0.5s ease;
 }
 
 // -------------------------------
