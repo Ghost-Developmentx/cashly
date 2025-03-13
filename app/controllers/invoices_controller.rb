@@ -177,7 +177,7 @@ class InvoicesController < ApplicationController
 
   def preview
     # Return the invoice template as HTML
-    render template: @invoice.template_path, layout: "invoice_preview"
+    render "invoices/templates/#{@invoice.template_name}", layout: "invoice_preview"
   end
 
   def send_reminder
@@ -209,6 +209,44 @@ class InvoicesController < ApplicationController
       format.html
       format.json { render json: @templates }
     end
+  end
+
+  def preview_template
+    # Create a temporary invoice object for the preview
+    @temp_invoice = Invoice.new
+
+    # Fill in the invoice details from params
+    @temp_invoice.client_name = params[:client_name].presence || "Client Name"
+    @temp_invoice.client_email = params[:client_email].presence || "client@example.com"
+    @temp_invoice.client_address = params[:client_address].presence
+    @temp_invoice.amount = params[:amount].presence || 0.0
+    @temp_invoice.currency = params[:currency].presence || "usd"
+    @temp_invoice.issue_date = params[:issue_date].presence ? Date.parse(params[:issue_date]) : Date.today
+    @temp_invoice.due_date = params[:due_date].presence ? Date.parse(params[:due_date]) : Date.today + 30.days
+    @temp_invoice.notes = params[:notes].presence
+    @temp_invoice.terms = params[:terms].presence
+    @temp_invoice.template = params[:template].presence || "default"
+    @temp_invoice.status = "draft"
+
+    # Attach the current user to the invoice for the preview
+    @temp_invoice.instance_variable_set(:@user, current_user)
+    def @temp_invoice.user
+      @user
+    end
+
+    # Allow overriding company name for preview
+    @company_name_override = params[:company_name].presence
+
+    # Handle logo upload if present
+    @logo_data = nil
+    if params[:logo].present? && params[:logo].respond_to?(:read)
+      @logo_data = params[:logo].read
+    end
+
+    # Use the temporary invoice for the view
+    @invoice = @temp_invoice
+
+    render "invoices/templates/#{@temp_invoice.template_name}", layout: "invoice_preview"
   end
 
   private

@@ -31,6 +31,7 @@ Rails.application.routes.draw do
     collection do
       get :templates
       get :recurring
+      post :preview_template
     end
   end
 

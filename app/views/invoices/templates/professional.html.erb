@@ -1,4 +1,4 @@
-<!-- app/views/invoices/templates/_professional.html.erb -->
+<!-- app/views/invoices/templates/professional.html.erb -->
 <div class="invoice-template professional">
   <div class="invoice-header">
     <div class="header-bg"></div>
@@ -6,26 +6,48 @@
       <div class="row align-items-center">
         <div class="col-6">
           <div class="company-branding">
-            <div class="company-logo">
-              <% if @invoice.user.company_name.present? %>
-                <div class="logo-initial"><%= @invoice.user.company_name.first(1) %></div>
+            <% if defined?(@logo_data) && @logo_data.present? %>
+              <!-- Display uploaded logo -->
+              <div class="company-logo-container">
+                <img src="data:image/jpeg;base64,<%= Base64.strict_encode64(@logo_data) %>" alt="Company Logo" class="company-logo-image">
+              </div>
+            <% else %>
+              <!-- Display letter logo -->
+              <div class="company-logo">
+                <% if @company_name_override.present? %>
+                  <div class="logo-initial"><%= @company_name_override.first(1) %></div>
+                <% elsif @invoice.user&.company_name.present? %>
+                  <div class="logo-initial"><%= @invoice.user.company_name.first(1) %></div>
+                <% else %>
+                  <div class="logo-initial">C</div>
+                <% end %>
+              </div>
+            <% end %>
+            <h3 class="company-name">
+              <% if @company_name_override.present? %>
+                <%= @company_name_override %>
+              <% elsif @invoice.user&.company_name.present? %>
+                <%= @invoice.user.company_name %>
               <% else %>
-                <div class="logo-initial">C</div>
+                Your Business
               <% end %>
-            </div>
-            <h3 class="company-name"><%= @invoice.user.company_name || "Your Business" %></h3>
+            </h3>
           </div>
         </div>
         <div class="col-6 text-end">
           <div class="invoice-label">INVOICE</div>
-          <div class="invoice-id">#<%= @invoice.generate_invoice_number %></div>
+          <% if @invoice.id.present? %>
+            <div class="invoice-id">#<%= @invoice.generate_invoice_number %></div>
+          <% else %>
+            <div class="invoice-id">#INV-00001</div>
+          <% end %>
         </div>
       </div>
     </div>
   </div>
 
   <div class="invoice-body">
-    <div class="row mb-5">
+    <div class="row mb-5 mt-5">
       <div class="col-sm-6">
         <div class="info-group">
           <h4 class="info-title">Billed To</h4>
@@ -86,11 +108,7 @@
           <tr>
             <td>
               <div class="item-description">
-                <% if @invoice.description.present? %>
-                  <%= @invoice.description %>
-                <% else %>
-                  Professional Services
-                <% end %>
+                Professional Services
               </div>
             </td>
             <td class="text-end"><%= @invoice.formatted_currency %></td>
@@ -172,15 +190,27 @@
     <div class="row">
       <div class="col-md-6">
         <div class="business-info">
-          <div class="business-name"><%= @invoice.user.company_name || "Your Business" %></div>
-          <div class="business-address">
-            <%= @invoice.user.address_line1 %>
-            <% if @invoice.user.address_line2.present? %>
-              , <%= @invoice.user.address_line2 %>
+          <div class="business-name">
+            <% if @company_name_override.present? %>
+              <%= @company_name_override %>
+            <% elsif @invoice.user&.company_name.present? %>
+              <%= @invoice.user.company_name %>
+            <% else %>
+              Your Business
             <% end %>
-            , <%= @invoice.user.city %>, <%= @invoice.user.state %> <%= @invoice.user.zip_code %>
           </div>
-          <div class="business-email"><%= @invoice.user.email %></div>
+          <div class="business-address">
+            <% if @invoice.user&.address_line1.present? %>
+              <%= @invoice.user.address_line1 %>
+              <% if @invoice.user&.address_line2.present? %>
+                , <%= @invoice.user.address_line2 %>
+              <% end %>
+              , <%= @invoice.user.city %>, <%= @invoice.user.state %> <%= @invoice.user.zip_code %>
+            <% else %>
+              123 Business Street, Cityville, ST 12345
+            <% end %>
+          </div>
+          <div class="business-email"><%= @invoice.user&.email || "your@email.com" %></div>
         </div>
       </div>
       <div class="col-md-6 text-md-end">
@@ -223,6 +253,12 @@
     .company-branding {
         display: flex;
         align-items: center;
+    }
+
+    .company-logo-image {
+        max-height: 60px;
+        max-width: 200px;
+        margin-right: 15px;
     }
 
     .company-logo {

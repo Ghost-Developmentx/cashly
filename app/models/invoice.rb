@@ -98,7 +98,21 @@ class Invoice < ApplicationRecord
   end
 
   def formatted_currency
-    Money.new(amount * 100, currency.upcase).format
+    begin
+      require "money"
+      Money.new((amount.to_f * 100).to_i, currency.upcase).format
+    rescue LoadError, NameError
+      # Fallback if Money gem is not available
+      symbol = case currency.to_s.downcase
+      when "usd", "us" then "$"
+      when "eur" then "€"
+      when "gbp" then "£"
+      when "jpy" then "¥"
+      else currency.to_s.upcase + " "
+      end
+
+      "#{symbol}#{sprintf('%.2f', amount.to_f)}"
+    end
   end
 
   # Methods for handling custom fields

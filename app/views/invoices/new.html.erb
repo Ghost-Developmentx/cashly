@@ -1,15 +1,12 @@
 <!-- app/views/invoices/new.html.erb -->
-<div class="container">
+<div class="container-fluid">
   <div class="row">
-    <div class="col-md-8 offset-md-2">
-      <div class="card">
-        <div class="card-header">
-          <h1 class="h4 mb-0">Create New Invoice</h1>
-        </div>
-        <div class="card-body">
-          <%= render 'form', invoice: @invoice %>
-        </div>
+    <div class="col-12 p-4">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Create New Invoice</h1>
+        <%= link_to "Back", invoices_path, class: "btn btn-link" %>
       </div>
+      <%= render 'form', invoice: @invoice %>
     </div>
   </div>
 </div>

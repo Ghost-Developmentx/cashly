@@ -91,3 +91,5 @@ gem "twilio-ruby", "~> 7.5"
 gem "devise-two-factor", "~> 6.1"
 
 gem "stripe", "~> 13.5"
+
+gem "money", "~> 6.19"

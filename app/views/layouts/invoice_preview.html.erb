@@ -13,7 +13,7 @@
       body {
           background-color: #f8f9fa;
           margin: 0;
-          padding: 0;
+          padding: 20px;
       }
 
       .invoice-container {
@@ -21,17 +21,21 @@
           box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
           margin: 0 auto;
           max-width: 210mm;
+          padding: 30px;
+          border-radius: 8px;
       }
 
       @media print {
           body {
               background-color: white;
+              padding: 0;
           }
 
           .invoice-container {
               box-shadow: none;
               margin: 0;
               max-width: none;
+              padding: 0;
           }
       }
   </style>

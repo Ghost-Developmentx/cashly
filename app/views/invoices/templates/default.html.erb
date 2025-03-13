@@ -1,21 +1,44 @@
-<!-- app/views/invoices/templates/_default.html.erb -->
+<!-- app/views/invoices/templates/default.html.erb -->
 <div class="invoice-template">
   <div class="invoice-header">
     <div class="row">
       <div class="col-6">
         <h1>INVOICE</h1>
-        <h2>#<%= @invoice.generate_invoice_number %></h2>
+        <% if @invoice.id.present? %>
+          <h2>#<%= @invoice.generate_invoice_number %></h2>
+        <% else %>
+          <h2>#INV-00001</h2>
+        <% end %>
       </div>
       <div class="col-6 text-end">
-        <h3><%= @invoice.user.company_name || "Your Business" %></h3>
-        <p>
-          <%= @invoice.user.address_line1 %><br>
-          <% if @invoice.user.address_line2.present? %>
-            <%= @invoice.user.address_line2 %><br>
+        <% if defined?(@logo_data) && @logo_data.present? %>
+          <div class="company-logo mb-3">
+            <img src="data:image/jpeg;base64,<%= Base64.strict_encode64(@logo_data) %>" alt="Company Logo" class="img-fluid" style="max-height: 80px;">
+          </div>
+        <% end %>
+        <h3>
+          <% if @company_name_override.present? %>
+            <%= @company_name_override %>
+          <% elsif @invoice.user&.company_name.present? %>
+            <%= @invoice.user.company_name %>
+          <% else %>
+            Your Business
           <% end %>
-          <%= @invoice.user.city %>, <%= @invoice.user.state %> <%= @invoice.user.zip_code %><br>
-          <%= @invoice.user.country %><br>
-          <%= @invoice.user.email %>
+        </h3>
+        <p>
+          <% if @invoice.user&.address_line1.present? %>
+            <%= @invoice.user.address_line1 %><br>
+            <% if @invoice.user&.address_line2.present? %>
+              <%= @invoice.user.address_line2 %><br>
+            <% end %>
+            <%= @invoice.user.city %>, <%= @invoice.user.state %> <%= @invoice.user.zip_code %><br>
+            <%= @invoice.user.country %><br>
+          <% else %>
+            123 Business Street<br>
+            Cityville, ST 12345<br>
+            Country<br>
+          <% end %>
+          <%= @invoice.user&.email || "your@email.com" %>
         </p>
       </div>
     </div>
@@ -44,7 +67,11 @@
             <div class="col-6 text-end">
               <p><%= @invoice.issue_date&.strftime('%b %d, %Y') %></p>
               <p><%= @invoice.due_date&.strftime('%b %d, %Y') %></p>
-              <p><span class="badge <%= @invoice.status == 'paid' ? 'bg-success' : (@invoice.status == 'pending' ? 'bg-warning' : 'bg-secondary') %>">
+              <p><span class="badge <%= if @invoice.status == 'paid'
+                                          'bg-success'
+                                        else
+                                          @invoice.status == 'pending' ? 'bg-warning' : 'bg-secondary'
+                                        end %>">
                 <%= @invoice.status.upcase %>
               </span></p>
             </div>
@@ -65,11 +92,6 @@
       <tbody>
       <tr>
         <td>
-          <% if @invoice.description.present? %>
-            <%= @invoice.description %>
-          <% else %>
-            Professional Services
-          <% end %>
         </td>
         <td class="text-end"><%= @invoice.formatted_currency %></td>
       </tr>

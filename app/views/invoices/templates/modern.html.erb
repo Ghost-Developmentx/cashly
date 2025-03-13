@@ -1,20 +1,43 @@
-<!-- app/views/invoices/templates/_modern.html.erb -->
+<!-- app/views/invoices/templates/modern.html.erb -->
 <div class="invoice-template modern">
   <div class="invoice-header">
     <div class="row align-items-center">
       <div class="col-6">
-        <div class="company-logo">
-          <% if @invoice.user.company_name.present? %>
-            <h2 class="logo-text"><%= @invoice.user.company_name.first(1) %></h2>
+        <% if defined?(@logo_data) && @logo_data.present? %>
+          <!-- Display uploaded logo -->
+          <div class="company-logo-container mb-2">
+            <img src="data:image/jpeg;base64,<%= Base64.strict_encode64(@logo_data) %>" alt="Company Logo" class="company-logo-image">
+          </div>
+        <% else %>
+          <!-- Display letter logo -->
+          <div class="company-logo">
+            <% if @company_name_override.present? %>
+              <h2 class="logo-text"><%= @company_name_override.first(1) %></h2>
+            <% elsif @invoice.user&.company_name.present? %>
+              <h2 class="logo-text"><%= @invoice.user.company_name.first(1) %></h2>
+            <% else %>
+              <h2 class="logo-text">C</h2>
+            <% end %>
+          </div>
+        <% end %>
+
+        <h3>
+          <% if @company_name_override.present? %>
+            <%= @company_name_override %>
+          <% elsif @invoice.user&.company_name.present? %>
+            <%= @invoice.user.company_name %>
           <% else %>
-            <h2 class="logo-text">C</h2>
+            Your Business
           <% end %>
-        </div>
-        <h3><%= @invoice.user.company_name || "Your Business" %></h3>
+        </h3>
       </div>
       <div class="col-6 text-end">
         <h1>INVOICE</h1>
-        <div class="invoice-id">#<%= @invoice.generate_invoice_number %></div>
+        <% if @invoice.id.present? %>
+          <div class="invoice-id">#<%= @invoice.generate_invoice_number %></div>
+        <% else %>
+          <div class="invoice-id">#INV-00001</div>
+        <% end %>
         <div class="invoice-status">
           <span class="status-badge <%= if @invoice.status == 'paid'
                                           'paid'
@@ -62,15 +85,29 @@
       <div class="col-6">
         <div class="party-block from-block">
           <div class="party-title">FROM</div>
-          <div class="party-name"><%= @invoice.user.company_name || "Your Business" %></div>
-          <div class="party-address">
-            <%= @invoice.user.address_line1 %><br>
-            <% if @invoice.user.address_line2.present? %>
-              <%= @invoice.user.address_line2 %><br>
+          <div class="party-name">
+            <% if @company_name_override.present? %>
+              <%= @company_name_override %>
+            <% elsif @invoice.user&.company_name.present? %>
+              <%= @invoice.user.company_name %>
+            <% else %>
+              Your Business
             <% end %>
-            <%= @invoice.user.city %>, <%= @invoice.user.state %> <%= @invoice.user.zip_code %><br>
-            <%= @invoice.user.country %><br>
-            <%= @invoice.user.email %>
+          </div>
+          <div class="party-address">
+            <% if @invoice.user&.address_line1.present? %>
+              <%= @invoice.user.address_line1 %><br>
+              <% if @invoice.user&.address_line2.present? %>
+                <%= @invoice.user.address_line2 %><br>
+              <% end %>
+              <%= @invoice.user.city %>, <%= @invoice.user.state %> <%= @invoice.user.zip_code %><br>
+              <%= @invoice.user.country %><br>
+            <% else %>
+              123 Business Street<br>
+              Cityville, ST 12345<br>
+              Country<br>
+            <% end %>
+            <%= @invoice.user&.email || "your@email.com" %>
           </div>
         </div>
       </div>
@@ -100,11 +137,6 @@
       <tbody>
       <tr>
         <td>
-          <% if @invoice.description.present? %>
-            <%= @invoice.description %>
-          <% else %>
-            Professional Services
-          <% end %>
         </td>
         <td class="text-end"><%= @invoice.formatted_currency %></td>
       </tr>
@@ -183,6 +215,15 @@
 
     .invoice-header {
         margin-bottom: 30px;
+    }
+
+    .company-logo-container {
+        margin-bottom: 10px;
+    }
+
+    .company-logo-image {
+        max-height: 80px;
+        max-width: 200px;
     }
 
     .company-logo {
