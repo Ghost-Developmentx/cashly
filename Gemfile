@@ -89,3 +89,5 @@ gem "omniauth-rails_csrf_protection", "~> 1.0"
 gem "twilio-ruby", "~> 7.5"
 
 gem "devise-two-factor", "~> 6.1"
+
+gem "stripe", "~> 13.5"

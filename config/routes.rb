@@ -14,9 +14,32 @@ Rails.application.routes.draw do
 
   resources :accounts
   resources :transactions
-  resources :invoices
   resources :budgets
   resources :categories
+
+  resources :invoices do
+    member do
+      post :send
+      post :mark_as_paid
+      post :set_recurring
+      post :cancel_recurring
+      get :preview
+      post :send_reminder
+      get :payment_status
+    end
+
+    collection do
+      get :templates
+      get :recurring
+    end
+  end
+
+  resources :integrations, only: [ :index, :new, :create, :destroy ] do
+    collection do
+      get :stripe
+      post :connect_stripe
+    end
+  end
 
   resources :imports, only: [ :new, :create ] do
     collection do
@@ -25,6 +48,7 @@ Rails.application.routes.draw do
   end
   get "dashboard", to: "dashboard#index"
   get "dashboard/hide_getting_started", to: "dashboard#hide_getting_started"
+  post "/stripe/webhooks", to: "stripe_webhooks#create"
 
   namespace :ai do
     get "insights", to: "insights#index"

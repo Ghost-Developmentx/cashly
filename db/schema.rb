@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_13_011818) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_13_143524) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -50,6 +50,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_13_011818) do
     t.index ["parent_category_id"], name: "index_categories_on_parent_category_id"
   end
 
+  create_table "integrations", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "provider", null: false
+    t.string "status", default: "active"
+    t.text "credentials", null: false
+    t.datetime "connected_at"
+    t.datetime "last_used_at"
+    t.datetime "expires_at"
+    t.text "metadata", default: "{}"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["status"], name: "index_integrations_on_status"
+    t.index ["user_id", "provider"], name: "index_integrations_on_user_id_and_provider", unique: true
+    t.index ["user_id"], name: "index_integrations_on_user_id"
+  end
+
   create_table "invoices", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "client_name"
@@ -59,6 +75,27 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_13_011818) do
     t.string "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "stripe_invoice_id"
+    t.string "stripe_payment_intent_id"
+    t.string "stripe_subscription_id"
+    t.string "stripe_customer_id"
+    t.string "payment_status", default: "awaiting_payment"
+    t.string "payment_method"
+    t.datetime "last_payment_attempt"
+    t.date "next_payment_date"
+    t.boolean "recurring", default: false
+    t.string "recurring_interval"
+    t.integer "recurring_period"
+    t.string "template", default: "default"
+    t.string "currency", default: "usd"
+    t.string "client_email"
+    t.text "client_address"
+    t.text "notes"
+    t.text "terms"
+    t.jsonb "custom_fields", default: {}
+    t.index ["payment_status"], name: "index_invoices_on_payment_status"
+    t.index ["stripe_invoice_id"], name: "index_invoices_on_stripe_invoice_id"
+    t.index ["stripe_subscription_id"], name: "index_invoices_on_stripe_subscription_id"
     t.index ["user_id"], name: "index_invoices_on_user_id"
   end
 
@@ -121,16 +158,19 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_13_011818) do
     t.string "unconfirmed_email"
     t.string "provider"
     t.string "uid"
+    t.string "stripe_customer_id"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["provider", "uid"], name: "index_users_on_provider_and_uid"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["stripe_customer_id"], name: "index_users_on_stripe_customer_id"
   end
 
   add_foreign_key "accounts", "users"
   add_foreign_key "budgets", "categories"
   add_foreign_key "budgets", "users"
   add_foreign_key "categories", "categories", column: "parent_category_id"
+  add_foreign_key "integrations", "users"
   add_foreign_key "invoices", "users"
   add_foreign_key "plaid_tokens", "users"
   add_foreign_key "transactions", "accounts"

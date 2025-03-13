@@ -1,0 +1,446 @@
+<!-- app/views/invoices/templates/_professional.html.erb -->
+<div class="invoice-template professional">
+  <div class="invoice-header">
+    <div class="header-bg"></div>
+    <div class="header-content">
+      <div class="row align-items-center">
+        <div class="col-6">
+          <div class="company-branding">
+            <div class="company-logo">
+              <% if @invoice.user.company_name.present? %>
+                <div class="logo-initial"><%= @invoice.user.company_name.first(1) %></div>
+              <% else %>
+                <div class="logo-initial">C</div>
+              <% end %>
+            </div>
+            <h3 class="company-name"><%= @invoice.user.company_name || "Your Business" %></h3>
+          </div>
+        </div>
+        <div class="col-6 text-end">
+          <div class="invoice-label">INVOICE</div>
+          <div class="invoice-id">#<%= @invoice.generate_invoice_number %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="invoice-body">
+    <div class="row mb-5">
+      <div class="col-sm-6">
+        <div class="info-group">
+          <h4 class="info-title">Billed To</h4>
+          <div class="client-info">
+            <h5 class="client-name"><%= @invoice.client_name %></h5>
+            <% if @invoice.client_address.present? %>
+              <address class="client-address">
+                <%= simple_format(@invoice.client_address) %>
+              </address>
+            <% end %>
+            <div class="client-email"><%= @invoice.client_email %></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="info-group">
+          <h4 class="info-title">Invoice Details</h4>
+          <div class="invoice-meta">
+            <div class="row">
+              <div class="col-6">
+                <div class="meta-item">
+                  <div class="meta-label">Invoice Date</div>
+                  <div class="meta-value"><%= @invoice.issue_date&.strftime('%b %d, %Y') %></div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="meta-item">
+                  <div class="meta-label">Due Date</div>
+                  <div class="meta-value"><%= @invoice.due_date&.strftime('%b %d, %Y') %></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="meta-item">
+              <div class="meta-label">Status</div>
+              <div class="meta-value">
+                <span class="status-badge <%= @invoice.status %>">
+                  <%= @invoice.status.upcase %>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="invoice-table-section">
+      <h4 class="section-title">Invoice Summary</h4>
+      <div class="table-responsive">
+        <table class="invoice-table">
+          <thead>
+          <tr>
+            <th>Description</th>
+            <th class="text-end">Amount</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>
+              <div class="item-description">
+                <% if @invoice.description.present? %>
+                  <%= @invoice.description %>
+                <% else %>
+                  Professional Services
+                <% end %>
+              </div>
+            </td>
+            <td class="text-end"><%= @invoice.formatted_currency %></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="invoice-summary-section">
+      <div class="row">
+        <div class="col-md-7">
+          <% if @invoice.notes.present? %>
+            <div class="invoice-notes">
+              <h4 class="section-title">Notes</h4>
+              <div class="notes-content">
+                <%= simple_format(@invoice.notes) %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+        <div class="col-md-5">
+          <div class="invoice-summary">
+            <div class="summary-row">
+              <div class="summary-label">Subtotal</div>
+              <div class="summary-value"><%= @invoice.formatted_currency %></div>
+            </div>
+
+            <div class="summary-row total">
+              <div class="summary-label">Total</div>
+              <div class="summary-value"><%= @invoice.formatted_currency %></div>
+            </div>
+
+            <% if @invoice.status == 'paid' %>
+              <div class="summary-row paid">
+                <div class="summary-label">Paid</div>
+                <div class="summary-value"><%= @invoice.formatted_currency %></div>
+              </div>
+              <div class="summary-row balance">
+                <div class="summary-label">Balance</div>
+                <div class="summary-value">0.00</div>
+              </div>
+            <% else %>
+              <div class="summary-row balance due">
+                <div class="summary-label">Balance Due</div>
+                <div class="summary-value"><%= @invoice.formatted_currency %></div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <% if @invoice.terms.present? %>
+      <div class="invoice-terms">
+        <h4 class="section-title">Terms & Conditions</h4>
+        <div class="terms-content">
+          <%= simple_format(@invoice.terms) %>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @invoice.status == 'pending' && @invoice.stripe_invoice_id.present? %>
+      <div class="payment-section">
+        <div class="payment-instruction">
+          <h4 class="section-title">Payment Information</h4>
+          <p class="mb-0">
+            Please pay this invoice securely online by clicking the link below:
+          </p>
+          <a href="https://invoice.stripe.com/i/<%= @invoice.stripe_invoice_id %>" class="payment-link" target="_blank">
+            <i class="bi bi-credit-card me-2"></i> Pay Invoice Online
+          </a>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="invoice-footer">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="business-info">
+          <div class="business-name"><%= @invoice.user.company_name || "Your Business" %></div>
+          <div class="business-address">
+            <%= @invoice.user.address_line1 %>
+            <% if @invoice.user.address_line2.present? %>
+              , <%= @invoice.user.address_line2 %>
+            <% end %>
+            , <%= @invoice.user.city %>, <%= @invoice.user.state %> <%= @invoice.user.zip_code %>
+          </div>
+          <div class="business-email"><%= @invoice.user.email %></div>
+        </div>
+      </div>
+      <div class="col-md-6 text-md-end">
+        <div class="thank-you">Thank you for your business!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+    .invoice-template.professional {
+        font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+        color: #333;
+        background: #fff;
+        margin: 0;
+        padding: 0;
+    }
+
+    .invoice-header {
+        position: relative;
+        margin-bottom: 40px;
+    }
+
+    .header-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 160px;
+        background: linear-gradient(135deg, #3f51b5 0%, #2196f3 100%);
+        z-index: 0;
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 1;
+        padding: 30px 40px;
+    }
+
+    .company-branding {
+        display: flex;
+        align-items: center;
+    }
+
+    .company-logo {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo-initial {
+        font-size: 30px;
+        font-weight: 700;
+        color: #3f51b5;
+    }
+
+    .company-name {
+        color: white;
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .invoice-label {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 2px;
+    }
+
+    .invoice-id {
+        color: white;
+        font-size: 24px;
+        font-weight: 700;
+    }
+
+    .invoice-body {
+        padding: 0 40px 40px;
+    }
+
+    .info-title {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #7986cb;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .client-name {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 10px;
+    }
+
+    .client-address {
+        font-style: normal;
+        margin-bottom: 5px;
+        line-height: 1.5;
+    }
+
+    .meta-label {
+        font-size: 12px;
+        color: #777;
+        margin-bottom: 5px;
+    }
+
+    .meta-value {
+        font-weight: 500;
+        margin-bottom: 15px;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-badge.paid {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .status-badge.pending {
+        background-color: #fff8e1;
+        color: #ff8f00;
+    }
+
+    .status-badge.draft {
+        background-color: #eceff1;
+        color: #546e7a;
+    }
+
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .invoice-table-section {
+        margin-bottom: 30px;
+    }
+
+    .invoice-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .invoice-table th {
+        background-color: #f5f5f5;
+        padding: 12px 15px;
+        font-weight: 600;
+        font-size: 14px;
+        text-align: left;
+        border-bottom: 2px solid #ddd;
+    }
+
+    .invoice-table td {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        vertical-align: top;
+    }
+
+    .item-description {
+        font-size: 14px;
+    }
+
+    .invoice-summary-section {
+        margin-bottom: 30px;
+    }
+
+    .invoice-summary {
+        background-color: #f9f9f9;
+        border-radius: 4px;
+        padding: 20px;
+    }
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .summary-row:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .summary-row.total {
+        font-weight: 700;
+    }
+
+    .summary-row.due {
+        font-size: 18px;
+        font-weight: 700;
+        color: #3f51b5;
+    }
+
+    .invoice-notes, .invoice-terms {
+        margin-bottom: 30px;
+    }
+
+    .notes-content, .terms-content {
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .payment-section {
+        margin: 30px 0;
+        background-color: #e8f0fe;
+        border-radius: 4px;
+        padding: 20px;
+    }
+
+    .payment-link {
+        display: inline-block;
+        margin-top: 10px;
+        background-color: #3f51b5;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background 0.3s;
+    }
+
+    .payment-link:hover {
+        background-color: #303f9f;
+        color: white;
+    }
+
+    .invoice-footer {
+        border-top: 1px solid #eee;
+        padding: 30px 40px;
+        font-size: 14px;
+        color: #777;
+    }
+
+    .business-name {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .thank-you {
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+    }
+</style>
