@@ -79,3 +79,5 @@ gem "csv", "~> 3.3"
 gem "plaid", "~> 36.1"
 
 gem "attr_encrypted", "~> 4.2"
+
+gem "country_select", "~> 10.0"

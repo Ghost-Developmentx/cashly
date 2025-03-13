@@ -4,6 +4,12 @@ Rails.application.routes.draw do
 
   root "dashboard#index"
 
+  resource :profile, only: [ :show, :edit, :update  ] do
+    get "onboarding", on: :collection
+    patch "complete_onboarding", on: :collection
+    post "complete_tutorial", on: :collection
+  end
+
   resources :accounts
   resources :transactions
   resources :invoices
@@ -16,6 +22,7 @@ Rails.application.routes.draw do
     end
   end
   get "dashboard", to: "dashboard#index"
+  get "dashboard/hide_getting_started", to: "dashboard#hide_getting_started"
 
   namespace :ai do
     get "insights", to: "insights#index"
@@ -23,11 +30,6 @@ Rails.application.routes.draw do
     get "recommendation", to: "insights#recommendation"
   end
 
-  resource :profile, only: [ :show, :edit, :update  ] do
-    get "onboarding", on: :collection
-    patch "complete_onboarding", on: :collection
-    post "complete_tutorial", on: :collection
-  end
 
   resources :plaid, only: [] do
     collection do

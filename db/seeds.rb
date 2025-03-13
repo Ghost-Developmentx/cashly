@@ -1,9 +1,20 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# Load default categories
+load(Rails.root.join('db', 'seeds', 'categories.rb'))
+
+# Create admin user if in development
+if Rails.env.development?
+  admin_email = "admin@example.com"
+  unless User.exists?(email: admin_email)
+    User.create!(
+    email: admin_email,
+    password: "password",
+    password_confirmation: "password",
+    first_name: "Admin",
+    last_name: "User",
+    company_name: "Cashly Dev",
+    onboarding_completed: true,
+    tutorial_completed: true
+    )
+    puts "Admin User created: #{admin_email}, password: password"
+  end
+end

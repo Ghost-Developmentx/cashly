@@ -38,4 +38,14 @@ class DashboardController < ApplicationController
 
     @show_tutorial = current_user.onboarding_completed? && !current_user.tutorial_completed?
   end
+
+  def hide_getting_started
+    # Set a session variable to hide the getting started guide
+    session[:hide_getting_started] = true
+
+    respond_to do |format|
+      format.json { render json: { success: true } }
+      format.html { redirect_back(fallback_location: dashboard_path) }
+    end
+  end
 end

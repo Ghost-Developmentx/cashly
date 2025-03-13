@@ -1,5 +1,4 @@
 class Users::RegistrationsController < Devise::RegistrationsController
-
   def create
     super do |resource|
       if resource.persisted?
@@ -11,10 +10,10 @@ class Users::RegistrationsController < Devise::RegistrationsController
   protected
 
   def after_sign_up_path_for(resource)
-    onboarding_profile_path
+    "/profile/onboarding"
   end
 
   def after_inactive_sign_up_path_for(resource)
-    onboarding_profile_path
+    "/profile/onboarding"
   end
 end

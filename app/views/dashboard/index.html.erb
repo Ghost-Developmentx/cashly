@@ -1,84 +1,363 @@
+<!-- app/views/dashboard/index.html.erb -->
 <div class="dashboard-container">
-  <h1>Welcome to <%= current_user.company_name.present? ? current_user.company_name : "Cashly" %> Dashboard</h1>
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Welcome to <%= current_user.company_name.present? ? current_user.company_name : "Cashly" %></h1>
 
-  <div class="dashboard-summary">
-    <div class="summary-card">
-      <h3>Current Balance</h3>
-      <p class="balance <%= @total_balance.to_f >= 0 ? "positive" : "negative" %>">
-        <%= number_to_currency(@total_balance || 0) %>
-      </p>
-    </div>
-
-    <div class="summary-card">
-      <h3>Monthly Income</h3>
-      <p class="income">
-        <%= number_to_currency(@monthly_income || 0) %>
-      </p>
-    </div>
-
-    <div class="summary-card">
-      <h3>Monthly Expenses</h3>
-      <p class="expenses">
-        <%= number_to_currency(@monthly_expenses || 0) %>
-      </p>
+    <!-- Quick Actions Dropdown -->
+    <div class="dropdown">
+      <button class="btn btn-primary dropdown-toggle" type="button" id="quickActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="bi bi-lightning-fill me-1"></i> Quick Actions
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="quickActionsDropdown">
+        <li><%= link_to "<i class='bi bi-plus-circle me-2'></i> Add Transaction".html_safe, new_transaction_path, class: "dropdown-item" %></li>
+        <li><%= link_to "<i class='bi bi-bank me-2'></i> Connect Account".html_safe, accounts_path, class: "dropdown-item" %></li>
+        <li><%= link_to "<i class='bi bi-pie-chart me-2'></i> Create Budget".html_safe, new_budget_path, class: "dropdown-item" %></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><%= link_to "<i class='bi bi-file-earmark-text me-2'></i> Create Invoice".html_safe, new_invoice_path, class: "dropdown-item" %></li>
+      </ul>
     </div>
   </div>
 
-  <div class="dashboard-charts row">
-    <div class="col-md-8">
-      <div class="chart-container">
-        <h3>Cash Flow Forecast</h3>
-        <div id="cash-flow-chart"></div>
+  <!-- Financial Summary Cards -->
+  <div class="row mb-4">
+    <div class="col-md-4 mb-3 mb-md-0">
+      <div class="card h-100 border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+              <i class="bi bi-wallet2 text-primary fs-4"></i>
+            </div>
+            <h5 class="card-title mb-0">Current Balance</h5>
+          </div>
+          <h2 class="<%= @total_balance.to_f >= 0 ? 'text-success' : 'text-danger' %>">
+            <%= number_to_currency(@total_balance || 0) %>
+          </h2>
+          <p class="text-muted mb-0">Across all accounts</p>
+        </div>
       </div>
     </div>
 
-    <div class="dashboard-charts row">
-      <div class="col-md-8">
-        <div class="chart-container">
-          <h3>Cash Flow Forecast</h3>
-          <div id="cash-flow-chart"></div>
+    <div class="col-md-4 mb-3 mb-md-0">
+      <div class="card h-100 border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+              <i class="bi bi-graph-up-arrow text-success fs-4"></i>
+            </div>
+            <h5 class="card-title mb-0">Monthly Income</h5>
+          </div>
+          <h2 class="text-success">
+            <%= number_to_currency(@monthly_income || 0) %>
+          </h2>
+          <p class="text-muted mb-0">This month</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card h-100 border-0 shadow-sm">
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <div class="rounded-circle bg-danger bg-opacity-10 p-3 me-3">
+              <i class="bi bi-graph-down-arrow text-danger fs-4"></i>
+            </div>
+            <h5 class="card-title mb-0">Monthly Expenses</h5>
+          </div>
+          <h2 class="text-danger">
+            <%= number_to_currency(@monthly_expenses || 0) %>
+          </h2>
+          <p class="text-muted mb-0">This month</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="row">
+    <!-- Left Column (Charts & Insights) -->
+    <div class="col-lg-8">
+      <!-- Cash Flow Chart -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Cash Flow Forecast</h5>
+            <div class="dropdown">
+              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="timeframeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                Last 30 Days
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="timeframeDropdown">
+                <li><a class="dropdown-item" href="#">Last 30 Days</a></li>
+                <li><a class="dropdown-item" href="#">Last 3 Months</a></li>
+                <li><a class="dropdown-item" href="#">Last 6 Months</a></li>
+                <li><a class="dropdown-item" href="#">Last Year</a></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="cash-flow-chart" style="height: 300px;"></div>
         </div>
       </div>
 
-      <div class="dashboard-insights">
-        <h3>AI Insights</h3>
-        <div class="insights-container">
+      <!-- AI Insights -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+              <i class="bi bi-lightning text-primary me-2"></i> AI Insights
+            </h5>
+            <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+          </div>
+        </div>
+        <div class="card-body">
           <% if @insights.present? %>
-            <% @insights.each do |insight| %>
-              <div class="insight-card <%= insight['type'] %>">
-                <h4><%= insight['title'] %></h4>
-                <p><%= insight['description'] %></p>
-              </div>
-            <% end %>
+            <div class="row">
+              <% @insights.each do |insight| %>
+                <div class="col-md-6 mb-3">
+                  <div class="insight-card <%= insight['type'] %> h-100">
+                    <h6><%= insight['title'] %></h6>
+                    <p class="mb-0 small"><%= insight['description'] %></p>
+                  </div>
+                </div>
+              <% end %>
+            </div>
           <% else %>
-            <p>Start adding your transactions to get personalized financial insights!</p>
+            <div class="text-center py-4">
+              <i class="bi bi-graph-up-arrow text-muted fs-1"></i>
+              <p class="mt-3">Start adding your transactions to get personalized financial insights!</p>
+              <%= link_to "Add First Transaction", new_transaction_path, class: "btn btn-primary" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column (Recent Transactions & Stats) -->
+    <div class="col-lg-4">
+      <!-- Recent Activity -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Recent Activity</h5>
+            <%= link_to "View All", transactions_path, class: "btn btn-sm btn-outline-primary" %>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <% recent_transactions = current_user.transactions.order(date: :desc).limit(5) %>
+
+          <% if recent_transactions.any? %>
+            <div class="list-group list-group-flush border-0">
+              <% recent_transactions.each do |transaction| %>
+                <%= link_to transaction_path(transaction), class: "list-group-item list-group-item-action border-start-0 border-end-0" do %>
+                  <div class="d-flex w-100 justify-content-between align-items-center">
+                    <div>
+                      <h6 class="mb-1"><%= transaction.description.truncate(25) %></h6>
+                      <div class="text-muted small">
+                        <span class="badge <%= transaction.category ? 'bg-light text-dark' : 'bg-secondary' %> me-1">
+                          <%= transaction.category&.name&.titleize || "Uncategorized" %>
+                        </span>
+                        <span><%= transaction.date.strftime("%b %d") %></span>
+                      </div>
+                    </div>
+                    <span class="fs-5 <%= transaction.amount >= 0 ? 'text-success' : 'text-danger' %>">
+                      <%= number_to_currency(transaction.amount) %>
+                    </span>
+                  </div>
+                <% end %>
+              <% end %>
+            </div>
+          <% else %>
+            <div class="text-center py-4">
+              <i class="bi bi-receipt text-muted fs-1"></i>
+              <p class="mt-3">No recent transactions</p>
+              <%= link_to "Add Your First Transaction", new_transaction_path, class: "btn btn-primary" %>
+            </div>
           <% end %>
         </div>
       </div>
 
-      <div class="dashboard-actions">
-        <h3>Quick Actions</h3>
-        <div class="action-buttons">
-          <%= link_to "Add Transaction", new_transaction_path, class: "btn btn-primary" %>
-          <%= link_to "View Transactions", transactions_path, class: "btn btn-secondary" %>
-          <%= link_to "View Budget", budgets_path, class: "btn btn-secondary" %>
-          <%= link_to "View Cash Flow Forecast", ai_forecast_path, class: "btn btn-secondary" %>
+      <!-- Budget Overview -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white border-0">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Budget Overview</h5>
+            <%= link_to "View Budgets", budgets_path, class: "btn btn-sm btn-outline-primary" %>
+          </div>
+        </div>
+        <div class="card-body">
+          <% if current_user.budgets.any? %>
+            <% current_user.budgets.includes(:category).limit(3).each do |budget| %>
+              <%
+                month_start = Date.today.beginning_of_month
+                month_end = Date.today.end_of_month
+
+                spent_amount = Transaction.joins(:account)
+                                          .where(category: budget.category,
+                                                 accounts: { user_id: current_user.id },
+                                                 date: month_start..month_end)
+                                          .where('amount < 0')
+                                          .sum(:amount).abs
+
+                percent_used = budget.amount > 0 ? (spent_amount / budget.amount) * 100 : 0
+              %>
+              <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span><%= budget.category.name.titleize %></span>
+                  <span class="text-muted small">
+                    <%= number_to_currency(spent_amount) %> / <%= number_to_currency(budget.amount) %>
+                  </span>
+                </div>
+                <div class="progress" style="height: 8px;">
+                  <div class="progress-bar <%= percent_used > 90 ? 'bg-danger' : 'bg-success' %>"
+                       role="progressbar"
+                       style="width: <%= [percent_used, 100].min %>%;"
+                       aria-valuenow="<%= percent_used %>"
+                       aria-valuemin="0"
+                       aria-valuemax="100"></div>
+                </div>
+              </div>
+            <% end %>
+          <% else %>
+            <div class="text-center py-3">
+              <p class="text-muted mb-3">No budgets created yet</p>
+              <%= link_to "Create Your First Budget", new_budget_path, class: "btn btn-primary btn-sm" %>
+            </div>
+          <% end %>
         </div>
       </div>
     </div>
-</div>
+  </div>
 </div>
 
+<!-- Floating Onboarding Button -->
+<%
+  tasks_completed = 0
+  tasks_completed += 1 if current_user.onboarding_completed?
+  tasks_completed += 1 if current_user.tutorial_completed?
+  tasks_completed += 1 if current_user.accounts.any?
+  tasks_completed += 1 if current_user.transactions.any?
+  tasks_completed += 1 if current_user.budgets.any?
+
+  progress_percentage = (tasks_completed.to_f / 5 * 100).round
+%>
+
+<% if tasks_completed < 5 && !session[:hide_getting_started] %>
+  <!-- Floating Action Button -->
+  <div class="onboarding-button" id="onboardingButton">
+    <div class="progress-ring">
+      <svg width="50" height="50">
+        <circle class="progress-ring-circle-bg" r="20" cx="25" cy="25" />
+        <circle class="progress-ring-circle" r="20" cx="25" cy="25" style="stroke-dashoffset: <%= 126 - (126 * progress_percentage / 100) %>;" />
+      </svg>
+      <span class="progress-text"><%= progress_percentage %>%</span>
+    </div>
+  </div>
+
+  <!-- Popup -->
+  <div class="onboarding-popup" id="onboardingPopup" style="display: none;">
+    <div class="onboarding-popup-header">
+      <h5><i class="bi bi-check2-circle me-2"></i>Setup Progress</h5>
+      <button type="button" class="btn-close" id="closeOnboardingPopup" aria-label="Close"></button>
+    </div>
+    <div class="onboarding-popup-body">
+      <%= render 'shared/getting_started' %>
+    </div>
+  </div>
+<% end %>
+
+<!-- Tutorial Modal -->
 <% if @show_tutorial %>
   <%= render "shared/tutorial" %>
 <% end %>
 
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-      document.getElementById('cash-flow-chart').innerHTML =
-          '<p class="placeholder-text">Cash flow chat will appear here</p>';
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cash flow chart placeholder
+        const cashFlowChart = document.getElementById('cash-flow-chart');
+        if (cashFlowChart) {
+            cashFlowChart.innerHTML = '<p class="placeholder-text">Cash flow chart will appear here</p>';
+        }
 
-      document.getElementById('expense-chart').innerHTML =
-          '<p class="placeholder-text">Expense breakdown chart will appear here</p>';
-  });
+        // Onboarding button functionality
+        const onboardingButton = document.getElementById('onboardingButton');
+        const onboardingPopup = document.getElementById('onboardingPopup');
+
+        if (onboardingButton && onboardingPopup) {
+            // Debug log to verify elements are found
+            console.log('Found onboarding elements:', onboardingButton, onboardingPopup);
+
+            onboardingButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                console.log('Onboarding button clicked');
+
+                // Toggle visibility
+                if (onboardingPopup["style"].display === 'block') {
+                    onboardingPopup["style"].display = 'none';
+                } else {
+                    onboardingPopup["style"].display = 'block';
+                }
+            });
+
+            // Close button inside popup
+            const closeOnboardingPopup = document.getElementById('closeOnboardingPopup');
+            if (closeOnboardingPopup) {
+                closeOnboardingPopup.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onboardingPopup["style"].display = 'none';
+                });
+            }
+
+            // Close when clicking outside the popup (but not on the button)
+            document.addEventListener('click', function(event) {
+                const isClickInsidePopup = onboardingPopup.contains(event.target);
+                const isClickOnButton = onboardingButton.contains(event.target);
+
+                if (!isClickInsidePopup && !isClickOnButton && onboardingPopup["style"].display === 'block') {
+                    onboardingPopup["style"].display = 'none';
+                }
+            });
+        }
+
+        // Tutorial button functionality
+        const startTutorial = document.getElementById('startTutorial');
+        if (startTutorial) {
+            startTutorial.addEventListener('click', function() {
+                const tutorialOverlay = document.getElementById('tutorialOverlay');
+                if (tutorialOverlay) {
+                    tutorialOverlay["style"].display = 'flex';
+                } else {
+                    window.location.href = '/dashboard?tutorial=true';
+                }
+            });
+        }
+
+        // Hide getting started guide
+        const hideGettingStartedGuide = document.getElementById('hideGettingStartedGuide');
+        if (hideGettingStartedGuide) {
+            hideGettingStartedGuide.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // Hide the popup
+                if (onboardingPopup) {
+                    onboardingPopup["style"].display = 'none';
+                }
+
+                // Hide the button too
+                if (onboardingButton) {
+                    onboardingButton["style"].display = 'none';
+                }
+
+                // Remember that user closed the guide
+                fetch('/dashboard/hide_getting_started', {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                }).catch(error => console.error('Error:', error));
+            });
+        }
+    });
 </script>
