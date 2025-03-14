@@ -1,300 +1,154 @@
 <!-- app/views/invoices/templates/minimalist.html.erb -->
-<div class="invoice-template minimalist">
-  <div class="invoice-header">
-    <div class="row">
-      <div class="col-6">
-        <% if defined?(@logo_data) && @logo_data.present? %>
-          <div class="company-logo mb-4">
-            <img src="data:image/jpeg;base64,<%= Base64.strict_encode64(@logo_data) %>" alt="Company Logo" class="logo-image">
-          </div>
-        <% end %>
-        <h1>
-          <% if @company_name_override.present? %>
-            <%= @company_name_override %>
-          <% elsif @invoice.user&.company_name.present? %>
-            <%= @invoice.user.company_name %>
-          <% else %>
-            Your Business
-          <% end %>
-        </h1>
-      </div>
-      <div class="col-6 text-end">
-        <h2>INVOICE</h2>
-        <% if @invoice.id.present? %>
-          <div class="invoice-number">#<%= @invoice.generate_invoice_number %></div>
+<div class="p-12 font-sans text-gray-800 max-w-4xl mx-auto">
+  <div class="flex flex-col md:flex-row justify-between items-start">
+    <div class="mb-6 md:mb-0">
+      <% if defined?(@logo_data) && @logo_data.present? %>
+        <div class="mb-4">
+          <img src="data:image/jpeg;base64,<%= Base64.strict_encode64(@logo_data) %>" alt="Company Logo" class="max-h-[70px] max-w-[200px]">
+        </div>
+      <% end %>
+      <h1 class="text-2xl font-normal text-black mt-0 mb-0">
+        <% if @company_name_override.present? %>
+          <%= @company_name_override %>
+        <% elsif @invoice.user&.company_name.present? %>
+          <%= @invoice.user.company_name %>
         <% else %>
-          <div class="invoice-number">#INV-00001</div>
+          Your Business
+        <% end %>
+      </h1>
+    </div>
+
+    <div class="text-right">
+      <h2 class="text-2xl font-light tracking-wider text-black mt-0 mb-1">INVOICE</h2>
+      <% if @invoice.id.present? %>
+        <div class="text-base text-gray-500">#<%= @invoice.generate_invoice_number %></div>
+      <% else %>
+        <div class="text-base text-gray-500">#INV-00001</div>
+      <% end %>
+    </div>
+  </div>
+
+  <hr class="my-8 border-t border-gray-200">
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+    <div>
+      <div class="uppercase text-xs tracking-wider text-gray-500 mb-1">Date</div>
+      <div class="text-base"><%= @invoice.issue_date&.strftime('%d/%m/%Y') %></div>
+    </div>
+
+    <div>
+      <div class="uppercase text-xs tracking-wider text-gray-500 mb-1">Due Date</div>
+      <div class="text-base"><%= @invoice.due_date&.strftime('%d/%m/%Y') %></div>
+    </div>
+
+    <div>
+      <div class="uppercase text-xs tracking-wider text-gray-500 mb-1">Status</div>
+      <div class="text-base">
+        <% case @invoice.status %>
+        <% when 'paid' %>
+          <span class="text-green-600"><%= @invoice.status.upcase %></span>
+        <% when 'pending' %>
+          <span class="text-amber-600"><%= @invoice.status.upcase %></span>
+        <% else %>
+          <span class="text-gray-500"><%= @invoice.status.upcase %></span>
         <% end %>
       </div>
     </div>
-  </div>
 
-  <hr class="divider">
-
-  <div class="invoice-info">
-    <div class="row">
-      <div class="col-3">
-        <div class="info-label">Date</div>
-        <div class="info-value"><%= @invoice.issue_date&.strftime('%d/%m/%Y') %></div>
-      </div>
-      <div class="col-3">
-        <div class="info-label">Due Date</div>
-        <div class="info-value"><%= @invoice.due_date&.strftime('%d/%m/%Y') %></div>
-      </div>
-      <div class="col-3">
-        <div class="info-label">Status</div>
-        <div class="info-value status-<%= @invoice.status %>"><%= @invoice.status.upcase %></div>
-      </div>
-      <div class="col-3">
-        <div class="info-label">Amount</div>
-        <div class="info-value"><%= @invoice.formatted_currency %></div>
-      </div>
+    <div>
+      <div class="uppercase text-xs tracking-wider text-gray-500 mb-1">Amount</div>
+      <div class="text-base"><%= @invoice.formatted_currency %></div>
     </div>
   </div>
 
-  <div class="invoice-addresses">
-    <div class="row">
-      <div class="col-6">
-        <div class="address-block from">
-          <div class="address-label">FROM</div>
-          <div class="address-content">
-            <% if @company_name_override.present? %>
-              <%= @company_name_override %><br>
-            <% elsif @invoice.user&.company_name.present? %>
-              <%= @invoice.user.company_name %><br>
-            <% else %>
-              Your Business<br>
-            <% end %>
+  <div class="flex flex-col md:flex-row mb-10">
+    <div class="md:w-1/2 mb-6 md:mb-0">
+      <div class="from-block">
+        <div class="uppercase text-xs tracking-wider text-gray-500 mb-2">FROM</div>
+        <div>
+          <% if @company_name_override.present? %>
+            <%= @company_name_override %><br>
+          <% elsif @invoice.user&.company_name.present? %>
+            <%= @invoice.user.company_name %><br>
+          <% else %>
+            Your Business<br>
+          <% end %>
 
-            <% if @invoice.user&.address_line1.present? %>
-              <%= @invoice.user.address_line1 %><br>
-              <% if @invoice.user&.address_line2.present? %>
-                <%= @invoice.user.address_line2 %><br>
-              <% end %>
-              <%= @invoice.user.city %>, <%= @invoice.user.state %> <%= @invoice.user.zip_code %><br>
-              <%= @invoice.user.country %><br>
-            <% else %>
-              123 Business Street<br>
-              Cityville, ST 12345<br>
-              Country<br>
+          <% if @invoice.user&.address_line1.present? %>
+            <%= @invoice.user.address_line1 %><br>
+            <% if @invoice.user&.address_line2.present? %>
+              <%= @invoice.user.address_line2 %><br>
             <% end %>
-            <%= @invoice.user&.email || "your@email.com" %>
-          </div>
+            <%= @invoice.user.city %>, <%= @invoice.user.state %> <%= @invoice.user.zip_code %><br>
+            <%= @invoice.user.country %><br>
+          <% else %>
+            123 Business Street<br>
+            Cityville, ST 12345<br>
+            Country<br>
+          <% end %>
+          <%= @invoice.user&.email || "your@email.com" %>
         </div>
       </div>
-      <div class="col-6">
-        <div class="address-block to">
-          <div class="address-label">TO</div>
-          <div class="address-content">
-            <%= @invoice.client_name %><br>
-            <% if @invoice.client_address.present? %>
-              <%= simple_format(@invoice.client_address.gsub("\n", "<br>")) %>
-            <% end %>
-            <%= @invoice.client_email %>
-          </div>
+    </div>
+
+    <div class="md:w-1/2">
+      <div class="to-block">
+        <div class="uppercase text-xs tracking-wider text-gray-500 mb-2">TO</div>
+        <div>
+          <%= @invoice.client_name %><br>
+          <% if @invoice.client_address.present? %>
+            <div class="whitespace-pre-line"><%= @invoice.client_address %></div>
+          <% end %>
+          <%= @invoice.client_email %>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="invoice-details">
-    <table class="table">
+  <div class="mb-10">
+    <table class="w-full">
       <thead>
       <tr>
-        <th>Description</th>
-        <th class="text-end">Amount</th>
+        <th class="py-2 px-2 border-b border-gray-200 text-left uppercase text-xs tracking-wider text-gray-500 font-medium">Description</th>
+        <th class="py-2 px-2 border-b border-gray-200 text-right uppercase text-xs tracking-wider text-gray-500 font-medium">Amount</th>
       </tr>
       </thead>
       <tbody>
       <tr>
-        <td>
+        <td class="py-4 px-2 border-b border-gray-200">
         </td>
-        <td class="text-end"><%= @invoice.formatted_currency %></td>
+        <td class="py-4 px-2 border-b border-gray-200 text-right"><%= @invoice.formatted_currency %></td>
       </tr>
       </tbody>
       <tfoot>
       <tr>
-        <td class="text-end">Total</td>
-        <td class="text-end"><strong><%= @invoice.formatted_currency %></strong></td>
+        <td class="py-4 px-2 text-right">Total</td>
+        <td class="py-4 px-2 text-right font-semibold"><%= @invoice.formatted_currency %></td>
       </tr>
       </tfoot>
     </table>
   </div>
 
   <% if @invoice.notes.present? %>
-    <div class="invoice-notes">
-      <div class="notes-label">Notes</div>
-      <div class="notes-content">
-        <%= simple_format(@invoice.notes) %>
-      </div>
+    <div class="mb-10">
+      <div class="uppercase text-xs tracking-wider text-gray-500 mb-2">Notes</div>
+      <div class="whitespace-pre-line"><%= @invoice.notes %></div>
     </div>
   <% end %>
 
   <% if @invoice.terms.present? %>
-    <div class="invoice-terms">
-      <div class="terms-label">Terms</div>
-      <div class="terms-content">
-        <%= simple_format(@invoice.terms) %>
-      </div>
+    <div class="mb-10">
+      <div class="uppercase text-xs tracking-wider text-gray-500 mb-2">Terms</div>
+      <div class="whitespace-pre-line"><%= @invoice.terms %></div>
     </div>
   <% end %>
 
-  <div class="invoice-footer">
+  <div class="text-center text-gray-500 mt-12">
     <% if @invoice.status == 'pending' && @invoice.stripe_invoice_id.present? %>
-      <div class="payment-link">
-        Pay online: <a href="https://invoice.stripe.com/i/<%= @invoice.stripe_invoice_id %>">https://invoice.stripe.com/i/<%= @invoice.stripe_invoice_id %></a>
+      <div class="mb-4">
+        Pay online: <a href="https://invoice.stripe.com/i/<%= @invoice.stripe_invoice_id %>" class="text-blue-600 no-underline hover:underline">https://invoice.stripe.com/i/<%= @invoice.stripe_invoice_id %></a>
       </div>
     <% end %>
-    <div class="thank-you">Thank you for your business</div>
+    <div class="italic">Thank you for your business</div>
   </div>
 </div>
-
-<style>
-    .invoice-template.minimalist {
-        padding: 50px;
-        font-family: 'Helvetica Neue', Arial, sans-serif;
-        color: #333;
-        line-height: 1.5;
-        max-width: 800px;
-        margin: 0 auto;
-    }
-
-    .logo-image {
-        max-height: 70px;
-        max-width: 200px;
-    }
-
-    .invoice-header h1 {
-        font-size: 24px;
-        font-weight: 400;
-        margin: 0;
-        color: #000;
-    }
-
-    .invoice-header h2 {
-        font-size: 28px;
-        font-weight: 300;
-        letter-spacing: 2px;
-        margin: 0 0 5px 0;
-        color: #000;
-    }
-
-    .invoice-number {
-        font-size: 16px;
-        color: #888;
-    }
-
-    .divider {
-        margin: 30px 0;
-        border: none;
-        border-top: 1px solid #eee;
-    }
-
-    .invoice-info {
-        margin-bottom: 40px;
-    }
-
-    .info-label {
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #888;
-        margin-bottom: 5px;
-    }
-
-    .info-value {
-        font-size: 16px;
-    }
-
-    .info-value.status-paid {
-        color: #4CAF50;
-    }
-
-    .info-value.status-pending {
-        color: #FF9800;
-    }
-
-    .info-value.status-draft {
-        color: #9E9E9E;
-    }
-
-    .address-label {
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #888;
-        margin-bottom: 10px;
-    }
-
-    .address-content {
-        margin-bottom: 30px;
-        font-size: 14px;
-    }
-
-    .invoice-addresses {
-        margin-bottom: 40px;
-    }
-
-    .invoice-details {
-        margin-bottom: 40px;
-    }
-
-    .invoice-details table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .invoice-details thead th {
-        border-bottom: 1px solid #eee;
-        text-align: left;
-        font-weight: 500;
-        padding: 10px;
-        font-size: 14px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #888;
-    }
-
-    .invoice-details tbody td {
-        padding: 15px 10px;
-        border-bottom: 1px solid #eee;
-    }
-
-    .invoice-details tfoot td {
-        padding: 15px 10px;
-        font-size: 16px;
-    }
-
-    .invoice-notes, .invoice-terms {
-        margin-bottom: 40px;
-        font-size: 14px;
-    }
-
-    .notes-label, .terms-label {
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #888;
-        margin-bottom: 10px;
-    }
-
-    .invoice-footer {
-        margin-top: 50px;
-        text-align: center;
-        color: #888;
-        font-size: 14px;
-    }
-
-    .payment-link {
-        margin-bottom: 15px;
-    }
-
-    .payment-link a {
-        color: #2196F3;
-        text-decoration: none;
-    }
-
-    .thank-you {
-        font-style: italic;
-    }
-</style>

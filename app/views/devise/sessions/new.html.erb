@@ -1,63 +1,71 @@
-<div class="auth-container">
-  <div class="auth-card">
-    <div class="auth-header text-center mb-4">
-      <h1 class="auth-title">Welcome Back</h1>
-      <p class="auth-subtitle">Sign in to your Cashly account</p>
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-md w-full bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="px-8 pt-8 pb-6 text-center">
+      <h1 class="text-2xl font-bold text-gray-800 mb-2">Welcome Back</h1>
+      <p class="text-gray-600">Sign in to your Cashly account</p>
     </div>
 
     <% if devise_mapping.omniauthable? %>
-      <div class="social-auth mb-4">
-        <%= button_to user_google_oauth2_omniauth_authorize_path, class: "btn btn-google w-100", data: { turbo: false } do %>
-          <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="google-icon">
-          Sign in with Google
+      <div class="px-8 pb-6">
+        <%= button_to user_google_oauth2_omniauth_authorize_path, class: "w-full flex justify-center items-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white hover:bg-gray-50 transition-colors", data: { turbo: false } do %>
+          <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" class="h-5 w-5 mr-2">
+          <span class="text-gray-700">Sign in with Google</span>
         <% end %>
       </div>
 
-      <div class="divider mb-4">
-        <span class="divider-text">or sign in with email</span>
+      <div class="relative px-8 pb-4">
+        <div class="absolute inset-0 flex items-center" aria-hidden="true">
+          <div class="w-full border-t border-gray-200"></div>
+        </div>
+        <div class="relative flex justify-center">
+          <span class="px-3 bg-white text-sm text-gray-500">or sign in with email</span>
+        </div>
       </div>
     <% end %>
 
-    <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "auth-form" }) do |f| %>
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "px-8 pb-8" }) do |f| %>
       <% if flash[:alert] %>
-        <div class="alert alert-danger">
+        <div class="mb-4 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded">
           <%= flash[:alert] %>
         </div>
       <% end %>
 
-      <div class="mb-3">
-        <%= f.label :email, class: "form-label" %>
-        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "form-control", placeholder: "you@example.com" %>
+      <div class="mb-4">
+        <%= f.label :email, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", placeholder: "you@example.com" %>
       </div>
 
-      <div class="mb-3">
-        <%= f.label :password, class: "form-label" %>
-        <div class="input-group">
-          <%= f.password_field :password, autocomplete: "current-password", class: "form-control", id: "password", placeholder: "Enter your password" %>
-          <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+      <div class="mb-4">
+        <%= f.label :password, class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <div class="relative">
+          <%= f.password_field :password, autocomplete: "current-password", class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500", id: "password", placeholder: "Enter your password" %>
+          <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-600">
             <i class="bi bi-eye" id="toggleIcon"></i>
           </button>
         </div>
       </div>
 
       <% if devise_mapping.rememberable? %>
-        <div class="mb-3 form-check">
-          <%= f.check_box :remember_me, class: "form-check-input" %>
-          <%= f.label :remember_me, class: "form-check-label" %>
+        <div class="mb-4 flex items-center">
+          <%= f.check_box :remember_me, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" %>
+          <%= f.label :remember_me, class: "ml-2 block text-sm text-gray-700" %>
         </div>
       <% end %>
 
-      <div class="mb-4 text-end">
-        <%= link_to "Forgot your password?", new_password_path(resource_name), class: "text-decoration-none" %>
+      <div class="mb-6 text-right">
+        <%= link_to "Forgot your password?", new_password_path(resource_name), class: "text-sm text-blue-600 hover:text-blue-800" %>
       </div>
 
-      <div class="d-grid gap-2">
-        <%= f.submit "Sign in", class: "btn btn-primary btn-lg" %>
+      <div>
+        <%= f.submit "Sign in", class: "w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
       </div>
     <% end %>
 
-    <div class="auth-footer text-center mt-4">
-      <p>Don't have an account yet? <%= link_to "Create an account", new_registration_path(resource_name), class: "text-decoration-none" %></p>
+    <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 text-center">
+      <p class="text-sm text-gray-600">
+        Don't have an account yet?
+        <%= link_to "Create an account", new_registration_path(resource_name), class: "text-blue-600 hover:text-blue-800 font-medium" %>
+      </p>
     </div>
   </div>
 </div>

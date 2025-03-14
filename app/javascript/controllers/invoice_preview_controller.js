@@ -118,8 +118,8 @@ export default class extends Controller {
             reader.onload = (e) => {
                 // Show the logo preview
                 this.logoPreviewTarget.src = e.target.result;
-                this.logoPreviewTarget.classList.remove('d-none');
-                this.removeLogoTarget.classList.remove('d-none');
+                this.logoPreviewTarget.classList.remove('hidden');
+                this.removeLogoTarget.classList.remove('hidden');
 
                 // Update the preview with the logo
                 this.updatePreview();
@@ -133,8 +133,8 @@ export default class extends Controller {
     removeLogo() {
         this.logoInputTarget.value = '';
         this.logoPreviewTarget.src = '';
-        this.logoPreviewTarget.classList.add('d-none');
-        this.removeLogoTarget.classList.add('d-none');
+        this.logoPreviewTarget.classList.add('hidden');
+        this.removeLogoTarget.classList.add('hidden');
 
         // Update the preview without the logo
         this.updatePreview();

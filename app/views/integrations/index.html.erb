@@ -1,40 +1,47 @@
 <!-- app/views/integrations/index.html.erb -->
-<div class="container my-5">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Integrations</h1>
+<div class="container mx-auto px-4 py-6">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Integrations</h1>
   </div>
 
-  <div class="row mb-4">
-    <div class="col-md-8">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body">
-          <h5 class="mb-4">Available Integrations</h5>
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
+    <div class="md:col-span-8">
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="p-6">
+          <h5 class="text-lg font-medium mb-4">Available Integrations</h5>
 
-          <div class="list-group">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <% @available_integrations.each do |provider, details| %>
-              <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center">
-                  <div class="integration-icon rounded-circle bg-light p-3 me-3">
-                    <i class="bi <%= details[:icon] %> fs-4"></i>
+              <div class="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-6">
+                <div class="flex flex-col h-full">
+                  <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mr-3">
+                      <i class="bi <%= details[:icon] %> text-xl"></i>
+                    </div>
+                    <h6 class="font-medium text-gray-800"><%= details[:name] %></h6>
                   </div>
-                  <div>
-                    <h6 class="mb-1"><%= details[:name] %></h6>
-                    <p class="mb-0 text-muted small"><%= details[:description] %></p>
-                  </div>
-                </div>
 
-                <% if details[:connected] %>
-                  <div class="d-flex align-items-center">
-                    <span class="badge bg-success me-2">Connected</span>
-                    <%= link_to send("#{provider}_integrations_path"), class: "btn btn-sm btn-outline-primary" do %>
-                      <i class="bi bi-gear"></i> Manage
+                  <p class="text-sm text-gray-600 mb-6 flex-grow"><%= details[:description] %></p>
+
+                  <div class="mt-auto">
+                    <% if details[:connected] %>
+                      <div class="flex items-center justify-between">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Connected
+                        </span>
+                        <%= link_to send("#{provider}_integrations_path"), class: "px-3 py-1 border border-blue-600 text-blue-600 rounded text-sm font-medium hover:bg-blue-50" do %>
+                          <i class="bi bi-gear"></i> Manage
+                        <% end %>
+                      </div>
+                    <% else %>
+                      <div class="flex justify-center">
+                        <%= link_to new_integration_path(provider: provider), class: "inline-flex items-center px-5 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700 transition-colors" do %>
+                          <i class="bi bi-plus-circle mr-1.5"></i> Connect
+                        <% end %>
+                      </div>
                     <% end %>
                   </div>
-                <% else %>
-                  <%= link_to new_integration_path(provider: provider), class: "btn btn-primary" do %>
-                    <i class="bi bi-plus-circle"></i> Connect
-                  <% end %>
-                <% end %>
+                </div>
               </div>
             <% end %>
           </div>
@@ -42,29 +49,43 @@
       </div>
     </div>
 
-    <div class="col-md-4">
-      <div class="card border-0 shadow-sm">
-        <div class="card-body">
-          <h5 class="mb-3">Why Connect?</h5>
+    <div class="md:col-span-4">
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="p-6">
+          <h5 class="text-lg font-medium mb-4">Why Connect?</h5>
 
-          <div class="mb-4">
-            <h6><i class="bi bi-credit-card-2-front text-primary me-2"></i> Accept Payments</h6>
-            <p class="text-muted small">Connect Stripe to send professional invoices and get paid online.</p>
-          </div>
+          <div class="space-y-4">
+            <div>
+              <h6 class="font-medium flex items-center">
+                <i class="bi bi-credit-card-2-front text-blue-600 mr-2"></i>
+                Accept Payments
+              </h6>
+              <p class="text-sm text-gray-500 mt-1">Connect Stripe to send professional invoices and get paid online.</p>
+            </div>
 
-          <div class="mb-4">
-            <h6><i class="bi bi-bank text-primary me-2"></i> Sync Transactions</h6>
-            <p class="text-muted small">Connect your bank accounts to automatically import transactions.</p>
-          </div>
+            <div>
+              <h6 class="font-medium flex items-center">
+                <i class="bi bi-bank text-blue-600 mr-2"></i>
+                Sync Transactions
+              </h6>
+              <p class="text-sm text-gray-500 mt-1">Connect your bank accounts to automatically import transactions.</p>
+            </div>
 
-          <div class="mb-4">
-            <h6><i class="bi bi-arrow-repeat text-primary me-2"></i> Automate Bookkeeping</h6>
-            <p class="text-muted small">Integrate with accounting software to keep everything in sync.</p>
-          </div>
+            <div>
+              <h6 class="font-medium flex items-center">
+                <i class="bi bi-arrow-repeat text-blue-600 mr-2"></i>
+                Automate Bookkeeping
+              </h6>
+              <p class="text-sm text-gray-500 mt-1">Integrate with accounting software to keep everything in sync.</p>
+            </div>
 
-          <div>
-            <h6><i class="bi bi-shield-check text-primary me-2"></i> Secure & Private</h6>
-            <p class="text-muted small">All your connection credentials are encrypted and securely stored.</p>
+            <div>
+              <h6 class="font-medium flex items-center">
+                <i class="bi bi-shield-check text-blue-600 mr-2"></i>
+                Secure & Private
+              </h6>
+              <p class="text-sm text-gray-500 mt-1">All your connection credentials are encrypted and securely stored.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -72,49 +93,57 @@
   </div>
 
   <% if @integrations.any? %>
-    <div class="card border-0 shadow-sm">
-      <div class="card-body">
-        <h5 class="mb-4">Connected Services</h5>
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div class="p-6">
+        <h5 class="text-lg font-medium mb-4">Connected Services</h5>
 
-        <div class="table-responsive">
-          <table class="table">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
             <thead>
             <tr>
-              <th>Service</th>
-              <th>Status</th>
-              <th>Connected Since</th>
-              <th>Last Used</th>
-              <th>Actions</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Connected Since</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Used</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
             </thead>
-            <tbody>
+            <tbody class="bg-white divide-y divide-gray-200">
             <% @integrations.each do |integration| %>
               <tr>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <div class="integration-icon rounded-circle bg-light p-2 me-2">
-                      <i class="bi <%= @available_integrations[integration.provider.to_sym][:icon] %> fs-5"></i>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-2">
+                      <i class="bi <%= @available_integrations[integration.provider.to_sym][:icon] %>"></i>
                     </div>
-                    <%= integration.provider.titleize %>
+                    <span class="font-medium"><%= integration.provider.titleize %></span>
                   </div>
                 </td>
-                <td>
+                <td class="px-6 py-4 whitespace-nowrap">
                   <% if integration.active? %>
-                    <span class="badge bg-success">Active</span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      Active
+                    </span>
                   <% else %>
-                    <span class="badge bg-warning">Inactive</span>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      Inactive
+                    </span>
                   <% end %>
                 </td>
-                <td><%= integration.connected_at&.strftime("%b %d, %Y") %></td>
-                <td><%= integration.last_used_at&.strftime("%b %d, %Y") || "Never" %></td>
-                <td>
-                  <div class="btn-group">
-                    <%= link_to send("#{integration.provider}_integrations_path"), class: "btn btn-sm btn-outline-primary" do %>
-                      <i class="bi bi-gear"></i> Manage
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <%= integration.connected_at&.strftime("%b %d, %Y") %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <%= integration.last_used_at&.strftime("%b %d, %Y") || "Never" %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <div class="flex space-x-2">
+                    <%= link_to send("#{integration.provider}_integrations_path"), class: "inline-flex items-center px-2.5 py-1.5 border border-blue-600 text-xs font-medium rounded text-blue-600 hover:bg-blue-50" do %>
+                      <i class="bi bi-gear mr-1"></i> Manage
                     <% end %>
 
-                    <%= button_to integration_path(integration), method: :delete, data: { confirm: "Are you sure you want to disconnect from #{integration.provider.titleize}?" }, class: "btn btn-sm btn-outline-danger" do %>
-                      <i class="bi bi-x-circle"></i> Disconnect
+                    <%= button_to integration_path(integration), method: :delete, data: { confirm: "Are you sure you want to disconnect from #{integration.provider.titleize}?" }, class: "inline-flex items-center px-2.5 py-1.5 border border-red-600 text-xs font-medium rounded text-red-600 hover:bg-red-50" do %>
+                      <i class="bi bi-x-circle mr-1"></i> Disconnect
                     <% end %>
                   </div>
                 </td>
@@ -127,13 +156,3 @@
     </div>
   <% end %>
 </div>
-
-<style>
-    .integration-icon {
-        width: 50px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-</style>

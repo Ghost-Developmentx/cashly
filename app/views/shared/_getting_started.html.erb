@@ -1,7 +1,7 @@
 <!-- app/views/shared/_getting_started.html.erb -->
-<div class="card border-0">
-  <div class="card-body p-0">
-    <div class="progress mb-3">
+<div class="bg-white rounded-lg shadow-sm">
+  <div class="p-4">
+    <div class="mb-3">
       <%
         # Calculate progress based on completed tasks
         tasks_completed = 0
@@ -13,116 +13,119 @@
 
         progress_percentage = (tasks_completed.to_f / 5 * 100).round
       %>
-      <div class="progress-bar bg-success" role="progressbar" style="width: <%= progress_percentage %>%;"
-           aria-valuenow="<%= progress_percentage %>" aria-valuemin="0" aria-valuemax="100">
-        <%= progress_percentage %>%
+      <div class="w-full bg-gray-200 rounded-full h-2.5">
+        <div class="bg-green-600 h-2.5 rounded-full text-xs flex items-center justify-center text-white" style="width: <%= progress_percentage %>%">
+          <%= progress_percentage %>%
+        </div>
       </div>
     </div>
 
-    <div class="list-group mb-3">
-      <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center
-                  <%= current_user.onboarding_completed? ? 'list-group-item-success' : '' %>">
-        <div>
-          <div class="d-flex align-items-center">
-            <div class="task-icon me-2 <%= current_user.onboarding_completed? ? 'bg-success' : 'bg-secondary' %>">
-              <i class="bi <%= current_user.onboarding_completed? ? 'bi-check-lg' : 'bi-person' %>"></i>
-            </div>
-            <div>
-              <h6 class="mb-0">Complete Your Profile</h6>
-              <small class="text-muted">Add your personal and business information</small>
-            </div>
+    <div class="divide-y divide-gray-100 mb-4">
+      <!-- Complete Your Profile -->
+      <div class="py-3 flex justify-between items-center <%= current_user.onboarding_completed? ? 'bg-green-50 rounded' : '' %>">
+        <div class="flex items-center">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3 <%= current_user.onboarding_completed? ? 'bg-green-500 text-white' : 'bg-gray-400 text-white' %>">
+            <i class="bi <%= current_user.onboarding_completed? ? 'bi-check-lg' : 'bi-person' %>"></i>
+          </div>
+          <div>
+            <h6 class="font-medium text-gray-900 leading-none mb-1">Complete Your Profile</h6>
+            <span class="text-sm text-gray-500">Add your personal and business information</span>
           </div>
         </div>
         <% if current_user.onboarding_completed? %>
-          <span class="badge bg-success rounded-pill">Done</span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            Done
+          </span>
         <% else %>
-          <%= link_to "Complete", onboarding_profile_path, class: "btn btn-sm btn-primary" %>
+          <%= link_to "Complete", onboarding_profile_path, class: "inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded shadow-sm text-white bg-blue-600 hover:bg-blue-700" %>
         <% end %>
       </div>
 
-      <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center
-                  <%= current_user.tutorial_completed? ? 'list-group-item-success' : '' %>">
-        <div>
-          <div class="d-flex align-items-center">
-            <div class="task-icon me-2 <%= current_user.tutorial_completed? ? 'bg-success' : 'bg-secondary' %>">
-              <i class="bi <%= current_user.tutorial_completed? ? 'bi-check-lg' : 'bi-info-circle' %>"></i>
-            </div>
-            <div>
-              <h6 class="mb-0">Complete the Tutorial</h6>
-              <small class="text-muted">Take a quick tour of Cashly's features</small>
-            </div>
+      <!-- Complete the Tutorial -->
+      <div class="py-3 flex justify-between items-center <%= current_user.tutorial_completed? ? 'bg-green-50 rounded' : '' %>">
+        <div class="flex items-center">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3 <%= current_user.tutorial_completed? ? 'bg-green-500 text-white' : 'bg-gray-400 text-white' %>">
+            <i class="bi <%= current_user.tutorial_completed? ? 'bi-check-lg' : 'bi-info-circle' %>"></i>
+          </div>
+          <div>
+            <h6 class="font-medium text-gray-900 leading-none mb-1">Complete the Tutorial</h6>
+            <span class="text-sm text-gray-500">Take a quick tour of Cashly's features</span>
           </div>
         </div>
         <% if current_user.tutorial_completed? %>
-          <span class="badge bg-success rounded-pill">Done</span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            Done
+          </span>
         <% else %>
-          <button class="btn btn-sm btn-primary" id="startTutorial">Start</button>
+          <button id="startTutorial" class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+            Start
+          </button>
         <% end %>
       </div>
 
-      <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center
-                  <%= current_user.accounts.any? ? 'list-group-item-success' : '' %>">
-        <div>
-          <div class="d-flex align-items-center">
-            <div class="task-icon me-2 <%= current_user.accounts.any? ? 'bg-success' : 'bg-secondary' %>">
-              <i class="bi <%= current_user.accounts.any? ? 'bi-check-lg' : 'bi-bank' %>"></i>
-            </div>
-            <div>
-              <h6 class="mb-0">Connect an Account</h6>
-              <small class="text-muted">Link your bank account or add one manually</small>
-            </div>
+      <!-- Connect an Account -->
+      <div class="py-3 flex justify-between items-center <%= current_user.accounts.any? ? 'bg-green-50 rounded' : '' %>">
+        <div class="flex items-center">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3 <%= current_user.accounts.any? ? 'bg-green-500 text-white' : 'bg-gray-400 text-white' %>">
+            <i class="bi <%= current_user.accounts.any? ? 'bi-check-lg' : 'bi-bank' %>"></i>
+          </div>
+          <div>
+            <h6 class="font-medium text-gray-900 leading-none mb-1">Connect an Account</h6>
+            <span class="text-sm text-gray-500">Link your bank account or add one manually</span>
           </div>
         </div>
         <% if current_user.accounts.any? %>
-          <span class="badge bg-success rounded-pill">Done</span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            Done
+          </span>
         <% else %>
-          <%= link_to "Add", accounts_path, class: "btn btn-sm btn-primary" %>
+          <%= link_to "Add", accounts_path, class: "inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded shadow-sm text-white bg-blue-600 hover:bg-blue-700" %>
         <% end %>
       </div>
 
-      <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center
-                  <%= current_user.transactions.any? ? 'list-group-item-success' : '' %>">
-        <div>
-          <div class="d-flex align-items-center">
-            <div class="task-icon me-2 <%= current_user.transactions.any? ? 'bg-success' : 'bg-secondary' %>">
-              <i class="bi <%= current_user.transactions.any? ? 'bi-check-lg' : 'bi-receipt' %>"></i>
-            </div>
-            <div>
-              <h6 class="mb-0">Record Transactions</h6>
-              <small class="text-muted">Add financial transactions or import them</small>
-            </div>
+      <!-- Record Transactions -->
+      <div class="py-3 flex justify-between items-center <%= current_user.transactions.any? ? 'bg-green-50 rounded' : '' %>">
+        <div class="flex items-center">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3 <%= current_user.transactions.any? ? 'bg-green-500 text-white' : 'bg-gray-400 text-white' %>">
+            <i class="bi <%= current_user.transactions.any? ? 'bi-check-lg' : 'bi-receipt' %>"></i>
+          </div>
+          <div>
+            <h6 class="font-medium text-gray-900 leading-none mb-1">Record Transactions</h6>
+            <span class="text-sm text-gray-500">Add financial transactions or import them</span>
           </div>
         </div>
         <% if current_user.transactions.any? %>
-          <span class="badge bg-success rounded-pill">Done</span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            Done
+          </span>
         <% else %>
-          <%= link_to "Add", new_transaction_path, class: "btn btn-sm btn-primary" %>
+          <%= link_to "Add", new_transaction_path, class: "inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded shadow-sm text-white bg-blue-600 hover:bg-blue-700" %>
         <% end %>
       </div>
 
-      <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center
-                  <%= current_user.budgets.any? ? 'list-group-item-success' : '' %>">
-        <div>
-          <div class="d-flex align-items-center">
-            <div class="task-icon me-2 <%= current_user.budgets.any? ? 'bg-success' : 'bg-secondary' %>">
-              <i class="bi <%= current_user.budgets.any? ? 'bi-check-lg' : 'bi-pie-chart' %>"></i>
-            </div>
-            <div>
-              <h6 class="mb-0">Create a Budget</h6>
-              <small class="text-muted">Set up your first budget category</small>
-            </div>
+      <!-- Create a Budget -->
+      <div class="py-3 flex justify-between items-center <%= current_user.budgets.any? ? 'bg-green-50 rounded' : '' %>">
+        <div class="flex items-center">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3 <%= current_user.budgets.any? ? 'bg-green-500 text-white' : 'bg-gray-400 text-white' %>">
+            <i class="bi <%= current_user.budgets.any? ? 'bi-check-lg' : 'bi-pie-chart' %>"></i>
+          </div>
+          <div>
+            <h6 class="font-medium text-gray-900 leading-none mb-1">Create a Budget</h6>
+            <span class="text-sm text-gray-500">Set up your first budget category</span>
           </div>
         </div>
         <% if current_user.budgets.any? %>
-          <span class="badge bg-success rounded-pill">Done</span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            Done
+          </span>
         <% else %>
-          <%= link_to "Create", new_budget_path, class: "btn btn-sm btn-primary" %>
+          <%= link_to "Create", new_budget_path, class: "inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded shadow-sm text-white bg-blue-600 hover:bg-blue-700" %>
         <% end %>
       </div>
     </div>
 
-    <div id="hideGuideContainer" class="text-center mb-2">
-      <a href="#" id="hideGettingStartedGuide" class="text-muted small">
+    <div id="hideGuideContainer" class="text-center">
+      <a href="#" id="hideGettingStartedGuide" class="text-gray-500 text-sm hover:text-gray-700">
         <i class="bi bi-eye-slash"></i> Don't show this again
       </a>
     </div>

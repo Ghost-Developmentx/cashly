@@ -1,14 +1,11 @@
-<!-- app/views/categories/edit.html.erb -->
-<div class="container">
-  <div class="row">
-    <div class="col-md-8 offset-md-2">
-      <div class="card">
-        <div class="card-header">
-          <h1 class="h4 mb-0">Edit Category: <%= @category.name %></h1>
-        </div>
-        <div class="card-body">
-          <%= render 'form', category: @category %>
-        </div>
+<div class="container mx-auto px-4 py-6">
+  <div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h1 class="text-xl font-medium text-gray-800">Edit Category: <%= @category.name %></h1>
+      </div>
+      <div class="p-6">
+        <%= render 'form', category: @category %>
       </div>
     </div>
   </div>

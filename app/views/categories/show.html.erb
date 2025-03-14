@@ -1,75 +1,81 @@
 <!-- app/views/categories/show.html.erb -->
-<div class="category-details">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1><%= @category.name %></h1>
-    <div>
-      <%= link_to "Edit Category", edit_category_path(@category), class: "btn btn-outline-primary" %>
-      <%= link_to "Back to Categories", categories_path, class: "btn btn-outline-secondary" %>
+<div class="container mx-auto px-4 py-6">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <h1 class="text-2xl font-bold text-gray-800"><%= @category.name %></h1>
+    <div class="flex space-x-3">
+      <%= link_to "Edit Category", edit_category_path(@category), class: "px-4 py-2 border border-blue-600 text-blue-600 text-sm font-medium rounded-md hover:bg-blue-50" %>
+      <%= link_to "Back to Categories", categories_path, class: "px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50" %>
     </div>
   </div>
 
-  <div class="row mb-4">
-    <div class="col-md-4">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="mb-0">Category Information</h5>
+  <div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-6">
+    <div class="md:col-span-4">
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-200">
+          <h5 class="font-medium text-gray-800">Category Information</h5>
         </div>
-        <div class="card-body">
+        <div class="p-6">
           <% if @category.description.present? %>
-            <p><%= @category.description %></p>
+            <p class="text-gray-700"><%= @category.description %></p>
           <% else %>
-            <p class="text-muted">No description provided.</p>
+            <p class="text-gray-500 italic">No description provided.</p>
           <% end %>
 
           <% if @category.parent_category %>
-            <p>
-              <strong>Parent Category:</strong>
-              <%= link_to @category.parent_category.name, category_path(@category.parent_category) %>
-            </p>
+            <div class="mt-4">
+              <p class="text-gray-700">
+                <span class="font-medium">Parent Category:</span>
+                <%= link_to @category.parent_category.name, category_path(@category.parent_category), class: "text-blue-600 hover:underline" %>
+              </p>
+            </div>
           <% end %>
 
           <% subcategories = Category.where(parent_category_id: @category.id) %>
           <% if subcategories.any? %>
-            <p><strong>Subcategories:</strong></p>
-            <ul>
-              <% subcategories.each do |subcat| %>
-                <li><%= link_to subcat.name, category_path(subcat) %></li>
-              <% end %>
-            </ul>
+            <div class="mt-4">
+              <p class="font-medium text-gray-700 mb-2">Subcategories:</p>
+              <ul class="list-disc pl-5 space-y-1">
+                <% subcategories.each do |subcat| %>
+                  <li>
+                    <%= link_to subcat.name, category_path(subcat), class: "text-blue-600 hover:underline" %>
+                  </li>
+                <% end %>
+              </ul>
+            </div>
           <% end %>
         </div>
       </div>
     </div>
 
-    <div class="col-md-4">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="mb-0">Spending Summary</h5>
+    <div class="md:col-span-4">
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-200">
+          <h5 class="font-medium text-gray-800">Spending Summary</h5>
         </div>
-        <div class="card-body">
-          <div class="mb-3">
-            <p class="text-muted mb-1">Total Spent</p>
-            <h4 class="text-danger"><%= number_to_currency(@total_spent) %></h4>
+        <div class="p-6">
+          <div class="mb-4">
+            <p class="text-gray-500 text-sm mb-1">Total Spent</p>
+            <h4 class="text-xl font-bold text-red-600"><%= number_to_currency(@total_spent) %></h4>
           </div>
 
           <div>
-            <p class="text-muted mb-1">Monthly Average</p>
-            <h4 class="text-danger"><%= number_to_currency(@monthly_average) %></h4>
+            <p class="text-gray-500 text-sm mb-1">Monthly Average</p>
+            <h4 class="text-xl font-bold text-red-600"><%= number_to_currency(@monthly_average) %></h4>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="col-md-4">
-      <div class="card">
-        <div class="card-header">
-          <h5 class="mb-0">Budget Status</h5>
+    <div class="md:col-span-4">
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-200">
+          <h5 class="font-medium text-gray-800">Budget Status</h5>
         </div>
-        <div class="card-body">
+        <div class="p-6">
           <% if @budget %>
-            <div class="mb-3">
-              <p class="text-muted mb-1">Monthly Budget</p>
-              <h4><%= number_to_currency(@budget.amount) %></h4>
+            <div class="mb-4">
+              <p class="text-gray-500 text-sm mb-1">Monthly Budget</p>
+              <h4 class="text-xl font-bold"><%= number_to_currency(@budget.amount) %></h4>
             </div>
 
             <%
@@ -85,68 +91,64 @@
             %>
 
             <div>
-              <p class="text-muted mb-1">
+              <p class="text-gray-500 text-sm mb-1">
                 This Month: <%= number_to_currency(month_spent) %>
                 (<%= number_to_percentage(percent_used, precision: 0) %>)
               </p>
-              <div class="progress">
-                <div class="progress-bar <%= percent_used > 100 ? 'bg-danger' : 'bg-success' %>"
-                     role="progressbar"
-                     style="width: <%= [percent_used, 100].min %>%"
-                     aria-valuenow="<%= percent_used %>"
-                     aria-valuemin="0"
-                     aria-valuemax="100">
+              <div class="w-full bg-gray-200 rounded-full h-2.5 mt-1">
+                <div class="<%= percent_used > 100 ? 'bg-red-600' : 'bg-green-600' %> h-2.5 rounded-full"
+                     style="width: <%= [percent_used, 100].min %>%">
                 </div>
               </div>
             </div>
           <% else %>
-            <p>No budget set for this category.</p>
-            <%= link_to "Create Budget", new_budget_path(category_id: @category.id), class: "btn btn-primary" %>
+            <p class="text-gray-600 mb-4">No budget set for this category.</p>
+            <%= link_to "Create Budget", new_budget_path(category_id: @category.id), class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
           <% end %>
         </div>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">Recent Transactions</h5>
+  <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+      <h5 class="font-medium text-gray-800">Recent Transactions</h5>
     </div>
-    <div class="card-body">
+    <div class="p-6">
       <% if @transactions.any? %>
-        <div class="table-responsive">
-          <table class="table table-hover">
-            <thead>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
             <tr>
-              <th>Date</th>
-              <th>Description</th>
-              <th>Account</th>
-              <th>Amount</th>
-              <th></th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Account</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
             </tr>
             </thead>
-            <tbody>
+            <tbody class="bg-white divide-y divide-gray-200">
             <% @transactions.each do |transaction| %>
-              <tr>
-                <td><%= transaction.date.strftime('%Y-%m-%d') %></td>
-                <td><%= transaction.description %></td>
-                <td><%= transaction.account.name %></td>
-                <td class="<%= transaction.amount >= 0 ? 'text-success' : 'text-danger' %>">
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= transaction.date.strftime('%Y-%m-%d') %></td>
+                <td class="px-6 py-4 text-sm text-gray-900"><%= transaction.description %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"><%= transaction.account.name %></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium <%= transaction.amount >= 0 ? 'text-green-600' : 'text-red-600' %>">
                   <%= number_to_currency(transaction.amount) %>
                 </td>
-                <td>
-                  <%= link_to "View", transaction_path(transaction), class: "btn btn-sm btn-outline-primary" %>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <%= link_to "View", transaction_path(transaction), class: "inline-flex items-center px-2.5 py-1.5 border border-blue-600 text-xs font-medium rounded text-blue-600 hover:bg-blue-50" %>
                 </td>
               </tr>
             <% end %>
             </tbody>
           </table>
         </div>
-        <div class="d-flex justify-content-center">
+        <div class="mt-4 flex justify-center">
           <%= paginate @transactions if @transactions.respond_to?(:total_pages) %>
         </div>
       <% else %>
-        <p class="text-center">No transactions found in this category.</p>
+        <p class="text-center text-gray-500 py-4">No transactions found in this category.</p>
       <% end %>
     </div>
   </div>
