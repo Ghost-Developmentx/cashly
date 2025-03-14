@@ -1,131 +1,145 @@
 <!-- app/views/dashboard/index.html.erb -->
-<div class="dashboard-container">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Welcome to <%= current_user.company_name.present? ? current_user.company_name : "Cashly" %></h1>
+<div class="px-4 py-6">
+  <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold mb-4 md:mb-0">Welcome to <%= current_user.company_name.present? ? current_user.company_name : "Cashly" %></h1>
 
     <!-- Quick Actions Dropdown -->
-    <div class="dropdown">
-      <button class="btn btn-primary dropdown-toggle" type="button" id="quickActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-        <i class="bi bi-lightning-fill me-1"></i> Quick Actions
+    <div class="relative group">
+      <button class="flex items-center bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+        <i class="bi bi-lightning-fill mr-2"></i> Quick Actions
+        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+        </svg>
       </button>
-      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="quickActionsDropdown">
-        <li><%= link_to "<i class='bi bi-plus-circle me-2'></i> Add Transaction".html_safe, new_transaction_path, class: "dropdown-item" %></li>
-        <li><%= link_to "<i class='bi bi-bank me-2'></i> Connect Account".html_safe, accounts_path, class: "dropdown-item" %></li>
-        <li><%= link_to "<i class='bi bi-pie-chart me-2'></i> Create Budget".html_safe, new_budget_path, class: "dropdown-item" %></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><%= link_to "<i class='bi bi-file-earmark-text me-2'></i> Create Invoice".html_safe, new_invoice_path, class: "dropdown-item" %></li>
-      </ul>
+      <div class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg hidden group-hover:block z-10 transform transition-all origin-top-right">
+        <div class="py-1 rounded-md bg-white shadow-xs">
+          <%= link_to new_transaction_path, class: "flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+            <i class="bi bi-plus-circle mr-2"></i> Add Transaction
+          <% end %>
+          <%= link_to accounts_path, class: "flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+            <i class="bi bi-bank mr-2"></i> Connect Account
+          <% end %>
+          <%= link_to new_budget_path, class: "flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+            <i class="bi bi-pie-chart mr-2"></i> Create Budget
+          <% end %>
+          <div class="border-t border-gray-100 my-1"></div>
+          <%= link_to new_invoice_path, class: "flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+            <i class="bi bi-file-earmark-text mr-2"></i> Create Invoice
+          <% end %>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Financial Summary Cards -->
-  <div class="row mb-4">
-    <div class="col-md-4 mb-3 mb-md-0">
-      <div class="card h-100 border-0 shadow-sm">
-        <div class="card-body">
-          <div class="d-flex align-items-center mb-3">
-            <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
-              <i class="bi bi-wallet2 text-primary fs-4"></i>
-            </div>
-            <h5 class="card-title mb-0">Current Balance</h5>
-          </div>
-          <h2 class="<%= @total_balance.to_f >= 0 ? 'text-success' : 'text-danger' %>">
-            <%= number_to_currency(@total_balance || 0) %>
-          </h2>
-          <p class="text-muted mb-0">Across all accounts</p>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- Current Balance Card -->
+    <div class="bg-white rounded-lg shadow-sm p-6 h-full">
+      <div class="flex items-center mb-4">
+        <div class="bg-blue-100 rounded-full p-3 mr-3">
+          <i class="bi bi-wallet2 text-blue-600 text-xl"></i>
         </div>
+        <h5 class="font-semibold text-gray-900">Current Balance</h5>
       </div>
+      <h2 class="text-2xl font-bold <%= @total_balance.to_f >= 0 ? 'text-green-600' : 'text-red-600' %>">
+        <%= number_to_currency(@total_balance || 0) %>
+      </h2>
+      <p class="text-gray-500 text-sm">Across all accounts</p>
     </div>
 
-    <div class="col-md-4 mb-3 mb-md-0">
-      <div class="card h-100 border-0 shadow-sm">
-        <div class="card-body">
-          <div class="d-flex align-items-center mb-3">
-            <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
-              <i class="bi bi-graph-up-arrow text-success fs-4"></i>
-            </div>
-            <h5 class="card-title mb-0">Monthly Income</h5>
-          </div>
-          <h2 class="text-success">
-            <%= number_to_currency(@monthly_income || 0) %>
-          </h2>
-          <p class="text-muted mb-0">This month</p>
+    <!-- Monthly Income Card -->
+    <div class="bg-white rounded-lg shadow-sm p-6 h-full">
+      <div class="flex items-center mb-4">
+        <div class="bg-green-100 rounded-full p-3 mr-3">
+          <i class="bi bi-graph-up-arrow text-green-600 text-xl"></i>
         </div>
+        <h5 class="font-semibold text-gray-900">Monthly Income</h5>
       </div>
+      <h2 class="text-2xl font-bold text-green-600">
+        <%= number_to_currency(@monthly_income || 0) %>
+      </h2>
+      <p class="text-gray-500 text-sm">This month</p>
     </div>
 
-    <div class="col-md-4">
-      <div class="card h-100 border-0 shadow-sm">
-        <div class="card-body">
-          <div class="d-flex align-items-center mb-3">
-            <div class="rounded-circle bg-danger bg-opacity-10 p-3 me-3">
-              <i class="bi bi-graph-down-arrow text-danger fs-4"></i>
-            </div>
-            <h5 class="card-title mb-0">Monthly Expenses</h5>
-          </div>
-          <h2 class="text-danger">
-            <%= number_to_currency(@monthly_expenses || 0) %>
-          </h2>
-          <p class="text-muted mb-0">This month</p>
+    <!-- Monthly Expenses Card -->
+    <div class="bg-white rounded-lg shadow-sm p-6 h-full">
+      <div class="flex items-center mb-4">
+        <div class="bg-red-100 rounded-full p-3 mr-3">
+          <i class="bi bi-graph-down-arrow text-red-600 text-xl"></i>
         </div>
+        <h5 class="font-semibold text-gray-900">Monthly Expenses</h5>
       </div>
+      <h2 class="text-2xl font-bold text-red-600">
+        <%= number_to_currency(@monthly_expenses || 0) %>
+      </h2>
+      <p class="text-gray-500 text-sm">This month</p>
     </div>
   </div>
 
   <!-- Main Content -->
-  <div class="row">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <!-- Left Column (Charts & Insights) -->
-    <div class="col-lg-8">
+    <div class="lg:col-span-2 space-y-6">
       <!-- Cash Flow Chart -->
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white border-0">
-          <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Cash Flow Forecast</h5>
-            <div class="dropdown">
-              <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="timeframeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+          <div class="flex justify-between items-center">
+            <h5 class="font-semibold text-gray-900">Cash Flow Forecast</h5>
+            <div class="relative group">
+              <button class="flex items-center text-sm text-gray-700 border border-gray-300 rounded-md px-3 py-1 bg-white hover:bg-gray-50">
                 Last 30 Days
+                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
               </button>
-              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="timeframeDropdown">
-                <li><a class="dropdown-item" href="#">Last 30 Days</a></li>
-                <li><a class="dropdown-item" href="#">Last 3 Months</a></li>
-                <li><a class="dropdown-item" href="#">Last 6 Months</a></li>
-                <li><a class="dropdown-item" href="#">Last Year</a></li>
-              </ul>
+              <div class="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg hidden group-hover:block z-10">
+                <div class="py-1">
+                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Last 30 Days</a>
+                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Last 3 Months</a>
+                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Last 6 Months</a>
+                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Last Year</a>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div class="card-body">
-          <div id="cash-flow-chart" style="height: 300px;"></div>
+        <div class="p-6">
+          <div id="cash-flow-chart" class="h-[300px]"></div>
         </div>
       </div>
 
       <!-- AI Insights -->
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white border-0">
-          <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
-              <i class="bi bi-lightning text-primary me-2"></i> AI Insights
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+          <div class="flex justify-between items-center">
+            <h5 class="font-semibold text-gray-900 flex items-center">
+              <i class="bi bi-lightning text-blue-600 mr-2"></i> AI Insights
             </h5>
-            <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+            <a href="#" class="text-sm text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md px-3 py-1">View All</a>
           </div>
         </div>
-        <div class="card-body">
+        <div class="p-6">
           <% if @insights.present? %>
-            <div class="row">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <% @insights.each do |insight| %>
-                <div class="col-md-6 mb-3">
-                  <div class="insight-card <%= insight['type'] %> h-100">
-                    <h6><%= insight['title'] %></h6>
-                    <p class="mb-0 small"><%= insight['description'] %></p>
-                  </div>
+                <div class="rounded-lg p-4 h-full
+                  <%= case insight['type']
+                      when 'warning' then 'bg-yellow-50 border-l-4 border-yellow-400'
+                      when 'alert' then 'bg-red-50 border-l-4 border-red-400'
+                      when 'info' then 'bg-blue-50 border-l-4 border-blue-400'
+                      when 'success' then 'bg-green-50 border-l-4 border-green-400'
+                      else 'bg-gray-50 border-l-4 border-gray-400'
+                      end %>">
+                  <h6 class="font-medium mb-2"><%= insight['title'] %></h6>
+                  <p class="text-sm text-gray-600"><%= insight['description'] %></p>
                 </div>
               <% end %>
             </div>
           <% else %>
-            <div class="text-center py-4">
-              <i class="bi bi-graph-up-arrow text-muted fs-1"></i>
-              <p class="mt-3">Start adding your transactions to get personalized financial insights!</p>
-              <%= link_to "Add First Transaction", new_transaction_path, class: "btn btn-primary" %>
+            <div class="text-center py-10">
+              <i class="bi bi-graph-up-arrow text-gray-400 text-4xl"></i>
+              <p class="mt-4 text-gray-600">Start adding your transactions to get personalized financial insights!</p>
+              <%= link_to "Add First Transaction", new_transaction_path, class: "mt-4 inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition" %>
             </div>
           <% end %>
         </div>
@@ -133,94 +147,90 @@
     </div>
 
     <!-- Right Column (Recent Transactions & Stats) -->
-    <div class="col-lg-4">
+    <div class="space-y-6">
       <!-- Recent Activity -->
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white border-0">
-          <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Recent Activity</h5>
-            <%= link_to "View All", transactions_path, class: "btn btn-sm btn-outline-primary" %>
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+          <div class="flex justify-between items-center">
+            <h5 class="font-semibold text-gray-900">Recent Activity</h5>
+            <%= link_to "View All", transactions_path, class: "text-sm text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md px-3 py-1" %>
           </div>
         </div>
-        <div class="card-body p-0">
-          <% recent_transactions = current_user.transactions.order(date: :desc).limit(5) %>
 
-          <% if recent_transactions.any? %>
-            <div class="list-group list-group-flush border-0">
-              <% recent_transactions.each do |transaction| %>
-                <%= link_to transaction_path(transaction), class: "list-group-item list-group-item-action border-start-0 border-end-0" do %>
-                  <div class="d-flex w-100 justify-content-between align-items-center">
-                    <div>
-                      <h6 class="mb-1"><%= transaction.description.truncate(25) %></h6>
-                      <div class="text-muted small">
-                        <span class="badge <%= transaction.category ? 'bg-light text-dark' : 'bg-secondary' %> me-1">
-                          <%= transaction.category&.name&.titleize || "Uncategorized" %>
-                        </span>
-                        <span><%= transaction.date.strftime("%b %d") %></span>
-                      </div>
+        <% recent_transactions = current_user.transactions.order(date: :desc).limit(5) %>
+
+        <% if recent_transactions.any? %>
+          <div class="divide-y divide-gray-100">
+            <% recent_transactions.each do |transaction| %>
+              <%= link_to transaction_path(transaction), class: "block p-4 hover:bg-gray-50 transition" do %>
+                <div class="flex justify-between items-center">
+                  <div>
+                    <h6 class="font-medium text-gray-900 mb-1"><%= transaction.description.truncate(25) %></h6>
+                    <div class="text-sm text-gray-500 flex items-center">
+                      <span class="<%= transaction.category ? 'bg-gray-100 text-gray-800' : 'bg-gray-600 text-white' %> text-xs px-2 py-1 rounded mr-2">
+                        <%= transaction.category&.name&.titleize || "Uncategorized" %>
+                      </span>
+                      <span><%= transaction.date.strftime("%b %d") %></span>
                     </div>
-                    <span class="fs-5 <%= transaction.amount >= 0 ? 'text-success' : 'text-danger' %>">
-                      <%= number_to_currency(transaction.amount) %>
-                    </span>
                   </div>
-                <% end %>
+                  <span class="text-lg font-semibold <%= transaction.amount >= 0 ? 'text-green-600' : 'text-red-600' %>">
+                    <%= number_to_currency(transaction.amount) %>
+                  </span>
+                </div>
               <% end %>
-            </div>
-          <% else %>
-            <div class="text-center py-4">
-              <i class="bi bi-receipt text-muted fs-1"></i>
-              <p class="mt-3">No recent transactions</p>
-              <%= link_to "Add Your First Transaction", new_transaction_path, class: "btn btn-primary" %>
-            </div>
-          <% end %>
-        </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="text-center py-10">
+            <i class="bi bi-receipt text-gray-400 text-4xl"></i>
+            <p class="mt-4 text-gray-600">No recent transactions</p>
+            <%= link_to "Add Your First Transaction", new_transaction_path, class: "mt-4 inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition" %>
+          </div>
+        <% end %>
       </div>
 
       <!-- Budget Overview -->
-      <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white border-0">
-          <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Budget Overview</h5>
-            <%= link_to "View Budgets", budgets_path, class: "btn btn-sm btn-outline-primary" %>
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+          <div class="flex justify-between items-center">
+            <h5 class="font-semibold text-gray-900">Budget Overview</h5>
+            <%= link_to "View Budgets", budgets_path, class: "text-sm text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md px-3 py-1" %>
           </div>
         </div>
-        <div class="card-body">
+        <div class="p-6">
           <% if current_user.budgets.any? %>
-            <% current_user.budgets.includes(:category).limit(3).each do |budget| %>
-              <%
-                month_start = Date.today.beginning_of_month
-                month_end = Date.today.end_of_month
+            <div class="space-y-4">
+              <% current_user.budgets.includes(:category).limit(3).each do |budget| %>
+                <%
+                  month_start = Date.today.beginning_of_month
+                  month_end = Date.today.end_of_month
 
-                spent_amount = Transaction.joins(:account)
-                                          .where(category: budget.category,
-                                                 accounts: { user_id: current_user.id },
-                                                 date: month_start..month_end)
-                                          .where('amount < 0')
-                                          .sum(:amount).abs
+                  spent_amount = Transaction.joins(:account)
+                                            .where(category: budget.category,
+                                                   accounts: { user_id: current_user.id },
+                                                   date: month_start..month_end)
+                                            .where('amount < 0')
+                                            .sum(:amount).abs
 
-                percent_used = budget.amount > 0 ? (spent_amount / budget.amount) * 100 : 0
-              %>
-              <div class="mb-3">
-                <div class="d-flex justify-content-between align-items-center mb-1">
-                  <span><%= budget.category.name.titleize %></span>
-                  <span class="text-muted small">
-                    <%= number_to_currency(spent_amount) %> / <%= number_to_currency(budget.amount) %>
-                  </span>
+                  percent_used = budget.amount > 0 ? (spent_amount / budget.amount) * 100 : 0
+                %>
+                <div>
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="font-medium text-gray-800"><%= budget.category.name.titleize %></span>
+                    <span class="text-sm text-gray-600">
+                      <%= number_to_currency(spent_amount) %> / <%= number_to_currency(budget.amount) %>
+                    </span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="<%= percent_used > 90 ? 'bg-red-600' : 'bg-green-600' %> h-2 rounded-full" style="width: <%= [percent_used, 100].min %>%"></div>
+                  </div>
                 </div>
-                <div class="progress" style="height: 8px;">
-                  <div class="progress-bar <%= percent_used > 90 ? 'bg-danger' : 'bg-success' %>"
-                       role="progressbar"
-                       style="width: <%= [percent_used, 100].min %>%;"
-                       aria-valuenow="<%= percent_used %>"
-                       aria-valuemin="0"
-                       aria-valuemax="100"></div>
-                </div>
-              </div>
-            <% end %>
+              <% end %>
+            </div>
           <% else %>
-            <div class="text-center py-3">
-              <p class="text-muted mb-3">No budgets created yet</p>
-              <%= link_to "Create Your First Budget", new_budget_path, class: "btn btn-primary btn-sm" %>
+            <div class="text-center py-6">
+              <p class="text-gray-600 mb-4">No budgets created yet</p>
+              <%= link_to "Create Your First Budget", new_budget_path, class: "inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition text-sm" %>
             </div>
           <% end %>
         </div>
@@ -243,23 +253,34 @@
 
 <% if tasks_completed < 5 && !session[:hide_getting_started] %>
   <!-- Floating Action Button -->
-  <div class="onboarding-button" id="onboardingButton">
-    <div class="progress-ring">
-      <svg width="50" height="50">
-        <circle class="progress-ring-circle-bg" r="20" cx="25" cy="25" />
-        <circle class="progress-ring-circle" r="20" cx="25" cy="25" style="stroke-dashoffset: <%= 126 - (126 * progress_percentage / 100) %>;" />
+  <div class="fixed right-6 bottom-6 z-50 cursor-pointer" id="onboardingButton">
+    <div class="relative h-12 w-12 bg-blue-600 rounded-full shadow-lg flex items-center justify-center">
+      <!-- SVG Progress Ring -->
+      <svg width="48" height="48" class="absolute">
+        <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="4"></circle>
+        <circle cx="24" cy="24" r="20" fill="none" stroke="white" stroke-width="4"
+                stroke-dasharray="126"
+                stroke-dashoffset="<%= 126 - (126 * progress_percentage / 100) %>"
+                transform="rotate(-90 24 24)">
+        </circle>
       </svg>
-      <span class="progress-text"><%= progress_percentage %>%</span>
+      <span class="text-white text-sm font-bold z-10"><%= progress_percentage %>%</span>
     </div>
   </div>
 
   <!-- Popup -->
-  <div class="onboarding-popup" id="onboardingPopup" style="display: none;">
-    <div class="onboarding-popup-header">
-      <h5><i class="bi bi-check2-circle me-2"></i>Setup Progress</h5>
-      <button type="button" class="btn-close" id="closeOnboardingPopup" aria-label="Close"></button>
+  <div class="fixed right-6 bottom-20 w-80 bg-white rounded-lg shadow-xl z-50 hidden" id="onboardingPopup">
+    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+      <h5 class="font-medium text-gray-900 flex items-center">
+        <i class="bi bi-check2-circle mr-2 text-green-600"></i>Setup Progress
+      </h5>
+      <button type="button" class="text-gray-400 hover:text-gray-600" id="closeOnboardingPopup">
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
     </div>
-    <div class="onboarding-popup-body">
+    <div class="p-4">
       <%= render 'shared/getting_started' %>
     </div>
   </div>
@@ -275,7 +296,7 @@
         // Cash flow chart placeholder
         const cashFlowChart = document.getElementById('cash-flow-chart');
         if (cashFlowChart) {
-            cashFlowChart.innerHTML = '<p class="placeholder-text">Cash flow chart will appear here</p>';
+            cashFlowChart.innerHTML = '<p class="text-center text-gray-500 py-16">Cash flow chart will appear here</p>';
         }
 
         // Onboarding button functionality
@@ -283,19 +304,15 @@
         const onboardingPopup = document.getElementById('onboardingPopup');
 
         if (onboardingButton && onboardingPopup) {
-            // Debug log to verify elements are found
-            console.log('Found onboarding elements:', onboardingButton, onboardingPopup);
-
             onboardingButton.addEventListener('click', function(event) {
                 event.preventDefault();
                 event.stopPropagation();
-                console.log('Onboarding button clicked');
 
                 // Toggle visibility
-                if (onboardingPopup["style"].display === 'block') {
-                    onboardingPopup["style"].display = 'none';
+                if (onboardingPopup.classList.contains('hidden')) {
+                    onboardingPopup.classList.remove('hidden');
                 } else {
-                    onboardingPopup["style"].display = 'block';
+                    onboardingPopup.classList.add('hidden');
                 }
             });
 
@@ -305,7 +322,7 @@
                 closeOnboardingPopup.addEventListener('click', function(event) {
                     event.preventDefault();
                     event.stopPropagation();
-                    onboardingPopup["style"].display = 'none';
+                    onboardingPopup.classList.add('hidden');
                 });
             }
 
@@ -314,8 +331,8 @@
                 const isClickInsidePopup = onboardingPopup.contains(event.target);
                 const isClickOnButton = onboardingButton.contains(event.target);
 
-                if (!isClickInsidePopup && !isClickOnButton && onboardingPopup["style"].display === 'block') {
-                    onboardingPopup["style"].display = 'none';
+                if (!isClickInsidePopup && !isClickOnButton && !onboardingPopup.classList.contains('hidden')) {
+                    onboardingPopup.classList.add('hidden');
                 }
             });
         }
@@ -326,7 +343,8 @@
             startTutorial.addEventListener('click', function() {
                 const tutorialOverlay = document.getElementById('tutorialOverlay');
                 if (tutorialOverlay) {
-                    tutorialOverlay["style"].display = 'flex';
+                    tutorialOverlay.classList.remove('hidden');
+                    tutorialOverlay.style.display = 'flex';
                 } else {
                     window.location.href = '/dashboard?tutorial=true';
                 }
@@ -341,12 +359,12 @@
 
                 // Hide the popup
                 if (onboardingPopup) {
-                    onboardingPopup["style"].display = 'none';
+                    onboardingPopup.classList.add('hidden');
                 }
 
                 // Hide the button too
                 if (onboardingButton) {
-                    onboardingButton["style"].display = 'none';
+                    onboardingButton.classList.add('hidden');
                 }
 
                 // Remember that user closed the guide

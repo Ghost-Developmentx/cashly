@@ -1,52 +1,59 @@
 <!-- app/views/accounts/index.html.erb -->
-<div class="accounts-container">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Your Accounts</h1>
-    <div>
-      <%= link_to "Add Manual Account", new_account_path, class: "btn btn-outline-primary" %>
-      <button id="plaid-link-button" class="btn btn-primary ms-2">Connect Bank</button>
+
+<!-- app/views/accounts/index.html.erb -->
+
+<div class="container mx-auto px-4 py-6">
+  <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Your Accounts</h1>
+    <div class="flex space-x-3">
+      <%= link_to "Add Manual Account", new_account_path,
+                  class: "px-4 py-2 border border-blue-600 text-blue-600 font-medium rounded-lg hover:bg-blue-50 transition" %>
+      <button id="plaid-link-button"
+              class="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition">
+        Connect Bank
+      </button>
     </div>
   </div>
 
-  <div class="row">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <% if @accounts.any? %>
       <% @accounts.each do |account| %>
-        <div class="col-md-4 mb-4">
-          <div class="card h-100">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h5 class="card-title mb-0"><%= account.name %></h5>
-              <span class="badge <%= account.balance.to_f >= 0 ? 'bg-success' : 'bg-danger' %>">
-                <%= account.account_type %>
-              </span>
-            </div>
-            <div class="card-body">
-              <h3 class="mb-3 <%= account.balance.to_f >= 0 ? 'text-success' : 'text-danger' %>">
-                <%= number_to_currency(account.balance) %>
-              </h3>
-              <p class="card-text text-muted">
-                <small>
-                  Institution: <%= account.institution.presence || 'Not specified' %><br>
-                  Last synced: <%= account.last_synced&.strftime('%Y-%m-%d %H:%M') || 'Never' %>
-                </small>
-              </p>
-            </div>
-            <div class="card-footer bg-transparent">
-              <div class="btn-group w-100">
-                <%= link_to "View", account_path(account), class: "btn btn-outline-primary" %>
-                <%= link_to "Edit", edit_account_path(account), class: "btn btn-outline-secondary" %>
-                <%= link_to "Delete", account_path(account),
-                            method: :delete,
-                            data: { confirm: "Are you sure you want to delete this account?" },
-                            class: "btn btn-outline-danger" %>
-              </div>
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 flex flex-col h-full">
+          <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h5 class="font-semibold text-gray-800"><%= account.name %></h5>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <%= account.balance.to_f >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' %>">
+              <%= account.account_type %>
+            </span>
+          </div>
+          <div class="px-6 py-4 flex-grow">
+            <h3 class="text-2xl font-bold mb-3 <%= account.balance.to_f >= 0 ? 'text-green-600' : 'text-red-600' %>">
+              <%= number_to_currency(account.balance) %>
+            </h3>
+            <p class="text-gray-500 text-sm">
+              Institution: <%= account.institution.presence || 'Not specified' %><br>
+              Last synced: <%= account.last_synced&.strftime('%Y-%m-%d %H:%M') || 'Never' %>
+            </p>
+          </div>
+          <div class="px-6 py-3 bg-gray-50 border-t border-gray-100">
+            <div class="grid grid-cols-3 gap-2">
+              <%= link_to "View", account_path(account),
+                          class: "px-4 py-2 text-center text-blue-600 border border-blue-600 rounded font-medium text-sm hover:bg-blue-50 transition" %>
+              <%= link_to "Edit", edit_account_path(account),
+                          class: "px-4 py-2 text-center text-gray-600 border border-gray-600 rounded font-medium text-sm hover:bg-gray-50 transition" %>
+              <%= link_to "Delete", account_path(account),
+                          method: :delete,
+                          data: { confirm: "Are you sure you want to delete this account?" },
+                          class: "px-4 py-2 text-center text-red-600 border border-red-600 rounded font-medium text-sm hover:bg-red-50 transition" %>
             </div>
           </div>
         </div>
       <% end %>
     <% else %>
-      <div class="col-12">
-        <div class="alert alert-info">
-          <p class="mb-0">You don't have any accounts yet. <%= link_to "Add your first account", new_account_path %>.</p>
+      <div class="col-span-full">
+        <div class="bg-blue-50 border-l-4 border-blue-500 text-blue-700 p-4 rounded">
+          <p class="mb-0">You don't have any accounts yet.
+            <%= link_to "Add your first account", new_account_path, class: "text-blue-700 font-medium hover:underline" %>.
+          </p>
         </div>
       </div>
     <% end %>

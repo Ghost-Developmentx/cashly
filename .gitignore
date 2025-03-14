@@ -39,3 +39,5 @@
 
 .env.development
 .env.test
+/app/assets/builds/*
+!/app/assets/builds/.keep

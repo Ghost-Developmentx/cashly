@@ -1,58 +1,58 @@
-<!-- app/views/transactions/show.html.erb -->
-<div class="container">
-  <div class="row">
-    <div class="col-md-8 offset-md-2">
-      <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <h1 class="h4 mb-0">Transaction Details</h1>
-          <div>
-            <%= link_to "Edit", edit_transaction_path(@transaction), class: "btn btn-sm btn-outline-primary" %>
-            <%= link_to "Back to List", transactions_path, class: "btn btn-sm btn-outline-secondary" %>
-          </div>
+<div class="container mx-auto px-4 py-6">
+  <div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div class="border-b px-6 py-4 flex justify-between items-center">
+        <h1 class="text-xl font-semibold text-gray-800">Transaction Details</h1>
+        <div class="space-x-2">
+          <%= link_to "Edit", edit_transaction_path(@transaction),
+                      class: "inline-flex items-center px-3 py-1.5 border border-blue-600 text-sm font-medium rounded-md text-blue-600 hover:bg-blue-50 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition" %>
+          <%= link_to "Back to List", transactions_path,
+                      class: "inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition" %>
         </div>
-        <div class="card-body">
-          <div class="transaction-details">
-            <div class="row mb-3">
-              <div class="col-md-4 fw-bold">Description:</div>
-              <div class="col-md-8"><%= @transaction.description %></div>
-            </div>
+      </div>
 
-            <div class="row mb-3">
-              <div class="col-md-4 fw-bold">Amount:</div>
-              <div class="col-md-8 <%= @transaction.amount >= 0 ? 'text-success' : 'text-danger' %>">
-                <%= number_to_currency(@transaction.amount) %>
-              </div>
-            </div>
+      <div class="p-6">
+        <div class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-2 py-2 border-b border-gray-100">
+            <div class="md:col-span-4 font-semibold text-gray-700">Description:</div>
+            <div class="md:col-span-8 text-gray-800"><%= @transaction.description %></div>
+          </div>
 
-            <div class="row mb-3">
-              <div class="col-md-4 fw-bold">Date:</div>
-              <div class="col-md-8"><%= @transaction.date.strftime('%Y-%m-%d') %></div>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-2 py-2 border-b border-gray-100">
+            <div class="md:col-span-4 font-semibold text-gray-700">Amount:</div>
+            <div class="md:col-span-8 <%= @transaction.amount >= 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium' %>">
+              <%= number_to_currency(@transaction.amount) %>
             </div>
+          </div>
 
-            <div class="row mb-3">
-              <div class="col-md-4 fw-bold">Account:</div>
-              <div class="col-md-8"><%= @transaction.account.name %></div>
-            </div>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-2 py-2 border-b border-gray-100">
+            <div class="md:col-span-4 font-semibold text-gray-700">Date:</div>
+            <div class="md:col-span-8 text-gray-800"><%= @transaction.date.strftime('%Y-%m-%d') %></div>
+          </div>
 
-            <div class="row mb-3">
-              <div class="col-md-4 fw-bold">Category:</div>
-              <div class="col-md-8"><%= @transaction.category&.name || 'Uncategorized' %></div>
-            </div>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-2 py-2 border-b border-gray-100">
+            <div class="md:col-span-4 font-semibold text-gray-700">Account:</div>
+            <div class="md:col-span-8 text-gray-800"><%= @transaction.account.name %></div>
+          </div>
 
-            <div class="row mb-3">
-              <div class="col-md-4 fw-bold">Recurring:</div>
-              <div class="col-md-8"><%= @transaction.recurring? ? 'Yes' : 'No' %></div>
-            </div>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-2 py-2 border-b border-gray-100">
+            <div class="md:col-span-4 font-semibold text-gray-700">Category:</div>
+            <div class="md:col-span-8 text-gray-800"><%= @transaction.category&.name || 'Uncategorized' %></div>
+          </div>
 
-            <div class="row mb-3">
-              <div class="col-md-4 fw-bold">Created at:</div>
-              <div class="col-md-8"><%= @transaction.created_at.strftime('%Y-%m-%d %H:%M') %></div>
-            </div>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-2 py-2 border-b border-gray-100">
+            <div class="md:col-span-4 font-semibold text-gray-700">Recurring:</div>
+            <div class="md:col-span-8 text-gray-800"><%= @transaction.recurring? ? 'Yes' : 'No' %></div>
+          </div>
 
-            <div class="row mb-3">
-              <div class="col-md-4 fw-bold">Last updated:</div>
-              <div class="col-md-8"><%= @transaction.updated_at.strftime('%Y-%m-%d %H:%M') %></div>
-            </div>
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-2 py-2 border-b border-gray-100">
+            <div class="md:col-span-4 font-semibold text-gray-700">Created at:</div>
+            <div class="md:col-span-8 text-gray-600 text-sm"><%= @transaction.created_at.strftime('%Y-%m-%d %H:%M') %></div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-12 gap-2 py-2">
+            <div class="md:col-span-4 font-semibold text-gray-700">Last updated:</div>
+            <div class="md:col-span-8 text-gray-600 text-sm"><%= @transaction.updated_at.strftime('%Y-%m-%d %H:%M') %></div>
           </div>
         </div>
       </div>

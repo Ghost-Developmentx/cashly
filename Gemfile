@@ -93,3 +93,5 @@ gem "devise-two-factor", "~> 6.1"
 gem "stripe", "~> 13.5"
 
 gem "money", "~> 6.19"
+
+gem "tailwindcss-rails", "~> 4.2"
