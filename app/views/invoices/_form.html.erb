@@ -1,10 +1,9 @@
-<!-- app/views/invoices/_form.html.erb -->
 <div data-controller="invoice-preview">
   <%= form_with(model: @invoice, local: true, html: { class: "invoice-form" }) do |form| %>
     <% if @invoice.errors.any? %>
-      <div class="alert alert-danger">
-        <h4><%= pluralize(@invoice.errors.count, "error") %> prohibited this invoice from being saved:</h4>
-        <ul>
+      <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+        <h4 class="text-red-800 font-medium"><%= pluralize(@invoice.errors.count, "error") %> prohibited this invoice from being saved:</h4>
+        <ul class="mt-2 list-disc pl-5 text-red-700">
           <% @invoice.errors.full_messages.each do |message| %>
             <li><%= message %></li>
           <% end %>
@@ -12,89 +11,94 @@
       </div>
     <% end %>
 
-    <div class="row g-4">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <!-- Left column - Invoice details -->
-      <div class="col-md-5">
-        <div class="card border-0 shadow-sm mb-4">
-          <div class="card-header bg-white py-3">
-            <h5 class="mb-0">Client Information</h5>
+      <div class="lg:col-span-5">
+        <!-- Client Information -->
+        <div class="bg-white rounded-lg shadow-sm mb-6">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h5 class="font-medium">Client Information</h5>
           </div>
-          <div class="card-body pb-0">
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <%= form.label :client_name, class: "form-label required" %>
-                <%= form.text_field :client_name, class: "form-control", required: true,
+          <div class="px-6 py-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <%= form.label :client_name, class: "block text-sm font-medium text-gray-700 mb-1 required" %>
+                <%= form.text_field :client_name, class: "block w-full h-10 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3", required: true,
                                     placeholder: "Business or client name",
                                     data: { invoice_preview_target: "clientName" } %>
               </div>
 
-              <div class="col-md-6 mb-3">
-                <%= form.label :client_email, class: "form-label required" %>
-                <%= form.email_field :client_email, class: "form-control", required: true,
+              <div>
+                <%= form.label :client_email, class: "block text-sm font-medium text-gray-700 mb-1 required" %>
+                <%= form.email_field :client_email, class: "block w-full h-10 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3", required: true,
                                      placeholder: "client@example.com",
                                      data: { invoice_preview_target: "clientEmail" } %>
-                <div class="form-text">Invoice will be sent to this email address</div>
+                <p class="mt-1 text-sm text-gray-500">Invoice will be sent to this email address</p>
               </div>
             </div>
 
-            <div class="mb-3">
-              <%= form.label :client_address, class: "form-label" %>
-              <%= form.text_area :client_address, class: "form-control", rows: 3,
+            <div class="mb-4">
+              <%= form.label :client_address, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.text_area :client_address, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3 py-2", rows: 3,
                                  placeholder: "Street address, city, state, zip code, country",
                                  data: { invoice_preview_target: "clientAddress" } %>
             </div>
           </div>
         </div>
 
-        <div class="card border-0 shadow-sm mb-4">
-          <div class="card-header bg-white">
-            <h5 class="mb-0">Company Information</h5>
+        <!-- Company Information -->
+        <div class="bg-white rounded-lg shadow-sm mb-6">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h5 class="font-medium">Company Information</h5>
           </div>
-          <div class="card-body">
-            <div class="mb-3">
-              <%= form.label :company_name, "Company Name", class: "form-label" %>
-              <%= form.text_field :company_name, value: current_user.company_name, class: "form-control",
+          <div class="p-6">
+            <div class="mb-4">
+              <%= form.label :company_name, "Company Name", class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.text_field :company_name, value: current_user.company_name, class: "block w-full h-10 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3",
                                   placeholder: "Your business name",
                                   data: { invoice_preview_target: "companyName" } %>
             </div>
 
-            <div class="mb-3">
-              <label class="form-label">Company Logo</label>
-              <div class="input-group mb-2">
-                <%= form.file_field :logo, accept: "image/*", class: "form-control",
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Company Logo</label>
+              <div class="mb-2">
+                <%= form.file_field :logo, accept: "image/*", class: "block w-full h-10 text-sm text-gray-900 border border-gray-300 rounded-md cursor-pointer bg-gray-50 focus:outline-none",
                                     data: { invoice_preview_target: "logoInput",
                                             action: "change->invoice-preview#handleLogoUpload" } %>
               </div>
-              <div class="logo-preview-container mt-2">
-                <img src="#" alt="Logo preview" class="img-thumbnail d-none" style="max-height: 100px"
+              <div class="mt-2">
+                <img src="#" alt="Logo preview" class="hidden max-h-24 border border-gray-200 rounded p-1"
                      data-invoice-preview-target="logoPreview">
-                <button type="button" class="btn btn-sm btn-outline-danger mt-2 d-none"
+                <button type="button" class="hidden mt-2 items-center px-3 py-1.5 border border-red-600 text-red-600 text-sm font-medium rounded hover:bg-red-50 transition"
                         data-invoice-preview-target="removeLogo"
                         data-action="click->invoice-preview#removeLogo">
-                  <i class="bi bi-trash"></i> Remove Logo
+                  <i class="bi bi-trash mr-1"></i> Remove Logo
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="card border-0 shadow-sm mb-4">
-          <div class="card-header bg-white py-3">
-            <h5 class="mb-0"><i class="bi bi-pencil me-2"></i>Invoice Details</h5>
+        <!-- Invoice Details -->
+        <div class="bg-white rounded-lg shadow-sm mb-6">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h5 class="font-medium flex items-center">
+              <i class="bi bi-pencil mr-2"></i>Invoice Details
+            </h5>
           </div>
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <%= form.label :amount, "Invoice Amount", class: "form-label required" %>
-                <div class="input-group">
-                  <span class="input-group-text"><%= form.object.currency.upcase.first(1) %></span>
-                  <%= form.number_field :amount, step: 0.01, class: "form-control", required: true,
+          <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <%= form.label :amount, "Invoice Amount", class: "block text-sm font-medium text-gray-700 mb-1 required" %>
+                <div class="flex rounded-md shadow-sm">
+                  <span class="inline-flex items-center px-3 py-2 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm"><%= form.object.currency.upcase.first(1) %></span>
+                  <%= form.number_field :amount, step: 0.01, class: "block w-full h-10 rounded-none rounded-r-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3", required: true,
                                         data: { invoice_preview_target: "amount" } %>
                 </div>
               </div>
 
-              <div class="col-md-6 mb-3">
-                <%= form.label :currency, class: "form-label" %>
+              <div>
+                <%= form.label :currency, class: "block text-sm font-medium text-gray-700 mb-1" %>
                 <%= form.select :currency,
                                 [
                                   ["USD - US Dollar", "usd"],
@@ -104,68 +108,71 @@
                                   ["AUD - Australian Dollar", "aud"],
                                   ["JPY - Japanese Yen", "jpy"]
                                 ],
-                                {}, class: "form-select", data: { invoice_preview_target: "currency" } %>
+                                {}, class: "block w-full h-10 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3",
+                                data: { invoice_preview_target: "currency" } %>
               </div>
             </div>
 
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <%= form.label :issue_date, class: "form-label required" %>
-                <%= form.date_field :issue_date, class: "form-control", required: true,
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <%= form.label :issue_date, class: "block text-sm font-medium text-gray-700 mb-1 required" %>
+                <%= form.date_field :issue_date, class: "block w-full h-10 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3", required: true,
                                     data: { invoice_preview_target: "issueDate" } %>
               </div>
 
-              <div class="col-md-6 mb-3">
-                <%= form.label :due_date, class: "form-label required" %>
-                <%= form.date_field :due_date, class: "form-control", required: true,
+              <div>
+                <%= form.label :due_date, class: "block text-sm font-medium text-gray-700 mb-1 required" %>
+                <%= form.date_field :due_date, class: "block w-full h-10 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3", required: true,
                                     data: { invoice_preview_target: "dueDate" } %>
               </div>
             </div>
 
-            <div class="mb-3">
-              <%= form.label :description, class: "form-label" %>
-              <%= form.text_area :description, class: "form-control", rows: 3,
+            <div>
+              <%= form.label :description, class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.text_area :description, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3 py-2", rows: 3,
                                  placeholder: "Description of services or products",
                                  data: { invoice_preview_target: "description" } %>
             </div>
           </div>
         </div>
 
-        <div class="card border-0 shadow-sm mb-4">
-          <div class="card-header bg-white">
-            <h5 class="mb-0">Additional Information</h5>
+        <!-- Additional Information -->
+        <div class="bg-white rounded-lg shadow-sm mb-6">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h5 class="font-medium">Additional Information</h5>
           </div>
-          <div class="card-body">
-            <div class="mb-3">
-              <%= form.label :notes, "Notes to Client", class: "form-label" %>
-              <%= form.text_area :notes, class: "form-control", rows: 3,
+          <div class="p-6">
+            <div class="mb-4">
+              <%= form.label :notes, "Notes to Client", class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.text_area :notes, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3 py-2", rows: 3,
                                  placeholder: "Any additional information for your client",
                                  data: { invoice_preview_target: "notes" } %>
             </div>
 
-            <div class="mb-3">
-              <%= form.label :terms, "Terms and Conditions", class: "form-label" %>
-              <%= form.text_area :terms, class: "form-control", rows: 3,
+            <div>
+              <%= form.label :terms, "Terms and Conditions", class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= form.text_area :terms, class: "block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm px-3 py-2", rows: 3,
                                  placeholder: "Payment terms and conditions",
                                  data: { invoice_preview_target: "terms" } %>
             </div>
           </div>
         </div>
 
-        <div class="card border-0 shadow-sm mb-4">
-          <div class="card-header bg-white">
-            <h5 class="mb-0">Invoice Template</h5>
+        <!-- Invoice Template -->
+        <div class="bg-white rounded-lg shadow-sm mb-6">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h5 class="font-medium">Invoice Template</h5>
           </div>
-          <div class="card-body">
-            <div class="template-selection">
+          <div class="p-6">
+            <div class="space-y-3">
               <% Invoice::TEMPLATES.each do |template_option| %>
-                <div class="template-item mb-3">
-                  <div class="form-check">
+                <div class="template-item transform transition duration-150 hover:-translate-y-1">
+                  <div class="flex items-center">
                     <%= form.radio_button :template, template_option,
-                                          class: "form-check-input",
+                                          class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300",
                                           data: { invoice_preview_target: "template" },
                                           id: "template_#{template_option}" %>
-                    <%= form.label "template_#{template_option}", class: "form-check-label fw-bold" do %>
+                    <%= form.label "template_#{template_option}", class: "ml-2 block text-sm font-medium text-gray-700" do %>
                       <%= template_option.titleize %>
                     <% end %>
                   </div>
@@ -175,25 +182,25 @@
           </div>
         </div>
 
-        <div class="d-grid gap-2">
-          <%= form.submit class: "btn btn-primary btn-lg" %>
+        <div class="flex flex-col space-y-3">
+          <%= form.submit class: "w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm transition" %>
 
           <% if @invoice.new_record? %>
-            <%= link_to "Cancel", invoices_path, class: "btn btn-outline-secondary" %>
+            <%= link_to "Cancel", invoices_path, class: "w-full py-3 text-center border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 transition" %>
           <% else %>
-            <%= link_to "Cancel", invoice_path(@invoice), class: "btn btn-outline-secondary" %>
+            <%= link_to "Cancel", invoice_path(@invoice), class: "w-full py-3 text-center border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 transition" %>
           <% end %>
         </div>
       </div>
 
       <!-- Right column - Live preview -->
-      <div class="col-lg-6">
-        <div class="card border-0 shadow-sm sticky-top" style="top: 20px;">
-          <div class="card-body p-0">
+      <div class="lg:col-span-7">
+        <div class="bg-white rounded-lg shadow-sm sticky top-5 z-10">
+          <div class="overflow-hidden">
             <iframe data-invoice-preview-target="previewFrame"
                     id="invoicePreview"
-                    class="invoice-preview-frame"
-                    srcdoc="<div class='text-center p-5'><p class='text-muted'>Loading preview...</p></div>">
+                    class="w-full min-h-[800px] h-[calc(100vh-180px)] border-0 bg-white"
+                    srcdoc="<div class='text-center p-5'><p class='text-gray-500'>Loading preview...</p></div>">
             </iframe>
           </div>
         </div>
@@ -201,40 +208,3 @@
     </div>
   <% end %>
 </div>
-
-<style>
-    .form-label.required:after {
-        content: " *";
-        color: #dc3545;
-        margin-left: 2px;
-    }
-
-
-    .template-preview img {
-        max-height: 120px;
-        object-fit: cover;
-        width: 100%;
-    }
-
-    .template-item {
-        transition: all 0.2s ease;
-    }
-
-    .template-item:hover {
-        transform: translateY(-3px);
-    }
-
-    .invoice-preview-frame {
-        width: 100%;
-        height: calc(100vh - 180px);
-        min-height: 800px;
-        border: none;
-        background: white;
-    }
-
-    .sticky-top {
-        position: sticky;
-        top: 20px;
-        z-index: 1000;
-    }
-</style>

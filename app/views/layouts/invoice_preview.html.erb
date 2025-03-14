@@ -6,42 +6,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Invoice Preview</title>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+  <!-- Keep Bootstrap Icons since they're used across the app -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+  <!-- Include Tailwind styles -->
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+
   <style>
-      body {
-          background-color: #f8f9fa;
-          margin: 0;
-          padding: 20px;
-      }
-
-      .invoice-container {
-          background-color: white;
-          box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-          margin: 0 auto;
-          max-width: 210mm;
-          padding: 30px;
-          border-radius: 8px;
-      }
-
       @media print {
           body {
-              background-color: white;
-              padding: 0;
+              @apply bg-white p-0;
           }
 
           .invoice-container {
-              box-shadow: none;
-              margin: 0;
-              max-width: none;
-              padding: 0;
+              @apply shadow-none m-0 max-w-none p-0;
           }
       }
   </style>
 </head>
-<body>
-<div class="invoice-container">
+<body class="bg-gray-100 m-0 p-5">
+<div class="invoice-container bg-white shadow-lg mx-auto max-w-[210mm] p-8 rounded-lg">
   <%= yield %>
 </div>
 </body>
