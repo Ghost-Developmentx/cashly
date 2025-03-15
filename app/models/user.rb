@@ -9,6 +9,7 @@ class User < ApplicationRecord
   has_many :budgets, dependent: :destroy
   has_many :plaid_tokens, dependent: :destroy
   has_many :integrations, dependent: :destroy
+  has_many :journal_entries, dependent: :destroy
 
   # Validations
   validates :first_name, :last_name, :company_name, presence: true, if: :onboarding_completed?

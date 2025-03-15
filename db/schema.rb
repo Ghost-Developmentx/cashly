@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_15_000813) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_15_140339) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -109,6 +109,36 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_15_000813) do
     t.index ["user_id"], name: "index_invoices_on_user_id"
   end
 
+  create_table "journal_entries", force: :cascade do |t|
+    t.date "date", null: false
+    t.string "reference"
+    t.text "description"
+    t.string "status", default: "draft"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["date"], name: "index_journal_entries_on_date"
+    t.index ["reference"], name: "index_journal_entries_on_reference"
+    t.index ["status"], name: "index_journal_entries_on_status"
+    t.index ["user_id"], name: "index_journal_entries_on_user_id"
+  end
+
+  create_table "journal_lines", force: :cascade do |t|
+    t.bigint "journal_entry_id", null: false
+    t.bigint "ledger_account_id", null: false
+    t.decimal "debit_amount", precision: 15, scale: 2, default: "0.0"
+    t.decimal "credit_amount", precision: 15, scale: 2, default: "0.0"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "is_increase", default: true
+    t.decimal "net_amount", precision: 15, scale: 2, default: "0.0"
+    t.index ["is_increase"], name: "index_journal_lines_on_is_increase"
+    t.index ["journal_entry_id", "ledger_account_id"], name: "index_journal_lines_on_journal_entry_id_and_ledger_account_id"
+    t.index ["journal_entry_id"], name: "index_journal_lines_on_journal_entry_id"
+    t.index ["ledger_account_id"], name: "index_journal_lines_on_ledger_account_id"
+  end
+
   create_table "ledger_accounts", force: :cascade do |t|
     t.string "name", null: false
     t.string "code", null: false
@@ -148,8 +178,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_15_000813) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "plaid_transaction_id"
+    t.bigint "journal_entry_id"
     t.index ["account_id"], name: "index_transactions_on_account_id"
     t.index ["category_id"], name: "index_transactions_on_category_id"
+    t.index ["journal_entry_id"], name: "index_transactions_on_journal_entry_id"
     t.index ["plaid_transaction_id"], name: "index_transactions_on_plaid_transaction_id", unique: true, where: "(plaid_transaction_id IS NOT NULL)"
   end
 
@@ -202,8 +234,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_15_000813) do
   add_foreign_key "category_account_mappings", "ledger_accounts"
   add_foreign_key "integrations", "users"
   add_foreign_key "invoices", "users"
+  add_foreign_key "journal_entries", "users"
+  add_foreign_key "journal_lines", "journal_entries"
+  add_foreign_key "journal_lines", "ledger_accounts"
   add_foreign_key "ledger_accounts", "ledger_accounts", column: "parent_account_id"
   add_foreign_key "plaid_tokens", "users"
   add_foreign_key "transactions", "accounts"
   add_foreign_key "transactions", "categories"
+  add_foreign_key "transactions", "journal_entries"
 end
