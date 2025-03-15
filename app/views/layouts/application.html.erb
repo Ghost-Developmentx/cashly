@@ -112,7 +112,9 @@
               <div class="py-1">
                 <%= link_to "Chart of Accounts", chart_of_accounts_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
                 <%= link_to "Category Mappings", category_account_mappings_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                <!-- Additional accounting related links can go here -->
+                <%= link_to "Journal Entries", journal_entries_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                <div class="border-t border-gray-100 my-1"></div>
+                <%= link_to "Financial Reports", reports_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
               </div>
             </div>
           </div>
@@ -133,7 +135,6 @@
                   <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                 </svg>
               </button>
-              <!-- Invisible bridge -->
               <div class="absolute right-0 w-full h-5 top-full"></div>
               <div class="absolute right-0 mt-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block z-10">
                 <div class="py-1">
@@ -156,7 +157,6 @@
       </div>
     </div>
 
-    <!-- Mobile Menu - Rest of the code is unchanged -->
     <div class="hidden md:hidden" id="mobile-menu" data-navbar-target="menu">
       <!-- Mobile menu content unchanged -->
       <div class="px-2 pt-2 pb-3 space-y-1">
@@ -194,6 +194,14 @@
         <%= link_to category_account_mappings_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
           <i class="bi bi-diagram-3 mr-1"></i> Category Mappings
         <% end %>
+
+        <%= link_to journal_entries_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+          <i class="bi bi-journal-check mr-1"></i> Journal Entries
+        <% end %>
+
+        <%= link_to reports_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+          <i class="bi bi-graph-up mr-1"></i> Financial Reports
+        <% end %>
       </div>
 
       <div class="pt-4 pb-3 border-t border-blue-700">
@@ -226,7 +234,7 @@
   </div>
 </nav>
 
-<!-- Main content and footer unchanged -->
+
 <main class="flex-grow">
   <div class="container mx-auto px-4">
     <% if notice %>
@@ -260,7 +268,6 @@
 
 <%= javascript_include_tag "plaid_link" %>
 
-<!-- Script for mobile menu unchanged -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const mobileMenuButton = document.querySelector('[data-action="click->navbar#toggleMenu"]');

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_15_140339) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_15_151825) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -117,9 +117,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_15_140339) do
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "transaction_id"
+    t.bigint "source_transaction_id"
     t.index ["date"], name: "index_journal_entries_on_date"
     t.index ["reference"], name: "index_journal_entries_on_reference"
+    t.index ["source_transaction_id"], name: "index_journal_entries_on_source_transaction_id"
     t.index ["status"], name: "index_journal_entries_on_status"
+    t.index ["transaction_id"], name: "index_journal_entries_on_transaction_id"
     t.index ["user_id"], name: "index_journal_entries_on_user_id"
   end
 
@@ -234,6 +238,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_15_140339) do
   add_foreign_key "category_account_mappings", "ledger_accounts"
   add_foreign_key "integrations", "users"
   add_foreign_key "invoices", "users"
+  add_foreign_key "journal_entries", "transactions"
+  add_foreign_key "journal_entries", "transactions", column: "source_transaction_id"
   add_foreign_key "journal_entries", "users"
   add_foreign_key "journal_lines", "journal_entries"
   add_foreign_key "journal_lines", "ledger_accounts"

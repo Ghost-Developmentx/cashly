@@ -3,14 +3,18 @@ class JournalEntry < ApplicationRecord
   belongs_to :user
   has_many :journal_lines, dependent: :destroy
 
+  belongs_to :source_transaction, class_name: "Transaction", optional: true
+
+  accepts_nested_attributes_for :journal_lines, allow_destroy: true, reject_if: :all_blank
+
   # Validations
   validates :date, presence: true
   validates :status, inclusion: { in: %w[draft posted reversed] }
 
   # Status constants
-  DRAFT = 'draft'
-  POSTED = 'posted'
-  REVERSED = 'reversed'
+  DRAFT = "draft"
+  POSTED = "posted"
+  REVERSED = "reversed"
 
   # Scopes
   scope :draft, -> { where(status: DRAFT) }

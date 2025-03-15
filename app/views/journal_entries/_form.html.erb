@@ -1,0 +1,238 @@
+<%= form_with(model: journal_entry, data: { turbo: false }, method: (journal_entry.persisted? ? :patch : :post), local: true) do |form| %>
+  <% if journal_entry.errors.any? %>
+    <div class="mb-4 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded">
+      <h4 class="text-lg font-medium mb-2"><%= pluralize(journal_entry.errors.count, "error") %> prohibited this journal entry from being saved:</h4>
+      <ul class="list-disc pl-5">
+        <% journal_entry.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div>
+      <%= form.label :date, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.date_field :date, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+    </div>
+
+    <div>
+      <%= form.label :reference, class: "block text-sm font-medium text-gray-700 mb-1" %>
+      <%= form.text_field :reference, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm", placeholder: "Reference number or identifier" %>
+    </div>
+  </div>
+
+  <div class="mb-6">
+    <%= form.label :description, class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= form.text_area :description, rows: 3, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm", placeholder: "Description of this journal entry" %>
+  </div>
+
+  <div class="mb-6">
+    <div class="flex justify-between items-center mb-2">
+      <h3 class="text-lg font-medium text-gray-900">Journal Lines</h3>
+      <button type="button" id="add-journal-line" class="inline-flex items-center px-3 py-1.5 border border-blue-600 text-sm font-medium rounded-md text-blue-600 hover:bg-blue-50">
+        <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+        </svg>
+        Add Line
+      </button>
+    </div>
+
+    <div class="border rounded-lg mb-4">
+      <table class="min-w-full">
+        <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Account</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Debit</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Credit</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"></th>
+        </tr>
+        </thead>
+        <tbody id="journal-lines" class="bg-white divide-y divide-gray-200">
+        <%= form.fields_for :journal_lines do |line_form| %>
+          <%= render partial: 'journal_line_fields', locals: { f: line_form } %>
+        <% end %>
+        </tbody>
+        <tfoot class="bg-gray-50">
+        <tr>
+          <td class="px-6 py-4 text-right" colspan="2">Totals</td>
+          <td class="px-6 py-4" id="total-debits">0.00</td>
+          <td class="px-6 py-4" id="total-credits">0.00</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="px-6 py-4 text-right font-medium" colspan="2">Difference</td>
+          <td class="px-6 py-4 font-medium" colspan="2" id="difference">0.00</td>
+          <td></td>
+        </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <div class="flex items-center mb-6">
+    <div class="flex items-center">
+      <%= check_box_tag :post, 'true', false, class: "h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" %>
+      <label for="post" class="ml-2 block text-sm text-gray-900">
+        Post immediately after saving
+      </label>
+    </div>
+    <div class="ml-4">
+      <div id="status-indicator" class="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+        Balanced
+      </div>
+    </div>
+  </div>
+
+  <div class="flex space-x-3">
+    <% if journal_entry.persisted? %>
+      <%= form.submit "Update Journal Entry", class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700" %>
+    <% else %>
+      <%= form.submit "Create Journal Entry", class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700" %>
+    <% end %>
+    <%= link_to "Cancel", journal_entries_path, class: "px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50" %>
+  </div>
+<% end %>
+
+<template id="line-template">
+  <tr>
+    <td class="px-6 py-4">
+      <label>
+        <select name="journal_entry[journal_lines_attributes][NEW_RECORD][ledger_account_id]" class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+          <option value="">Select account</option>
+          <% LedgerAccount.active.order(:code).each do |account| %>
+            <option value="<%= account.id %>"><%= account.full_name %></option>
+          <% end %>
+        </select>
+      </label>
+    </td>
+    <td class="px-6 py-4">
+      <label>
+        <input type="text" name="journal_entry[journal_lines_attributes][NEW_RECORD][description]" class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+      </label>
+    </td>
+    <td class="px-6 py-4">
+      <label>
+        <input type="number" step="0.01" min="0" value="0.00" name="journal_entry[journal_lines_attributes][NEW_RECORD][debit_amount]" class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+      </label>
+    </td>
+    <td class="px-6 py-4">
+      <label>
+        <input type="number" step="0.01" min="0" value="0.00" name="journal_entry[journal_lines_attributes][NEW_RECORD][credit_amount]" class="block w-full rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+      </label>
+    </td>
+    <td class="px-6 py-4">
+      <button type="button" class="remove-line text-red-600 hover:text-red-900">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+        </svg>
+      </button>
+      <input type="hidden" name="journal_entry[journal_lines_attributes][NEW_RECORD][_destroy]" value="false">
+    </td>
+  </tr>
+</template>
+
+<script>
+    document.addEventListener('turbo:load', initJournalEntryForm);
+    document.addEventListener('DOMContentLoaded', initJournalEntryForm);
+
+    function initJournalEntryForm() {
+        const addButton = document.getElementById('add-journal-line');
+        if (!addButton) return;
+
+        addButton.addEventListener('click', function() {
+            const template = document.getElementById('line-template');
+            const tbody = document.getElementById('journal-lines');
+            // Create a unique timestamp index
+            const newIndex = new Date().getTime();
+            const content = template.innerHTML.replace(/NEW_RECORD/g, newIndex);
+            tbody.insertAdjacentHTML('beforeend', content);
+
+            // Initialize the newly added row
+            const rows = tbody.querySelectorAll('tr');
+            if (rows.length > 0) {
+                initializeRow(rows[rows.length - 1]);
+            }
+            updateTotals();
+        });
+
+        // Initialize existing rows
+        document.querySelectorAll('#journal-lines tr').forEach(function(row) {
+            initializeRow(row);
+        });
+
+        updateTotals();
+    }
+
+    function initializeRow(row) {
+        const removeButton = row.querySelector('.remove-line');
+        if (removeButton) {
+            removeButton.addEventListener('click', function() {
+                row.remove();
+                updateTotals();
+            });
+        }
+
+        const debitField = row.querySelector('input[name*="[debit_amount]"]');
+        const creditField = row.querySelector('input[name*="[credit_amount]"]');
+
+        if (debitField && creditField) {
+            debitField.addEventListener('input', function() {
+                if (parseFloat(this.value) > 0) {
+                    creditField.value = '0.00';
+                }
+                updateTotals();
+            });
+
+            creditField.addEventListener('input', function() {
+                if (parseFloat(this.value) > 0) {
+                    debitField.value = '0.00';
+                }
+                updateTotals();
+            });
+        }
+    }
+
+    function updateTotals() {
+        let totalDebits = 0;
+        let totalCredits = 0;
+
+        document.querySelectorAll('#journal-lines tr').forEach(function(row) {
+            const debitField = row.querySelector('input[name*="[debit_amount]"]');
+            const creditField = row.querySelector('input[name*="[credit_amount]"]');
+
+            if (debitField && creditField) {
+                totalDebits += parseFloat(debitField.value || 0);
+                totalCredits += parseFloat(creditField.value || 0);
+            }
+        });
+
+        if (document.getElementById('total-debits')) {
+            document.getElementById('total-debits').textContent = totalDebits.toFixed(2);
+        }
+
+        if (document.getElementById('total-credits')) {
+            document.getElementById('total-credits').textContent = totalCredits.toFixed(2);
+        }
+
+        const difference = totalDebits - totalCredits;
+        const differenceElement = document.getElementById('difference');
+        if (differenceElement) {
+            differenceElement.textContent = Math.abs(difference).toFixed(2);
+        }
+
+        const statusIndicator = document.getElementById('status-indicator');
+        if (statusIndicator) {
+            if (Math.abs(difference) < 0.01) {
+                statusIndicator.textContent = 'Balanced';
+                statusIndicator.classList.remove('bg-red-100', 'text-red-800');
+                statusIndicator.classList.add('bg-green-100', 'text-green-800');
+            } else {
+                statusIndicator.textContent = difference > 0 ? 'Debits exceed credits' : 'Credits exceed debits';
+                statusIndicator.classList.remove('bg-green-100', 'text-green-800');
+                statusIndicator.classList.add('bg-red-100', 'text-red-800');
+            }
+        }
+    }
+</script>

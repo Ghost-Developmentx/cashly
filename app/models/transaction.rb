@@ -4,7 +4,11 @@ class Transaction < ApplicationRecord
 
   delegate :user, to: :account
 
-  has_one :journal_entry, dependent: :nullify
+  has_many :journal_entries, foreign_key: "source_transaction_id", dependent: :nullify
+
+  def active_journal_entry
+    journal_entries.where(status: JournalEntry::POSTED).order(created_at: :desc).first
+  end
 
   # Callbacks
   after_create :create_journal_entry
@@ -20,7 +24,7 @@ class Transaction < ApplicationRecord
   private
 
   def create_journal_entry
-    return if journal_entry.present?
+    return if active_journal_entry.present?
     return unless category_id.present?
 
     # Create a new journal entry
@@ -28,7 +32,8 @@ class Transaction < ApplicationRecord
       date: date,
       reference: "TXN-#{id}",
       description: description,
-      status: JournalEntry::DRAFT
+      status: JournalEntry::DRAFT,
+      source_transaction_id: id
     )
 
     # Create appropriate journal lines based on transaction type
@@ -80,23 +85,23 @@ class Transaction < ApplicationRecord
   end
 
   def update_journal_entry
-    return unless journal_entry.present?
+    current_entry = active_journal_entry
+    return unless current_entry.present?
 
-    # If the transaction was material changed, reverse the old entry and create a new one
-    if saved_change_to_amount? || saved_change_to_date? || saved_change_to_category_id?
-      reverse_journal_entry
+    # If the transaction was materially changed, reverse the old entry and create a new one
+    if saved_change_to_amount? || saved_change_to_date? || saved_change_to_category_id? || saved_change_to_account_id?
+      current_entry.reverse
+      # Let the create_journal_entry method handle creating the new entry
       create_journal_entry
     end
   end
 
   def reverse_journal_entry
-    return unless journal_entry.present?
+    current_entry = active_journal_entry
+    return unless current_entry.present?
 
     # Reverse the journal entry
-    reversal = journal_entry.reverse
-
-    # Unlink the journal entry
-    update_column(:journal_entry_id, nil)
+    current_entry.reverse
   end
 
   def get_asset_account_for_bank_account

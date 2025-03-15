@@ -59,6 +59,21 @@ Rails.application.routes.draw do
   end
   get "chart_of_accounts", to: "ledger_accounts#index", as: "chart_of_accounts"
 
+  resources :journal_entries do
+    member do
+      patch :post
+      patch :reverse
+    end
+  end
+
+  resources :reports, only: [ :index ] do
+    collection do
+      get :trial_balance
+      get :income_statement
+      get :balance_sheet
+    end
+  end
+
   namespace :ai do
     get "insights", to: "insights#index"
     get "forecast", to: "insights#forecast"
