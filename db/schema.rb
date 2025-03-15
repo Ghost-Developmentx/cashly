@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_13_143524) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_15_000813) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -48,6 +48,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_13_143524) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["parent_category_id"], name: "index_categories_on_parent_category_id"
+  end
+
+  create_table "category_account_mappings", force: :cascade do |t|
+    t.bigint "category_id", null: false
+    t.bigint "ledger_account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id", "ledger_account_id"], name: "index_category_ledger_account_unique", unique: true
+    t.index ["category_id"], name: "index_category_account_mappings_on_category_id"
+    t.index ["ledger_account_id"], name: "index_category_account_mappings_on_ledger_account_id"
   end
 
   create_table "integrations", force: :cascade do |t|
@@ -97,6 +107,24 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_13_143524) do
     t.index ["stripe_invoice_id"], name: "index_invoices_on_stripe_invoice_id"
     t.index ["stripe_subscription_id"], name: "index_invoices_on_stripe_subscription_id"
     t.index ["user_id"], name: "index_invoices_on_user_id"
+  end
+
+  create_table "ledger_accounts", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "code", null: false
+    t.string "account_type", null: false
+    t.string "account_subtype"
+    t.text "description"
+    t.bigint "parent_account_id"
+    t.boolean "active", default: true, null: false
+    t.string "default_balance", default: "debit", null: false
+    t.integer "display_order"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_type", "account_subtype"], name: "index_ledger_accounts_on_account_type_and_account_subtype"
+    t.index ["active"], name: "index_ledger_accounts_on_active"
+    t.index ["code"], name: "index_ledger_accounts_on_code", unique: true
+    t.index ["parent_account_id"], name: "index_ledger_accounts_on_parent_account_id"
   end
 
   create_table "plaid_tokens", force: :cascade do |t|
@@ -170,8 +198,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_13_143524) do
   add_foreign_key "budgets", "categories"
   add_foreign_key "budgets", "users"
   add_foreign_key "categories", "categories", column: "parent_category_id"
+  add_foreign_key "category_account_mappings", "categories"
+  add_foreign_key "category_account_mappings", "ledger_accounts"
   add_foreign_key "integrations", "users"
   add_foreign_key "invoices", "users"
+  add_foreign_key "ledger_accounts", "ledger_accounts", column: "parent_account_id"
   add_foreign_key "plaid_tokens", "users"
   add_foreign_key "transactions", "accounts"
   add_foreign_key "transactions", "categories"

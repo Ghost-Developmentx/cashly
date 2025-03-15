@@ -1,253 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title><%= content_for(:title) || "Cashly" %></title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <%= csrf_meta_tags %>
-    <%= csp_meta_tag %>
+<head>
+  <title><%= content_for(:title) || "Cashly" %></title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
 
-    <%= yield :head %>
+  <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
-    <%= javascript_importmap_tags %>
-  </head>
+  <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+  <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+  <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+  <%= javascript_importmap_tags %>
+</head>
 
-  <body class="flex flex-col min-h-screen bg-gray-50">
-  <!-- Navigation bar -->
-  <nav class="bg-blue-600 text-white shadow-md mb-6">
-    <div class="container mx-auto px-4">
-      <div class="flex items-center justify-between h-16">
-        <!-- Logo and brand -->
-        <div class="flex items-center">
-          <%= link_to "Cashly", root_path, class: "text-xl font-bold text-white" %>
-        </div>
-
-        <!-- Mobile menu button -->
-        <div class="flex md:hidden">
-          <button type="button" class="text-white hover:text-gray-200 focus:outline-none focus:text-gray-200"
-                  data-action="click->navbar#toggleMenu" aria-label="Toggle menu">
-            <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-            </svg>
-          </button>
-        </div>
-
-        <!-- Desktop Nav -->
-        <div class="hidden md:flex md:items-center">
-          <div class="flex space-x-4">
-            <!-- Main nav items -->
-            <%= link_to dashboard_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
-              <i class="bi bi-speedometer2 mr-1"></i> Dashboard
-            <% end %>
-
-            <!-- Transactions Dropdown with invisible bridge -->
-            <div class="relative group">
-              <button class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700 flex items-center">
-                <i class="bi bi-cash-coin mr-1"></i> Transactions
-                <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                </svg>
-              </button>
-              <!-- Invisible bridge -->
-              <div class="absolute left-0 w-full h-5 top-full"></div>
-              <div class="absolute left-0 mt-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block z-10">
-                <div class="py-1">
-                  <%= link_to "View Transactions", transactions_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                  <%= link_to "Add Transaction", new_transaction_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                  <%= link_to "Import Transactions", new_import_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                </div>
-              </div>
-            </div>
-
-            <%= link_to accounts_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
-              <i class="bi bi-wallet2 mr-1"></i> Accounts
-            <% end %>
-
-            <!-- Invoices Dropdown with invisible bridge -->
-            <div class="relative group">
-              <button class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700 flex items-center">
-                <i class="bi bi-receipt mr-1"></i> Invoices
-                <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                </svg>
-              </button>
-              <!-- Invisible bridge -->
-              <div class="absolute left-0 w-full h-5 top-full"></div>
-              <div class="absolute left-0 mt-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block z-10">
-                <div class="py-1">
-                  <%= link_to "All Invoices", invoices_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                  <%= link_to "Recurring Invoices", recurring_invoices_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                  <%= link_to "Create Invoice", new_invoice_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                </div>
-              </div>
-            </div>
-
-            <%= link_to budgets_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
-              <i class="bi bi-pie-chart mr-1"></i> Budgets
-            <% end %>
-
-            <%= link_to integrations_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
-              <i class="bi bi-plug mr-1"></i> Integrations
-            <% end %>
-
-            <%= link_to categories_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
-              <i class="bi bi-tags mr-1"></i> Categories
-            <% end %>
-          </div>
-        </div>
-
-        <!-- User profile dropdown with invisible bridge -->
-        <div class="hidden md:block">
-          <div class="ml-4 flex items-center">
-            <% if user_signed_in? %>
-              <div class="relative group">
-                <button class="flex items-center text-sm font-medium text-white hover:text-gray-200 focus:outline-none">
-                  <div class="flex items-center justify-center h-8 w-8 rounded-full bg-blue-800 text-white mr-2">
-                    <span><%= current_user.initials %></span>
-                  </div>
-                  <span><%= current_user.full_name %></span>
-                  <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                  </svg>
-                </button>
-                <!-- Invisible bridge -->
-                <div class="absolute right-0 w-full h-5 top-full"></div>
-                <div class="absolute right-0 mt-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block z-10">
-                  <div class="py-1">
-                    <%= link_to "View Profile", profile_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                    <%= link_to "Edit Profile", edit_profile_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                    <div class="border-t border-gray-100"></div>
-                    <%= link_to "Account Settings", edit_user_registration_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                    <div class="border-t border-gray-100"></div>
-                    <%= button_to "Log Out", destroy_user_session_path, method: :delete, class: "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                  </div>
-                </div>
-              </div>
-            <% else %>
-              <div class="flex space-x-4">
-                <%= link_to "Sign In", new_user_session_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" %>
-                <%= link_to "Sign Up", new_user_registration_path, class: "px-3 py-2 rounded-md text-sm font-medium bg-white text-blue-600 hover:bg-gray-100" %>
-              </div>
-            <% end %>
-          </div>
-        </div>
+<body class="flex flex-col min-h-screen bg-gray-50">
+<!-- Navigation bar -->
+<nav class="bg-blue-600 text-white shadow-md mb-6">
+  <div class="container mx-auto px-4">
+    <div class="flex items-center justify-between h-16">
+      <!-- Logo and brand -->
+      <div class="flex items-center">
+        <%= link_to "Cashly", root_path, class: "text-xl font-bold text-white" %>
       </div>
 
-      <!-- Mobile Menu - Rest of the code is unchanged -->
-      <div class="hidden md:hidden" id="mobile-menu" data-navbar-target="menu">
-        <!-- Mobile menu content unchanged -->
-        <div class="px-2 pt-2 pb-3 space-y-1">
-          <%= link_to dashboard_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+      <!-- Mobile menu button -->
+      <div class="flex md:hidden">
+        <button type="button" class="text-white hover:text-gray-200 focus:outline-none focus:text-gray-200"
+                data-action="click->navbar#toggleMenu" aria-label="Toggle menu">
+          <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Desktop Nav -->
+      <div class="hidden md:flex md:items-center">
+        <div class="flex space-x-4">
+          <!-- Main nav items -->
+          <%= link_to dashboard_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
             <i class="bi bi-speedometer2 mr-1"></i> Dashboard
           <% end %>
 
-          <%= link_to transactions_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
-            <i class="bi bi-cash-coin mr-1"></i> Transactions
-          <% end %>
+          <!-- Transactions Dropdown with invisible bridge -->
+          <div class="relative group">
+            <button class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700 flex items-center">
+              <i class="bi bi-cash-coin mr-1"></i> Transactions
+              <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+              </svg>
+            </button>
+            <!-- Invisible bridge -->
+            <div class="absolute left-0 w-full h-5 top-full"></div>
+            <div class="absolute left-0 mt-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block z-10">
+              <div class="py-1">
+                <%= link_to "View Transactions", transactions_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                <%= link_to "Add Transaction", new_transaction_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                <%= link_to "Import Transactions", new_import_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+              </div>
+            </div>
+          </div>
 
-          <%= link_to accounts_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+          <%= link_to accounts_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
             <i class="bi bi-wallet2 mr-1"></i> Accounts
           <% end %>
 
-          <%= link_to invoices_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
-            <i class="bi bi-receipt mr-1"></i> Invoices
-          <% end %>
+          <!-- Invoices Dropdown with invisible bridge -->
+          <div class="relative group">
+            <button class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700 flex items-center">
+              <i class="bi bi-receipt mr-1"></i> Invoices
+              <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+              </svg>
+            </button>
+            <!-- Invisible bridge -->
+            <div class="absolute left-0 w-full h-5 top-full"></div>
+            <div class="absolute left-0 mt-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block z-10">
+              <div class="py-1">
+                <%= link_to "All Invoices", invoices_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                <%= link_to "Recurring Invoices", recurring_invoices_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                <%= link_to "Create Invoice", new_invoice_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+              </div>
+            </div>
+          </div>
 
-          <%= link_to budgets_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+          <%= link_to budgets_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
             <i class="bi bi-pie-chart mr-1"></i> Budgets
           <% end %>
 
-          <%= link_to integrations_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+          <%= link_to integrations_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
             <i class="bi bi-plug mr-1"></i> Integrations
           <% end %>
 
-          <%= link_to categories_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+          <%= link_to categories_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
             <i class="bi bi-tags mr-1"></i> Categories
           <% end %>
+          <div class="relative group">
+            <button class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700 flex items-center">
+              <i class="bi bi-journal-text mr-1"></i> Accounting
+              <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+              </svg>
+            </button>
+            <!-- Invisible bridge -->
+            <div class="absolute left-0 w-full h-5 top-full"></div>
+            <div class="absolute left-0 mt-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block z-10">
+              <div class="py-1">
+                <%= link_to "Chart of Accounts", chart_of_accounts_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                <%= link_to "Category Mappings", category_account_mappings_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                <!-- Additional accounting related links can go here -->
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <div class="pt-4 pb-3 border-t border-blue-700">
+      <!-- User profile dropdown with invisible bridge -->
+      <div class="hidden md:block">
+        <div class="ml-4 flex items-center">
           <% if user_signed_in? %>
-            <div class="flex items-center px-5">
-              <div class="flex-shrink-0">
-                <div class="h-10 w-10 rounded-full bg-blue-800 flex items-center justify-center">
-                  <span class="text-white font-medium"><%= current_user.initials %></span>
+            <div class="relative group">
+              <button class="flex items-center text-sm font-medium text-white hover:text-gray-200 focus:outline-none">
+                <div class="flex items-center justify-center h-8 w-8 rounded-full bg-blue-800 text-white mr-2">
+                  <span><%= current_user.initials %></span>
+                </div>
+                <span><%= current_user.full_name %></span>
+                <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+              </button>
+              <!-- Invisible bridge -->
+              <div class="absolute right-0 w-full h-5 top-full"></div>
+              <div class="absolute right-0 mt-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block z-10">
+                <div class="py-1">
+                  <%= link_to "View Profile", profile_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                  <%= link_to "Edit Profile", edit_profile_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                  <div class="border-t border-gray-100"></div>
+                  <%= link_to "Account Settings", edit_user_registration_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
+                  <div class="border-t border-gray-100"></div>
+                  <%= button_to "Log Out", destroy_user_session_path, method: :delete, class: "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
                 </div>
               </div>
-              <div class="ml-3">
-                <div class="text-base font-medium text-white"><%= current_user.full_name %></div>
-                <div class="text-sm font-medium text-blue-300"><%= current_user.email %></div>
-              </div>
-            </div>
-            <div class="mt-3 px-2 space-y-1">
-              <%= link_to "View Profile", profile_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
-              <%= link_to "Edit Profile", edit_profile_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
-              <%= link_to "Account Settings", edit_user_registration_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
-              <%= button_to "Log Out", destroy_user_session_path, method: :delete, class: "block w-full text-left px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
             </div>
           <% else %>
-            <div class="mt-3 px-2 space-y-1">
-              <%= link_to "Sign In", new_user_session_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
-              <%= link_to "Sign Up", new_user_registration_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
+            <div class="flex space-x-4">
+              <%= link_to "Sign In", new_user_session_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" %>
+              <%= link_to "Sign Up", new_user_registration_path, class: "px-3 py-2 rounded-md text-sm font-medium bg-white text-blue-600 hover:bg-gray-100" %>
             </div>
           <% end %>
         </div>
       </div>
     </div>
-  </nav>
 
-  <!-- Main content and footer unchanged -->
-  <main class="flex-grow">
-    <div class="container mx-auto px-4">
-      <% if notice %>
-        <div class="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded relative" role="alert">
-          <%= notice %>
-          <button type="button" class="absolute top-0 right-0 mt-2 mr-2 text-green-700 hover:text-green-900" onclick="this.parentElement.style.display='none'">
-            <span class="text-xl">&times;</span>
-          </button>
-        </div>
-      <% end %>
-      <% if alert %>
-        <div class="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded relative" role="alert">
-          <%= alert %>
-          <button type="button" class="absolute top-0 right-0 mt-2 mr-2 text-red-700 hover:text-red-900" onclick="this.parentElement.style.display='none'">
-            <span class="text-xl">&times;</span>
-          </button>
-        </div>
-      <% end %>
+    <!-- Mobile Menu - Rest of the code is unchanged -->
+    <div class="hidden md:hidden" id="mobile-menu" data-navbar-target="menu">
+      <!-- Mobile menu content unchanged -->
+      <div class="px-2 pt-2 pb-3 space-y-1">
+        <%= link_to dashboard_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+          <i class="bi bi-speedometer2 mr-1"></i> Dashboard
+        <% end %>
 
-      <%= yield %>
+        <%= link_to transactions_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+          <i class="bi bi-cash-coin mr-1"></i> Transactions
+        <% end %>
+
+        <%= link_to accounts_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+          <i class="bi bi-wallet2 mr-1"></i> Accounts
+        <% end %>
+
+        <%= link_to invoices_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+          <i class="bi bi-receipt mr-1"></i> Invoices
+        <% end %>
+
+        <%= link_to budgets_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+          <i class="bi bi-pie-chart mr-1"></i> Budgets
+        <% end %>
+
+        <%= link_to integrations_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+          <i class="bi bi-plug mr-1"></i> Integrations
+        <% end %>
+
+        <%= link_to categories_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+          <i class="bi bi-tags mr-1"></i> Categories
+        <% end %>
+        <%= link_to chart_of_accounts_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+          <i class="bi bi-journal-text mr-1"></i> Chart of Accounts
+        <% end %>
+
+        <%= link_to category_account_mappings_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
+          <i class="bi bi-diagram-3 mr-1"></i> Category Mappings
+        <% end %>
+      </div>
+
+      <div class="pt-4 pb-3 border-t border-blue-700">
+        <% if user_signed_in? %>
+          <div class="flex items-center px-5">
+            <div class="flex-shrink-0">
+              <div class="h-10 w-10 rounded-full bg-blue-800 flex items-center justify-center">
+                <span class="text-white font-medium"><%= current_user.initials %></span>
+              </div>
+            </div>
+            <div class="ml-3">
+              <div class="text-base font-medium text-white"><%= current_user.full_name %></div>
+              <div class="text-sm font-medium text-blue-300"><%= current_user.email %></div>
+            </div>
+          </div>
+          <div class="mt-3 px-2 space-y-1">
+            <%= link_to "View Profile", profile_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
+            <%= link_to "Edit Profile", edit_profile_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
+            <%= link_to "Account Settings", edit_user_registration_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
+            <%= button_to "Log Out", destroy_user_session_path, method: :delete, class: "block w-full text-left px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
+          </div>
+        <% else %>
+          <div class="mt-3 px-2 space-y-1">
+            <%= link_to "Sign In", new_user_session_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
+            <%= link_to "Sign Up", new_user_registration_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
+          </div>
+        <% end %>
+      </div>
     </div>
-  </main>
+  </div>
+</nav>
 
-  <footer class="bg-gray-100 py-6 mt-8">
-    <div class="container mx-auto px-4 text-center">
-      <p class="text-gray-600 text-sm">
-        &copy; <%= Date.today.year %> Cashly - Intelligent Cash Flow Management
-      </p>
-    </div>
-  </footer>
+<!-- Main content and footer unchanged -->
+<main class="flex-grow">
+  <div class="container mx-auto px-4">
+    <% if notice %>
+      <div class="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded relative" role="alert">
+        <%= notice %>
+        <button type="button" class="absolute top-0 right-0 mt-2 mr-2 text-green-700 hover:text-green-900" onclick="this.parentElement.style.display='none'">
+          <span class="text-xl">&times;</span>
+        </button>
+      </div>
+    <% end %>
+    <% if alert %>
+      <div class="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded relative" role="alert">
+        <%= alert %>
+        <button type="button" class="absolute top-0 right-0 mt-2 mr-2 text-red-700 hover:text-red-900" onclick="this.parentElement.style.display='none'">
+          <span class="text-xl">&times;</span>
+        </button>
+      </div>
+    <% end %>
 
-  <%= javascript_include_tag "plaid_link" %>
+    <%= yield %>
+  </div>
+</main>
 
-  <!-- Script for mobile menu unchanged -->
-  <script>
-      document.addEventListener('DOMContentLoaded', function() {
-          const mobileMenuButton = document.querySelector('[data-action="click->navbar#toggleMenu"]');
-          const mobileMenu = document.getElementById('mobile-menu');
+<footer class="bg-gray-100 py-6 mt-8">
+  <div class="container mx-auto px-4 text-center">
+    <p class="text-gray-600 text-sm">
+      &copy; <%= Date.today.year %> Cashly - Intelligent Cash Flow Management
+    </p>
+  </div>
+</footer>
 
-          if(mobileMenuButton && mobileMenu) {
-              mobileMenuButton.addEventListener('click', function() {
-                  mobileMenu.classList.toggle('hidden');
-              });
-          }
-      });
-  </script>
-  </body>
+<%= javascript_include_tag "plaid_link" %>
+
+<!-- Script for mobile menu unchanged -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileMenuButton = document.querySelector('[data-action="click->navbar#toggleMenu"]');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if(mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+    });
+</script>
+</body>
 </html>

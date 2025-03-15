@@ -1,0 +1,44 @@
+<!-- app/views/ledger_accounts/_account_row.html.erb -->
+<tr class="hover:bg-gray-50 <%= account.active? ? '' : 'text-gray-400' %>">
+  <td class="px-6 py-3 whitespace-nowrap">
+    <% level.times do %>
+      <span class="inline-block w-4"></span>
+    <% end %>
+    <% if account.child_accounts.any? %>
+      <span class="text-gray-400 mr-1">└</span>
+    <% end %>
+    <%= account.code %>
+  </td>
+  <td class="px-6 py-3 whitespace-nowrap">
+    <%= link_to account.name, ledger_account_path(account), class: "text-blue-600 hover:underline #{account.active? ? '' : 'text-gray-400'}" %>
+  </td>
+  <td class="px-6 py-3 whitespace-nowrap">
+    <%= account.account_type.titleize %>
+  </td>
+  <td class="px-6 py-3 whitespace-nowrap">
+    <%= account.account_subtype&.titleize %>
+  </td>
+  <td class="px-6 py-3 whitespace-nowrap">
+    <%= account.default_balance.titleize %>
+  </td>
+  <td class="px-6 py-3 whitespace-nowrap">
+    <% if account.active? %>
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Active</span>
+    <% else %>
+      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Inactive</span>
+    <% end %>
+  </td>
+  <td class="px-6 py-3 whitespace-nowrap">
+    <div class="flex space-x-2">
+      <%= link_to "View", ledger_account_path(account), class: "inline-flex items-center px-2.5 py-1.5 border border-blue-600 text-xs font-medium rounded text-blue-600 hover:bg-blue-50" %>
+      <%= link_to "Edit", edit_ledger_account_path(account), class: "inline-flex items-center px-2.5 py-1.5 border border-gray-600 text-xs font-medium rounded text-gray-600 hover:bg-gray-50" %>
+      <%= link_to account.active? ? "Deactivate" : "Activate", toggle_active_ledger_account_path(account), method: :patch, class: "inline-flex items-center px-2.5 py-1.5 border border-#{account.active? ? 'red' : 'green'}-600 text-xs font-medium rounded text-#{account.active? ? 'red' : 'green'}-600 hover:bg-#{account.active? ? 'red' : 'green'}-50" %>
+    </div>
+  </td>
+</tr>
+
+<% if account.child_accounts.any? %>
+  <% account.child_accounts.each do |child| %>
+    <%= render 'account_row', account: child, level: level + 1 %>
+  <% end %>
+<% end %>

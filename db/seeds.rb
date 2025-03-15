@@ -1,5 +1,6 @@
 # Load default categories
-load(Rails.root.join('db', 'seeds', 'categories.rb'))
+require_relative 'seeds/chart_of_accounts'
+require_relative 'seeds/categories'
 
 # Create admin user if in development
 if Rails.env.development?

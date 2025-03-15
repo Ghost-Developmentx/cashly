@@ -1,0 +1,19 @@
+<!-- app/views/ledger_accounts/new.html.erb -->
+<div class="container mx-auto px-4 py-6">
+  <div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h1 class="text-xl font-medium text-gray-800">
+          <% if @parent_account %>
+            Add New Sub-Account to <%= @parent_account.name %>
+          <% else %>
+            Add New Account
+          <% end %>
+        </h1>
+      </div>
+      <div class="p-6">
+        <%= render 'form', ledger_account: @ledger_account %>
+      </div>
+    </div>
+  </div>
+</div>

@@ -51,6 +51,14 @@ Rails.application.routes.draw do
   get "dashboard/hide_getting_started", to: "dashboard#hide_getting_started"
   post "/stripe/webhooks", to: "stripe_webhooks#create"
 
+  resources :category_account_mappings, only: [ :index, :create, :update, :destroy ]
+  resources :ledger_accounts do
+    member do
+      patch :toggle_active
+    end
+  end
+  get "chart_of_accounts", to: "ledger_accounts#index", as: "chart_of_accounts"
+
   namespace :ai do
     get "insights", to: "insights#index"
     get "forecast", to: "insights#forecast"

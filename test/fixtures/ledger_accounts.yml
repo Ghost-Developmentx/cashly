@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  code: MyString
+  account_type: MyString
+  account_subtype: MyString
+  description: MyText
+  parent_account: one
+  active: false
+  default_balance: MyString
+
+two:
+  name: MyString
+  code: MyString
+  account_type: MyString
+  account_subtype: MyString
+  description: MyText
+  parent_account: two
+  active: false
+  default_balance: MyString
