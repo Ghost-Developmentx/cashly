@@ -423,6 +423,13 @@
     <option name="myRootTask">
       <RakeTaskImpl id="rake">
         <subtasks>
+          <RakeTaskImpl id="accounting">
+            <subtasks>
+              <RakeTaskImpl description="Initialize full accounting system (Chart of Accounts and category mappings)" fullCommand="accounting:initialize" id="initialize" />
+              <RakeTaskImpl description="Initialize standard Chart of Accounts" fullCommand="accounting:initialize_coa" id="initialize_coa" />
+              <RakeTaskImpl description="Map categories to appropriate ledger accounts" fullCommand="accounting:map_categories" id="map_categories" />
+            </subtasks>
+          </RakeTaskImpl>
           <RakeTaskImpl id="action_mailbox">
             <subtasks>
               <RakeTaskImpl id="ingress">

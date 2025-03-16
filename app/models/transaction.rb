@@ -1,6 +1,7 @@
 class Transaction < ApplicationRecord
   belongs_to :account
   belongs_to :category, optional: true
+  belongs_to :bank_statement, optional: true
 
   delegate :user, to: :account
 
@@ -17,8 +18,33 @@ class Transaction < ApplicationRecord
 
   scope :plaid_transactions, -> { where.not(plaid_transaction_id: nil) }
 
+  # Reconciliation-related scopes
+  scope :reconciled, -> { where(reconciled: true) }
+  scope :unreconciled, -> { where(reconciled: false) }
+  scope :for_account, ->(account_id) { joins(:account).where(accounts: { id: account_id }) }
+  scope :in_date_range, ->(start_date, end_date) { where("date >= ? AND date <= ?", start_date, end_date) }
+
+
   def plaid_linked?
     plaid_transaction_id.present?
+  end
+
+  def reconcile(bank_statement_id = nil, notes = nil)
+    update(
+      reconciled: true,
+      reconciled_at: Time.current,
+      reconciliation_notes: notes,
+      bank_statement_id: bank_statement_id
+    )
+  end
+
+  def unreconcile
+    update(
+      reconciled: false,
+      reconciled_at: nil,
+      reconciliation_notes: nil,
+      bank_statement_id: nil
+    )
   end
 
   private

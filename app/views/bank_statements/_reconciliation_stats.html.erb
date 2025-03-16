@@ -1,0 +1,63 @@
+<div class="mb-4">
+  <div class="flex justify-between mb-1">
+    <span class="text-sm font-medium text-gray-700">Progress</span>
+    <span class="text-sm font-medium text-gray-700" data-reconciliation-target="progressPercentage"><%= bank_statement.reconciliation_progress.round(1) %>%</span>
+  </div>
+  <div class="w-full bg-gray-200 rounded-full h-2.5">
+    <div class="bg-blue-600 h-2.5 rounded-full" data-reconciliation-target="progressBar" style="width: <%= bank_statement.reconciliation_progress %>%"></div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
+  <div>
+    <h6 class="text-sm font-medium text-gray-500">Transactions</h6>
+    <div class="mt-2 flex space-x-4">
+      <div>
+        <p class="text-xl font-semibold text-gray-900" data-reconciliation-target="reconciledCount"><%= bank_statement.transactions.where(reconciled: true).count %></p>
+        <p class="text-sm text-gray-500">Reconciled</p>
+      </div>
+      <div>
+        <p class="text-xl font-semibold text-gray-900" data-reconciliation-target="unreconciledCount"><%= bank_statement.account.transactions.where(date: bank_statement.start_date..bank_statement.end_date).where(reconciled: false).count %></p>
+        <p class="text-sm text-gray-500">Unreconciled</p>
+      </div>
+      <div>
+        <p class="text-xl font-semibold text-gray-900"><%= bank_statement.account.transactions.where(date: bank_statement.start_date..bank_statement.end_date).count %></p>
+        <p class="text-sm text-gray-500">Total</p>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <h6 class="text-sm font-medium text-gray-500">Discrepancy</h6>
+    <p class="mt-2 text-xl font-semibold <%= bank_statement.reconciliation_difference == 0 ? 'text-green-600' : 'text-red-600' %>" data-reconciliation-target="differenceAmount" data-value="<%= bank_statement.reconciliation_difference %>">
+      <%= number_to_currency(bank_statement.reconciliation_difference) %>
+    </p>
+    <p class="text-sm text-gray-500">Difference between statement and reconciled transactions</p>
+  </div>
+</div>
+
+<% if !bank_statement.locked? && !bank_statement.fully_reconciled? %>
+  <div class="rounded-md bg-blue-50 p-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-blue-800">Reconciliation Instructions</h3>
+        <div class="mt-2 text-sm text-blue-700">
+          <p>To reconcile this statement, select transactions from the available list below. You can also unreconcile transactions if needed.</p>
+        </div>
+        <% if bank_statement.reconciliation_difference == 0 && bank_statement.transactions.where(reconciled: true).count > 0 %>
+          <div class="mt-4">
+            <%= form_with(url: account_bank_statement_path(bank_statement.account, bank_statement), method: :patch, local: true) do |form| %>
+              <%= form.hidden_field :locked, value: true %>
+              <%= form.submit "Mark as Reconciled & Lock", class: "inline-flex items-center px-3 py-2 border border-blue-800 text-sm font-medium rounded-md text-blue-800 bg-blue-100 hover:bg-blue-200" %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

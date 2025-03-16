@@ -12,8 +12,20 @@ Rails.application.routes.draw do
     post "complete_tutorial", on: :collection
   end
 
-  resources :accounts
-  resources :transactions
+  resources :accounts do
+    resources :bank_statements do
+      member do
+        patch :reconcile
+      end
+    end
+  end
+
+  resources :transactions do
+    member do
+      patch :unreconcile
+    end
+  end
+
   resources :budgets
   resources :categories
 
@@ -71,6 +83,7 @@ Rails.application.routes.draw do
       get :trial_balance
       get :income_statement
       get :balance_sheet
+      get :cash_flow_statement
     end
   end
 

@@ -74,6 +74,52 @@ class TransactionsController < ApplicationController
     end
   end
 
+  def reconcile
+    @transaction = Transaction.find(params[:transaction_id])
+    @bank_statement = BankStatement.find(params[:bank_statement_id])
+
+    if @transaction.reconcile(@bank_statement.id)
+      # Get updated data for the view
+      @reconciled_transactions = @bank_statement.transactions.where(reconciled: true)
+      @available_transactions = @bank_statement.account.transactions
+                                               .where(date: @bank_statement.start_date..@bank_statement.end_date)
+                                               .where(reconciled: false)
+
+      respond_to do |format|
+        format.turbo_stream
+        format.json { render json: { success: true, transaction: @transaction } }
+      end
+    else
+      respond_to do |format|
+        format.turbo_stream
+        format.json { render json: { success: false, errors: @transaction.errors.full_messages } }
+      end
+    end
+  end
+
+  def unreconcile
+    @transaction = Transaction.find(params[:id])
+    @bank_statement = @transaction.bank_statement
+
+    if @transaction.unreconcile
+      # Get updated data for the view
+      @reconciled_transactions = @bank_statement.transactions.where(reconciled: true)
+      @available_transactions = @bank_statement.account.transactions
+                                               .where(date: @bank_statement.start_date..@bank_statement.end_date)
+                                               .where(reconciled: false)
+
+      respond_to do |format|
+        format.turbo_stream
+        format.json { render json: { success: true, transaction: @transaction } }
+      end
+    else
+      respond_to do |format|
+        format.turbo_stream
+        format.json { render json: { success: false, errors: @transaction.errors.full_messages } }
+      end
+    end
+  end
+
   private
 
   def set_transaction

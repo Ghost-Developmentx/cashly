@@ -1,6 +1,4 @@
-<!-- app/views/accounts/show.html.erb -->
-<!-- app/views/accounts/show.html.erb -->
-<div class="container mx-auto px-4 py-6">
+<div class="container mx-auto px-4 py-6" data-controller="reconciliation">
   <div class="flex flex-col md:flex-row justify-between items-center mb-6">
     <div class="flex items-center mb-4 md:mb-0">
       <h1 class="text-2xl font-bold text-gray-800 mr-3"><%= @account.name %></h1>
@@ -82,6 +80,83 @@
           </dl>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Bank Statements Section -->
+  <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 mb-6">
+    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+      <h2 class="text-lg font-semibold text-gray-800">Bank Statements</h2>
+      <div class="flex space-x-2">
+        <%= link_to "New Statement", new_account_bank_statement_path(@account),
+                    class: "px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition" %>
+        <%= link_to "View All", account_bank_statements_path(@account),
+                    class: "px-3 py-1.5 border border-blue-600 text-blue-600 text-sm font-medium rounded hover:bg-blue-50 transition" %>
+      </div>
+    </div>
+    <div class="px-6 py-4">
+      <% recent_statements = @account.bank_statements.order(statement_date: :desc).limit(3) %>
+
+      <% if recent_statements.any? %>
+        <div class="mb-4">
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statement Date</th>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Period</th>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+              </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+              <% recent_statements.each do |statement| %>
+                <tr class="hover:bg-gray-50">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                    <%= statement.statement_date.strftime('%Y-%m-%d') %>
+                    <% if statement.statement_number.present? %>
+                      <span class="text-gray-500 text-xs">#<%= statement.statement_number %></span>
+                    <% end %>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
+                    <%= statement.start_date.strftime('%b %d') %> - <%= statement.end_date.strftime('%b %d, %Y') %>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-600">
+                    <%= number_to_currency(statement.ending_balance) %>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm">
+                    <% if statement.locked? %>
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">Locked</span>
+                    <% elsif statement.fully_reconciled? %>
+                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Reconciled</span>
+                    <% elsif statement.reconciled? %>
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                          <%= statement.reconciliation_progress.round %>% Reconciled
+                        </span>
+                    <% else %>
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                          Unreconciled
+                        </span>
+                    <% end %>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right">
+                    <%= link_to "View", account_bank_statement_path(@account, statement),
+                                class: "inline-flex items-center px-2.5 py-1.5 border border-blue-600 text-xs font-medium rounded text-blue-600 hover:bg-blue-50 transition" %>
+                  </td>
+                </tr>
+              <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <% else %>
+        <div class="text-center py-6">
+          <p class="text-gray-500 mb-4">No bank statements have been added for this account yet.</p>
+          <%= link_to "Add Your First Bank Statement", new_account_bank_statement_path(@account),
+                      class: "px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition" %>
+        </div>
+      <% end %>
     </div>
   </div>
 
