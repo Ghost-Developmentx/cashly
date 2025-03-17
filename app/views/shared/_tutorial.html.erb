@@ -1,210 +1,110 @@
 <!-- app/views/shared/_tutorial.html.erb -->
-<div class="tutorial-overlay" id="tutorialOverlay">
-  <div class="tutorial-modal">
-    <div class="tutorial-header">
-      <h4>Welcome to Cashly!</h4>
-      <button type="button" class="btn-close" id="closeTutorial"></button>
+<div class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center" id="tutorialOverlay">
+  <div class="bg-white rounded-lg w-11/12 max-w-3xl max-h-[90vh] overflow-y-auto shadow-lg">
+    <div class="px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+      <h4 class="font-bold text-lg text-gray-800">Welcome to Cashly!</h4>
+      <button type="button" id="closeTutorial" class="text-gray-400 hover:text-gray-500">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
 
-    <div class="tutorial-body">
-      <div class="tutorial-steps">
+    <div class="p-6">
+      <div class="relative min-h-[300px]">
         <!-- Step 1 -->
-        <div class="tutorial-step active" data-step="1">
+        <div class="tutorial-step block" data-step="1">
           <div class="step-content">
-            <h5>Welcome, <%= current_user.first_name %>!</h5>
-            <p>Let's take a quick tour of Cashly to help you get started with managing your finances.</p>
-            <img src="../assets/tutorial/" alt="Dashboard Overview" class="img-fluid rounded mb-3">
-            <p>Your financial dashboard gives you a quick overview of your accounts, income, expenses, and AI-powered insights.</p>
+            <h5 class="text-xl font-semibold mb-2">Welcome, <%= current_user.first_name %>!</h5>
+            <p class="mb-4">Let's take a quick tour of Cashly to help you get started with managing your finances.</p>
+            <img src="../assets/tutorial/" alt="Dashboard Overview" class="w-full rounded mb-3">
+            <p class="text-gray-700">Your financial dashboard gives you a quick overview of your accounts, income, expenses, and AI-powered insights.</p>
           </div>
         </div>
 
         <!-- Step 2 -->
-        <div class="tutorial-step" data-step="2">
+        <div class="tutorial-step hidden" data-step="2">
           <div class="step-content">
-            <h5>Connect Your Accounts</h5>
-            <p>Start by connecting your bank accounts to automatically import transactions.</p>
-            <img src="../assets/tutorial/connect_accounts.png" alt="Connect Accounts" class="img-fluid rounded mb-3">
-            <p>Don't worry, your data is securely encrypted, and we use bank-level security to protect your information.</p>
+            <h5 class="text-xl font-semibold mb-2">Connect Your Accounts</h5>
+            <p class="mb-4">Start by connecting your bank accounts to automatically import transactions.</p>
+            <img src="../assets/tutorial/connect_accounts.png" alt="Connect Accounts" class="w-full rounded mb-3">
+            <p class="text-gray-700">Don't worry, your data is securely encrypted, and we use bank-level security to protect your information.</p>
           </div>
         </div>
 
         <!-- Step 3 -->
-        <div class="tutorial-step" data-step="3">
+        <div class="tutorial-step hidden" data-step="3">
           <div class="step-content">
-            <h5>Manage Your Transactions</h5>
-            <p>View, categorize, and manage all your financial transactions in one place.</p>
-            <img src="../assets/tutorial/transactions.png" alt="Transactions" class="img-fluid rounded mb-3">
-            <p>Our AI automatically categorizes transactions, making it easy to track your spending patterns.</p>
+            <h5 class="text-xl font-semibold mb-2">Manage Your Transactions</h5>
+            <p class="mb-4">View, categorize, and manage all your financial transactions in one place.</p>
+            <img src="../assets/tutorial/transactions.png" alt="Transactions" class="w-full rounded mb-3">
+            <p class="text-gray-700">Our AI automatically categorizes transactions, making it easy to track your spending patterns.</p>
           </div>
         </div>
 
         <!-- Step 4 -->
-        <div class="tutorial-step" data-step="4">
+        <div class="tutorial-step hidden" data-step="4">
           <div class="step-content">
-            <h5>Create and Track Budgets</h5>
-            <p>Set up budgets for different categories to keep your spending in check.</p>
-            <img src="../assets/tutorial/budgets.png" alt="Budgets" class="img-fluid rounded mb-3">
-            <p>Cashly will help you monitor your progress and alert you when you're approaching your limits.</p>
+            <h5 class="text-xl font-semibold mb-2">Create and Track Budgets</h5>
+            <p class="mb-4">Set up budgets for different categories to keep your spending in check.</p>
+            <img src="../assets/tutorial/budgets.png" alt="Budgets" class="w-full rounded mb-3">
+            <p class="text-gray-700">Cashly will help you monitor your progress and alert you when you're approaching your limits.</p>
           </div>
         </div>
 
         <!-- Step 5 -->
-        <div class="tutorial-step" data-step="5">
+        <div class="tutorial-step hidden" data-step="5">
           <div class="step-content">
-            <h5>Get AI-Powered Insights</h5>
-            <p>Leverage our artificial intelligence to gain deeper insights into your finances.</p>
-            <img src="../assets/tutorial/ai_insights.png" alt="AI Insights" class="img-fluid rounded mb-3">
-            <p>From spending patterns to cash flow forecasts, our AI helps you make smarter financial decisions.</p>
+            <h5 class="text-xl font-semibold mb-2">Get AI-Powered Insights</h5>
+            <p class="mb-4">Leverage our artificial intelligence to gain deeper insights into your finances.</p>
+            <img src="../assets/tutorial/ai_insights.png" alt="AI Insights" class="w-full rounded mb-3">
+            <p class="text-gray-700">From spending patterns to cash flow forecasts, our AI helps you make smarter financial decisions.</p>
           </div>
         </div>
 
         <!-- Final Step -->
-        <div class="tutorial-step" data-step="6">
+        <div class="tutorial-step hidden" data-step="6">
           <div class="step-content">
-            <h5>You're All Set!</h5>
-            <p>You're now ready to take control of your finances with Cashly.</p>
-            <div class="d-flex justify-content-center my-4">
-              <div class="tutorial-action-card">
-                <i class="bi bi-bank2 fs-1"></i>
-                <h6>Connect an Account</h6>
-                <p>Start by adding your first financial account</p>
-                <%= link_to "Add Account", accounts_path, class: "btn btn-sm btn-primary" %>
+            <h5 class="text-xl font-semibold mb-2">You're All Set!</h5>
+            <p class="mb-4">You're now ready to take control of your finances with Cashly.</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 my-4">
+              <div class="border border-gray-200 rounded-lg p-4 text-center">
+                <i class="bi bi-bank2 text-4xl text-blue-600 mb-2"></i>
+                <h6 class="font-medium mb-2">Connect an Account</h6>
+                <p class="text-sm text-gray-600 mb-4">Start by adding your first financial account</p>
+                <%= link_to "Add Account", accounts_path, class: "px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700" %>
               </div>
 
-              <div class="tutorial-action-card">
-                <i class="bi bi-receipt fs-1"></i>
-                <h6>Add a Transaction</h6>
-                <p>Manually track your income and expenses</p>
-                <%= link_to "Add Transaction", new_transaction_path, class: "btn btn-sm btn-primary" %>
+              <div class="border border-gray-200 rounded-lg p-4 text-center">
+                <i class="bi bi-receipt text-4xl text-blue-600 mb-2"></i>
+                <h6 class="font-medium mb-2">Add a Transaction</h6>
+                <p class="text-sm text-gray-600 mb-4">Manually track your income and expenses</p>
+                <%= link_to "Add Transaction", new_transaction_path, class: "px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700" %>
               </div>
 
-              <div class="tutorial-action-card">
-                <i class="bi bi-piggy-bank fs-1"></i>
-                <h6>Create a Budget</h6>
-                <p>Set up your first budget category</p>
-                <%= link_to "Create Budget", new_budget_path, class: "btn btn-sm btn-primary" %>
+              <div class="border border-gray-200 rounded-lg p-4 text-center">
+                <i class="bi bi-piggy-bank text-4xl text-blue-600 mb-2"></i>
+                <h6 class="font-medium mb-2">Create a Budget</h6>
+                <p class="text-sm text-gray-600 mb-4">Set up your first budget category</p>
+                <%= link_to "Create Budget", new_budget_path, class: "px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700" %>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="tutorial-navigation">
-        <button class="btn btn-outline-secondary" id="prevStep" disabled>Previous</button>
-        <div class="tutorial-dots">
+      <div class="flex justify-between items-center mt-8 pt-4 border-t border-gray-200">
+        <button class="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed" id="prevStep" disabled>Previous</button>
+        <div class="flex gap-2">
           <% (1..6).each do |step| %>
-            <div class="tutorial-dot <%= step == 1 ? 'active' : '' %>" data-step="<%= step %>"></div>
+            <div class="w-2.5 h-2.5 rounded-full <%= step == 1 ? 'bg-blue-600' : 'bg-gray-300' %> cursor-pointer tutorial-dot" data-step="<%= step %>"></div>
           <% end %>
         </div>
-        <button class="btn btn-primary" id="nextStep">Next</button>
+        <button class="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700" id="nextStep">Next</button>
       </div>
     </div>
   </div>
 </div>
-
-<style>
-    .tutorial-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .tutorial-modal {
-        background-color: white;
-        border-radius: 8px;
-        width: 90%;
-        max-width: 800px;
-        max-height: 90vh;
-        overflow-y: auto;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    }
-
-    .tutorial-header {
-        padding: 1rem;
-        border-bottom: 1px solid #e9ecef;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .tutorial-header h4 {
-        margin-bottom: 0;
-    }
-
-    .tutorial-body {
-        padding: 1.5rem;
-    }
-
-    .tutorial-steps {
-        position: relative;
-        min-height: 300px;
-    }
-
-    .tutorial-step {
-        display: none;
-    }
-
-    .tutorial-step.active {
-        display: block;
-    }
-
-    .tutorial-navigation {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 2rem;
-        padding-top: 1rem;
-        border-top: 1px solid #e9ecef;
-    }
-
-    .tutorial-dots {
-        display: flex;
-        gap: 8px;
-    }
-
-    .tutorial-dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background-color: #dee2e6;
-        cursor: pointer;
-    }
-
-    .tutorial-dot.active {
-        background-color: #0d6efd;
-    }
-
-    .tutorial-action-card {
-        text-align: center;
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 1rem;
-        margin: 0 0.5rem;
-        width: 170px;
-    }
-
-    .tutorial-action-card i {
-        margin-bottom: 0.5rem;
-        color: #0d6efd;
-    }
-
-    .tutorial-action-card h6 {
-        margin-bottom: 0.5rem;
-    }
-
-    .tutorial-action-card p {
-        font-size: 0.85rem;
-        color: #6c757d;
-        margin-bottom: 1rem;
-    }
-</style>
 
 <script>
     document.addEventListener('turbo:load', initTutorial);
@@ -218,9 +118,10 @@
         const nextStep = document.getElementById('nextStep');
         const prevStep = document.getElementById('prevStep');
         const dots = document.querySelectorAll('.tutorial-dot');
+        const steps = document.querySelectorAll('.tutorial-step');
 
         let currentStep = 1;
-        const totalSteps = document.querySelectorAll('.tutorial-step').length;
+        const totalSteps = steps.length;
 
         // Close tutorial and mark as completed
         closeTutorial.addEventListener('click', function() {
@@ -251,14 +152,18 @@
         });
 
         function goToStep(step) {
-            // Hide current step
-            document.querySelector(`.tutorial-step[data-step="${currentStep}"]`).classList.remove('active');
-            document.querySelector(`.tutorial-dot[data-step="${currentStep}"]`).classList.remove('active');
+            // Hide all steps
+            steps.forEach(s => s.classList.add('hidden'));
+
+            // Remove active class from all dots
+            dots.forEach(d => d.classList.remove('bg-blue-600'));
+            dots.forEach(d => d.classList.add('bg-gray-300'));
 
             // Show new step
             currentStep = step;
-            document.querySelector(`.tutorial-step[data-step="${currentStep}"]`).classList.add('active');
-            document.querySelector(`.tutorial-dot[data-step="${currentStep}"]`).classList.add('active');
+            steps[currentStep - 1].classList.remove('hidden');
+            dots[currentStep - 1].classList.remove('bg-gray-300');
+            dots[currentStep - 1].classList.add('bg-blue-600');
 
             // Update buttons
             prevStep.disabled = currentStep === 1;

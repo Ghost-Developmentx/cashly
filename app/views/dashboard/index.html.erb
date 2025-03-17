@@ -78,70 +78,47 @@
 
   <!-- Main Content -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Left Column (Charts & Insights) -->
+    <!-- Left and Middle Columns (Charts) -->
     <div class="lg:col-span-2 space-y-6">
       <!-- Cash Flow Chart -->
       <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100">
-          <div class="flex justify-between items-center">
-            <h5 class="font-semibold text-gray-900">Cash Flow Forecast</h5>
-            <div class="relative group">
-              <button class="flex items-center text-sm text-gray-700 border border-gray-300 rounded-md px-3 py-1 bg-white hover:bg-gray-50">
-                Last 30 Days
-                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-              </button>
-              <div class="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg hidden group-hover:block z-10">
-                <div class="py-1">
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Last 30 Days</a>
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Last 3 Months</a>
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Last 6 Months</a>
-                  <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Last Year</a>
-                </div>
-              </div>
-            </div>
-          </div>
+          <h5 class="font-semibold text-gray-900">Cash Flow Forecast</h5>
         </div>
         <div class="p-6">
-          <div id="cash-flow-chart" class="h-[300px]"></div>
+          <div
+            data-controller="cash-flow-chart"
+            data-cash-flow-chart-data-value='<%= @cash_flow_data.to_json %>'
+            class="h-[300px]">
+          </div>
         </div>
       </div>
 
-      <!-- AI Insights -->
+      <!-- Budget vs Actual Chart -->
       <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100">
-          <div class="flex justify-between items-center">
-            <h5 class="font-semibold text-gray-900 flex items-center">
-              <i class="bi bi-lightning text-blue-600 mr-2"></i> AI Insights
-            </h5>
-            <a href="#" class="text-sm text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md px-3 py-1">View All</a>
-          </div>
+          <h5 class="font-semibold text-gray-900">Budget vs Actual</h5>
         </div>
         <div class="p-6">
-          <% if @insights.present? %>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <% @insights.each do |insight| %>
-                <div class="rounded-lg p-4 h-full
-                  <%= case insight['type']
-                      when 'warning' then 'bg-yellow-50 border-l-4 border-yellow-400'
-                      when 'alert' then 'bg-red-50 border-l-4 border-red-400'
-                      when 'info' then 'bg-blue-50 border-l-4 border-blue-400'
-                      when 'success' then 'bg-green-50 border-l-4 border-green-400'
-                      else 'bg-gray-50 border-l-4 border-gray-400'
-                      end %>">
-                  <h6 class="font-medium mb-2"><%= insight['title'] %></h6>
-                  <p class="text-sm text-gray-600"><%= insight['description'] %></p>
-                </div>
-              <% end %>
-            </div>
-          <% else %>
-            <div class="text-center py-10">
-              <i class="bi bi-graph-up-arrow text-gray-400 text-4xl"></i>
-              <p class="mt-4 text-gray-600">Start adding your transactions to get personalized financial insights!</p>
-              <%= link_to "Add First Transaction", new_transaction_path, class: "mt-4 inline-block bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition" %>
-            </div>
-          <% end %>
+          <div
+            data-controller="budget-vs-actual-chart"
+            data-budget-vs-actual-chart-data-value='<%= @budget_vs_actual_data.to_json %>'
+            class="h-[300px]">
+          </div>
+        </div>
+      </div>
+
+      <!-- Category Spending Chart -->
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+          <h5 class="font-semibold text-gray-900">Spending by Category</h5>
+        </div>
+        <div class="p-6">
+          <div
+            data-controller="category-spending-chart"
+            data-category-spending-chart-data-value='<%= @category_spending_data.to_json %>'
+            class="h-[300px]">
+          </div>
         </div>
       </div>
     </div>
@@ -157,11 +134,9 @@
           </div>
         </div>
 
-        <% recent_transactions = current_user.transactions.order(date: :desc).limit(5) %>
-
-        <% if recent_transactions.any? %>
+        <% if @recent_transactions.any? %>
           <div class="divide-y divide-gray-100">
-            <% recent_transactions.each do |transaction| %>
+            <% @recent_transactions.each do |transaction| %>
               <%= link_to transaction_path(transaction), class: "block p-4 hover:bg-gray-50 transition" do %>
                 <div class="flex justify-between items-center">
                   <div>
@@ -198,9 +173,9 @@
           </div>
         </div>
         <div class="p-6">
-          <% if current_user.budgets.any? %>
+          <% if @budgets.any? %>
             <div class="space-y-4">
-              <% current_user.budgets.includes(:category).limit(3).each do |budget| %>
+              <% @budgets.each do |budget| %>
                 <%
                   month_start = Date.today.beginning_of_month
                   month_end = Date.today.end_of_month
@@ -293,12 +268,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Cash flow chart placeholder
-        const cashFlowChart = document.getElementById('cash-flow-chart');
-        if (cashFlowChart) {
-            cashFlowChart.innerHTML = '<p class="text-center text-gray-500 py-16">Cash flow chart will appear here</p>';
-        }
-
         // Onboarding button functionality
         const onboardingButton = document.getElementById('onboardingButton');
         const onboardingPopup = document.getElementById('onboardingPopup');

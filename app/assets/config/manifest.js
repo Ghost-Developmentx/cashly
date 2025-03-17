@@ -7,4 +7,8 @@
 //= link controllers/invoice_preview_controller.js
 //= link controllers/template_selector_controller.js
 //= link controllers/reconciliation_controller.js
+//= link controllers/budget_vs_actual_chart_controller.js
+//= link controllers/category_spending_chart_controller.js
+//= link controllers/cash_flow_chart_controller.js
+//= link apexcharts.js
 //= link_tree ../builds
