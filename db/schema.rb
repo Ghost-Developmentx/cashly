@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_16_144810) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_17_232732) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -76,6 +76,34 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_16_144810) do
     t.index ["category_id", "ledger_account_id"], name: "index_category_ledger_account_unique", unique: true
     t.index ["category_id"], name: "index_category_account_mappings_on_category_id"
     t.index ["ledger_account_id"], name: "index_category_account_mappings_on_ledger_account_id"
+  end
+
+  create_table "category_feedbacks", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "transaction_record_id", null: false
+    t.bigint "suggested_category_id", null: false
+    t.bigint "chosen_category_id", null: false
+    t.string "feedback_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["chosen_category_id"], name: "index_category_feedbacks_on_chosen_category_id"
+    t.index ["suggested_category_id"], name: "index_category_feedbacks_on_suggested_category_id"
+    t.index ["transaction_record_id"], name: "index_category_feedbacks_on_transaction_record_id"
+    t.index ["user_id"], name: "index_category_feedbacks_on_user_id"
+  end
+
+  create_table "forecasts", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "name", null: false
+    t.text "description"
+    t.integer "time_horizon", default: 30, null: false
+    t.text "result_data"
+    t.text "included_category_ids"
+    t.string "scenario_type", default: "default"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "name"], name: "index_forecasts_on_user_id_and_name"
+    t.index ["user_id"], name: "index_forecasts_on_user_id"
   end
 
   create_table "integrations", force: :cascade do |t|
@@ -205,6 +233,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_16_144810) do
     t.datetime "reconciled_at"
     t.text "reconciliation_notes"
     t.integer "bank_statement_id"
+    t.boolean "ai_categorized", default: false
+    t.float "categorization_confidence"
     t.index ["account_id"], name: "index_transactions_on_account_id"
     t.index ["bank_statement_id"], name: "index_transactions_on_bank_statement_id"
     t.index ["category_id"], name: "index_transactions_on_category_id"
@@ -261,6 +291,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_16_144810) do
   add_foreign_key "categories", "categories", column: "parent_category_id"
   add_foreign_key "category_account_mappings", "categories"
   add_foreign_key "category_account_mappings", "ledger_accounts"
+  add_foreign_key "category_feedbacks", "categories", column: "chosen_category_id"
+  add_foreign_key "category_feedbacks", "categories", column: "suggested_category_id"
+  add_foreign_key "category_feedbacks", "transactions", column: "transaction_record_id"
+  add_foreign_key "category_feedbacks", "users"
+  add_foreign_key "forecasts", "users"
   add_foreign_key "integrations", "users"
   add_foreign_key "invoices", "users"
   add_foreign_key "journal_entries", "transactions"

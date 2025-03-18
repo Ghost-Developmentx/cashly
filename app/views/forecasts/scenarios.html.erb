@@ -1,0 +1,206 @@
+<!-- app/views/forecasts/scenarios.html.erb -->
+<div class="container mx-auto px-4 py-6">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">Create Scenario</h1>
+      <p class="text-gray-600 mt-1">Based on "<%= @forecast.name %>"</p>
+    </div>
+
+    <div class="flex space-x-2">
+      <%= link_to "Back to Forecast", forecast_path(@forecast), class: "px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50" %>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2">
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-medium text-gray-800">Define Your Scenario</h2>
+        </div>
+        <div class="p-6">
+          <%= form_with(url: create_scenario_forecast_path(@forecast), method: :post, local: true) do |form| %>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Scenario Description</label>
+              <%= form.text_area :description, rows: 2, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm", placeholder: "e.g. What if I add a new employee with $5000/month salary?" %>
+            </div>
+
+            <div class="border-t border-gray-200 pt-4 mt-4">
+              <h3 class="font-medium text-gray-800 mb-3">Income Adjustments</h3>
+
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Income Adjustment</label>
+                <div class="mt-1 relative rounded-md shadow-sm">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="text-gray-500 sm:text-sm">$</span>
+                  </div>
+                  <%= form.number_field :income_adjustment, step: 100, class: "focus:ring-blue-500 focus:border-blue-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md", placeholder: "0" %>
+                </div>
+                <p class="mt-1 text-xs text-gray-500">Enter positive value to increase income, negative to decrease</p>
+              </div>
+            </div>
+
+            <div class="border-t border-gray-200 pt-4 mt-4">
+              <h3 class="font-medium text-gray-800 mb-3">Expense Adjustments</h3>
+
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Expense Adjustment</label>
+                <div class="mt-1 relative rounded-md shadow-sm">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span class="text-gray-500 sm:text-sm">$</span>
+                  </div>
+                  <%= form.number_field :expense_adjustment, step: 100, class: "focus:ring-blue-500 focus:border-blue-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md", placeholder: "0" %>
+                </div>
+                <p class="mt-1 text-xs text-gray-500">Enter positive value to increase expenses, negative to decrease</p>
+              </div>
+
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Category-specific Adjustments</label>
+
+                <div class="space-y-2 mt-2">
+                  <% Category.all.order(:name).each_with_index do |category, index| %>
+                    <div class="flex items-center">
+                      <div class="w-1/3">
+                        <label for="category_<%= category.id %>" class="text-sm text-gray-700"><%= category.name %></label>
+                      </div>
+                      <div class="w-2/3">
+                        <div class="relative rounded-md shadow-sm">
+                          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">$</span>
+                          </div>
+                          <%= form.number_field "category_adjustments[#{category.id}]", id: "category_#{category.id}", step: 10, class: "focus:ring-blue-500 focus:border-blue-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md", placeholder: "0" %>
+                        </div>
+                      </div>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t border-gray-200 pt-4 mt-4">
+              <h3 class="font-medium text-gray-800 mb-3">Add Recurring Transactions</h3>
+
+              <div id="recurring-transactions">
+                <div class="recurring-transaction mb-4 border border-gray-200 rounded-md p-3">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                      <%= form.text_field "recurring_transactions[0][description]", class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm", placeholder: "e.g. New Salary" %>
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                      <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <span class="text-gray-500 sm:text-sm">$</span>
+                        </div>
+                        <%= form.number_field "recurring_transactions[0][amount]", step: 0.01, class: "focus:ring-blue-500 focus:border-blue-500 block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md", placeholder: "0.00" %>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                      <%= form.select "recurring_transactions[0][category_id]",
+                                      Category.all.order(:name).map { |c| [c.name, c.id] },
+                                      { include_blank: "Select category" },
+                                      class: "mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" %>
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 mb-1">Frequency</label>
+                      <%= form.select "recurring_transactions[0][frequency]",
+                                      [%w[Daily daily], %w[Weekly weekly], %w[Monthly monthly]],
+                                      { selected: "monthly" },
+                                      class: "mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md" %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <button type="button" id="add-recurring" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <svg class="-ml-0.5 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 3a1 1 0 00-1 1v5H4a1 1 0 100 2h5v5a1 1 0 102 0v-5h5a1 1 0 100-2h-5V4a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+                Add Another Recurring Transaction
+              </button>
+            </div>
+
+            <div class="mt-6 border-t border-gray-200 pt-6">
+              <%= form.submit "Create Scenario", class: "w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden sticky top-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-lg font-medium text-gray-800">Scenario Tips</h2>
+        </div>
+        <div class="p-6">
+          <div class="space-y-4">
+            <div>
+              <h3 class="font-medium text-gray-800 mb-1">What are scenarios?</h3>
+              <p class="text-sm text-gray-600">Scenarios let you model "what-if" situations to see how changes to your income or expenses might affect your financial future.</p>
+            </div>
+
+            <div>
+              <h3 class="font-medium text-gray-800 mb-1">Example scenarios:</h3>
+              <ul class="text-sm text-gray-600 list-disc pl-5 space-y-1">
+                <li>What if I hire a new employee?</li>
+                <li>What if I take on a new client?</li>
+                <li>What if I reduce my marketing expenses?</li>
+                <li>What if I purchase new equipment?</li>
+                <li>What if I invest in a new project?</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 class="font-medium text-gray-800 mb-1">Tips for accurate scenarios:</h3>
+              <ul class="text-sm text-gray-600 list-disc pl-5 space-y-1">
+                <li>Be realistic with your adjustments</li>
+                <li>Consider timing of income and expenses</li>
+                <li>Add specific recurring transactions for major changes</li>
+                <li>Use categories to organize changes by area</li>
+              </ul>
+            </div>
+
+            <div class="bg-blue-50 p-4 rounded-lg mt-4">
+              <p class="text-sm text-blue-600">After creating a scenario, you'll be able to compare it side-by-side with your original forecast to see the impact.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let transactionCount = 1;
+
+        document.getElementById('add-recurring').addEventListener('click', function() {
+            const container = document.getElementById('recurring-transactions');
+
+            // Clone the first transaction div
+            const newTransaction = document.querySelector('.recurring-transaction').cloneNode(true);
+
+            // Update all the field names to use the new index
+            const inputs = newTransaction.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                const name = input.getAttribute('name');
+                if (name) {
+                    input.setAttribute('name', name.replace(/\[\d+]/, `[${transactionCount}]`));
+                    input.value = '';
+                }
+            });
+
+            // Add the new transaction to the container
+            container.appendChild(newTransaction);
+
+            transactionCount++;
+        });
+    });
+</script>

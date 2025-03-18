@@ -22,6 +22,44 @@ class DashboardController < ApplicationController
     # Get active budgets
     @budgets = current_user.budgets.includes(:category).order("categories.name").limit(3)
 
+    @recent_forecast = current_user.forecasts.where(scenario_type: "default")
+                                   .order(created_at: :desc)
+                                   .first
+
+    # Generate a default forecast if none exists
+    if @recent_forecast.nil? && current_user.transactions.count > 10
+      # Get transactions for forecasting
+      transactions = current_user.transactions.where(date: 90.days.ago..Date.today)
+                                 .includes(:category)
+
+      formatted_transactions = transactions.map do |t|
+        {
+          date: t.date.to_s,
+          amount: t.amount.to_f,
+          category: t.category&.name || "uncategorized"
+        }
+      end
+
+      # Skip if there are no transactions
+      unless formatted_transactions.empty?
+        forecast_result = AiService.forecast_cash_flow(
+          current_user.id,
+          formatted_transactions,
+          30
+        )
+
+        if forecast_result.is_a?(Hash) && !forecast_result[:error]
+          @recent_forecast = current_user.forecasts.create(
+            name: "Default 30-Day Forecast",
+            description: "Automatically generated 30-day forecast",
+            time_horizon: 30,
+            scenario_type: "default",
+            result_data: forecast_result.to_json
+          )
+        end
+      end
+    end
+
     # Prepare data for ApexChart Stimulus controllers
     @cash_flow_data = prepare_cash_flow_data
     @category_spending_data = prepare_category_spending_data

@@ -37,8 +37,22 @@ Rails.application.routes.draw do
   end
 
   resources :transactions do
+    collection do
+      post :categorize_all
+      post :category_feedback
+    end
+
     member do
       patch :unreconcile
+      patch :update_category
+    end
+  end
+
+  resources :forecasts do
+    member do
+      get :compare
+      get :scenarios
+      post :create_scenario
     end
   end
 

@@ -82,15 +82,57 @@
     <div class="lg:col-span-2 space-y-6">
       <!-- Cash Flow Chart -->
       <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
           <h5 class="font-semibold text-gray-900">Cash Flow Forecast</h5>
+          <% if @recent_forecast.present? %>
+            <%= link_to "View Details", forecast_path(@recent_forecast), class: "text-sm text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md px-3 py-1" %>
+          <% end %>
         </div>
         <div class="p-6">
-          <div
-            data-controller="cash-flow-chart"
-            data-cash-flow-chart-data-value='<%= @cash_flow_data.to_json %>'
-            class="h-[300px]">
-          </div>
+          <% if @recent_forecast.present? && @recent_forecast.result_data.present? %>
+            <% forecast_data = JSON.parse(@recent_forecast.result_data) %>
+
+            <%
+              # Format data for the cash flow chart controller
+              formatted_data = {
+                dates: forecast_data["forecast"].map { |f| f["date"] },
+                series: [
+                  {
+                    name: "Projected Balance",
+                    data: forecast_data["forecast"].map { |f| f["balance"] }
+                  }
+                ]
+              }
+            %>
+
+            <div
+              data-controller="cash-flow-chart"
+              data-cash-flow-chart-data-value='<%= formatted_data.to_json %>'
+              class="h-[300px]">
+            </div>
+
+            <% if forecast_data["insights"].present? && forecast_data["insights"].any? %>
+              <div class="mt-4 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                <h6 class="font-medium text-blue-800 mb-1">Key Insight</h6>
+                <p class="text-blue-700 text-sm"><%= forecast_data["insights"].first["description"] %></p>
+              </div>
+            <% end %>
+
+            <div class="mt-4 text-center">
+              <%= link_to "Create What-If Scenario", scenarios_forecast_path(@recent_forecast), class: "px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 inline-block" %>
+            </div>
+          <% else %>
+            <div
+              data-controller="cash-flow-chart"
+              data-cash-flow-chart-data-value='<%= @cash_flow_data.to_json %>'
+              class="h-[300px]">
+            </div>
+            <% if current_user.transactions.count > 10 %>
+              <div class="mt-4 text-center">
+                <%= link_to "Generate AI Forecast", forecasts_path, class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 inline-block" %>
+              </div>
+            <% end %>
+          <% end %>
         </div>
       </div>
 

@@ -26,6 +26,7 @@ class ImportsController < ApplicationController
       # Process the CSV file
       success_count = 0
       failed_transactions = []
+      created_transaction_ids = []
 
       CSV.foreach(file.path, headers: true) do |row|
         # Extract data from CSV row
@@ -53,20 +54,38 @@ class ImportsController < ApplicationController
 
           if category_response.is_a?(Hash) && !category_response[:error]
             category_name = category_response["category"]
+            confidence = category_response["confidence"].to_f
+
             category = Category.find_or_create_by(name: category_name)
+
+            # Set category and AI categorization metadata
             transaction.category = category
+            transaction.ai_categorized = true
+            transaction.categorization_confidence = confidence
           end
         end
 
         # Save the transaction
         if transaction.save
           success_count += 1
+          created_transaction_ids << transaction.id
         else
           failed_transactions << {
             row: row.to_h,
             errors: transaction.errors.full_messages.join(", ")
           }
         end
+      end
+
+      # Process transactions with low confidence or missing categories in the background
+      pending_categorization = created_transaction_ids.select do |id|
+        transaction = Transaction.find(id)
+        transaction.category_id.nil? ||
+          (transaction.ai_categorized && transaction.categorization_confidence < 0.6)
+      end
+
+      if pending_categorization.any?
+        CategorizeTransactionsJob.perform_later(current_user.id, pending_categorization)
       end
 
       flash[:notice] = "Successfully imported #{success_count} transactions."
@@ -79,6 +98,7 @@ class ImportsController < ApplicationController
       redirect_to transactions_path
 
     rescue => e
+      Rails.logger.error "Import error: #{e.message}\n#{e.backtrace.join("\n")}"
       redirect_to new_import_path, alert: "Error importing file: #{e.message}"
     end
   end

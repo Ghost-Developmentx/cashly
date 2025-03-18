@@ -12,9 +12,9 @@ class AiService
 
     formatted_transactions = transactions.map do |t|
       {
-        date: t.date.to_s,
-        amount: t.amount.to_f,
-        category: t.category&.name || "uncategorized"
+        date: t[:date].to_s,
+        amount: t[:amount].to_f,
+        category: t[:category] || "uncategorized"
       }
     end
 
@@ -22,6 +22,19 @@ class AiService
       user_id: user_id,
       transactions: formatted_transactions,
       forecast_days: days
+    }
+
+    make_request(endpoint, payload)
+  end
+
+  def self.forecast_cash_flow_scenario(user_id, transactions, forecast_days, adjustments)
+    endpoint = "#{AI_SERVICE_URL}/forecast/cash_flow/scenario"
+
+    payload = {
+      user_id: user_id,
+      transactions: transactions,
+      forecast_days: forecast_days,
+      adjustments: adjustments
     }
 
     make_request(endpoint, payload)

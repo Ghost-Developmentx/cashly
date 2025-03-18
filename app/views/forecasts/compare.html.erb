@@ -1,0 +1,227 @@
+<!-- app/views/forecasts/compare.html.erb -->
+<div class="container mx-auto px-4 py-6">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">Compare Forecasts</h1>
+      <p class="text-gray-600 mt-1">Comparing "<%= @forecast.name %>" with "<%= @comparison_forecast.name %>"</p>
+    </div>
+
+    <div class="flex space-x-2">
+      <%= link_to "Back to Forecast", forecast_path(@forecast), class: "px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50" %>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h2 class="text-lg font-medium text-gray-800">Forecast Comparison</h2>
+    </div>
+    <div class="p-6">
+      <div id="comparison-chart" class="h-96"></div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Original Forecast -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-medium text-gray-800"><%= @forecast.name %></h2>
+      </div>
+      <div class="p-6">
+        <dl class="grid grid-cols-1 gap-y-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Time Horizon</dt>
+            <dd class="mt-1 text-lg font-semibold text-gray-900"><%= pluralize(@forecast.time_horizon, 'day') %></dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Date Range</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @forecast.date_range %></dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Final Balance</dt>
+            <% final_balance = @forecast_data["forecast"].last["balance"] %>
+            <dd class="mt-1 text-lg font-semibold <%= final_balance >= 0 ? 'text-green-600' : 'text-red-600' %>">
+              <%= number_to_currency(final_balance) %>
+            </dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Total Income</dt>
+            <% total_income = @forecast_data["forecast"].sum { |d| d["income"] } %>
+            <dd class="mt-1 text-lg font-semibold text-green-600">
+              <%= number_to_currency(total_income) %>
+            </dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Total Expenses</dt>
+            <% total_expenses = @forecast_data["forecast"].sum { |d| d["expenses"] } %>
+            <dd class="mt-1 text-lg font-semibold text-red-600">
+              <%= number_to_currency(total_expenses) %>
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <!-- Comparison Forecast -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-medium text-gray-800"><%= @comparison_forecast.name %></h2>
+      </div>
+      <div class="p-6">
+        <dl class="grid grid-cols-1 gap-y-4">
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Time Horizon</dt>
+            <dd class="mt-1 text-lg font-semibold text-gray-900"><%= pluralize(@comparison_forecast.time_horizon, 'day') %></dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Date Range</dt>
+            <dd class="mt-1 text-sm text-gray-900"><%= @comparison_forecast.date_range %></dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Final Balance</dt>
+            <% final_balance = @comparison_data["forecast"].last["balance"] %>
+            <dd class="mt-1 text-lg font-semibold <%= final_balance >= 0 ? 'text-green-600' : 'text-red-600' %>">
+              <%= number_to_currency(final_balance) %>
+            </dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Total Income</dt>
+            <% total_income = @comparison_data["forecast"].sum { |d| d["income"] } %>
+            <dd class="mt-1 text-lg font-semibold text-green-600">
+              <%= number_to_currency(total_income) %>
+            </dd>
+          </div>
+
+          <div>
+            <dt class="text-sm font-medium text-gray-500">Total Expenses</dt>
+            <% total_expenses = @comparison_data["forecast"].sum { |d| d["expenses"] } %>
+            <dd class="mt-1 text-lg font-semibold text-red-600">
+              <%= number_to_currency(total_expenses) %>
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Difference Summary -->
+  <div class="bg-white rounded-lg shadow-sm overflow-hidden mt-6">
+    <div class="px-6 py-4 border-b border-gray-200">
+      <h2 class="text-lg font-medium text-gray-800">Difference Summary</h2>
+    </div>
+    <div class="p-6">
+      <%
+        original_final = @forecast_data["forecast"].last["balance"]
+        comparison_final = @comparison_data["forecast"].last["balance"]
+        difference = comparison_final - original_final
+        percentage = original_final != 0 ? (difference / original_final.abs * 100).round(1) : 0
+      %>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-500 mb-1">Final Balance Difference</p>
+          <p class="text-xl font-bold <%= difference >= 0 ? 'text-green-600' : 'text-red-600' %>">
+            <%= number_to_currency(difference) %>
+          </p>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-500 mb-1">Percentage Change</p>
+          <p class="text-xl font-bold <%= percentage >= 0 ? 'text-green-600' : 'text-red-600' %>">
+            <%= number_to_percentage(percentage, precision: 1) %>
+          </p>
+        </div>
+
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <p class="text-sm text-gray-500 mb-1">Outcome</p>
+          <p class="text-xl font-bold <%= difference >= 0 ? 'text-green-600' : 'text-red-600' %>">
+            <% if difference > 0 %>
+              Better
+            <% elsif difference < 0 %>
+              Worse
+            <% else %>
+              Same
+            <% end %>
+          </p>
+        </div>
+      </div>
+
+      <% if @comparison_forecast.description.present? %>
+        <div class="mt-6 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+          <h3 class="font-medium text-blue-800 mb-1">Scenario Description</h3>
+          <p class="text-blue-700"><%= @comparison_forecast.description %></p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const originalData = <%= raw @forecast.result_data %>;
+        const comparisonData = <%= raw @comparison_forecast.result_data %>;
+
+        const dates = originalData.forecast.map(item => item.date);
+        const originalBalances = originalData.forecast.map(item => item.balance);
+        const comparisonBalances = comparisonData.forecast.map(item => item.balance);
+
+        const options = {
+            series: [
+                {
+                    name: '<%= @forecast.name %>',
+                    data: originalBalances
+                },
+                {
+                    name: '<%= @comparison_forecast.name %>',
+                    data: comparisonBalances
+                }
+            ],
+            chart: {
+                height: 400,
+                type: 'line',
+                toolbar: {
+                    show: true
+                }
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 3
+            },
+            colors: ['#3b82f6', '#10b981'], // Blue, Green
+            xaxis: {
+                categories: dates,
+                labels: {
+                    rotate: -45,
+                    style: {
+                        fontSize: '10px'
+                    }
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'Balance'
+                },
+                labels: {
+                    formatter: function(value) {
+                        return '$' + value.toFixed(0);
+                    }
+                }
+            },
+            markers: {
+                size: 4
+            },
+            legend: {
+                position: 'top'
+            }
+        };
+
+        const chart = new ApexCharts(document.querySelector("#comparison-chart"), options);
+        chart.render();
+    });
+</script>

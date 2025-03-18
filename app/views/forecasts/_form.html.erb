@@ -1,0 +1,92 @@
+<!-- app/views/forecasts/_form.html.erb -->
+<%= form_with(model: forecast, local: true) do |form| %>
+  <% if forecast.errors.any? %>
+    <div class="mb-4 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded">
+      <h4 class="text-lg font-medium mb-2"><%= pluralize(forecast.errors.count, "error") %> prohibited this forecast from being saved:</h4>
+      <ul class="list-disc pl-5">
+        <% forecast.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-4">
+    <%= form.label :name, class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= form.text_field :name, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm", placeholder: "e.g. My 30-Day Forecast" %>
+  </div>
+
+  <div class="mb-4">
+    <%= form.label :description, class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= form.text_area :description, rows: 3, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm", placeholder: "Brief description of this forecast" %>
+  </div>
+
+  <div class="mb-4">
+    <%= form.label :time_horizon, "Time Horizon (days)", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= form.number_field :time_horizon, min: 7, max: 365, step: 1, class: "mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %>
+    <p class="mt-1 text-xs text-gray-500">Choose how many days into the future to forecast (minimum 7, maximum 365)</p>
+  </div>
+
+  <div class="mb-6">
+    <fieldset>
+      <legend class="block text-sm font-medium text-gray-700 mb-1">Categories to Include</legend>
+      <div class="mt-1 bg-white border border-gray-300 rounded-md p-3 h-48 overflow-y-auto">
+        <div class="flex flex-col space-y-2">
+          <div class="relative flex items-start">
+            <div class="flex items-center h-5">
+              <%= check_box_tag "include_all", "1", !forecast.included_category_ids.present?, class: "focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded", data: { action: "change->forecast#toggleAllCategories" } %>
+            </div>
+            <div class="ml-3 text-sm">
+              <label for="include_all" class="font-medium text-gray-700">Include all categories</label>
+            </div>
+          </div>
+
+          <div id="category-checkboxes" class="<%= !forecast.included_category_ids.present? ? 'hidden' : '' %> mt-2 space-y-2">
+            <% @categories.each do |category| %>
+              <div class="relative flex items-start">
+                <div class="flex items-center h-5">
+                  <%= check_box_tag "included_category_ids[]", category.id,
+                                    forecast.included_category_ids&.include?(category.id.to_s),
+                                    id: "category_#{category.id}",
+                                    class: "focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" %>
+                </div>
+                <div class="ml-3 text-sm">
+                  <label for="category_<%= category.id %>" class="font-medium text-gray-700"><%= category.name %></label>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+      <p class="mt-1 text-xs text-gray-500">Select which categories to include in the forecast. Leave blank to include all categories.</p>
+    </fieldset>
+  </div>
+
+  <div class="flex space-x-3">
+    <%= form.submit class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+    <%= link_to "Cancel", forecasts_path, class: "px-4 py-2 bg-white border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" %>
+  </div>
+<% end %>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const includeAllCheckbox = document.getElementById('include_all');
+        const categoryCheckboxes = document.getElementById('category-checkboxes');
+        const categoryInputs = document.querySelectorAll('#category-checkboxes input[type="checkbox"]');
+
+        if (includeAllCheckbox) {
+            includeAllCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // Hide and uncheck all category checkboxes
+                    categoryCheckboxes.classList.add('hidden');
+                    categoryInputs.forEach(input => {
+                        input.checked = false;
+                    });
+                } else {
+                    // Show category checkboxes
+                    categoryCheckboxes.classList.remove('hidden');
+                }
+            });
+        }
+    });
+</script>
