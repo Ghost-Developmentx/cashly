@@ -56,7 +56,13 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :budgets
+  resources :budgets do
+    collection do
+      get :recommendations
+      post :apply_all_recommendations
+    end
+  end
+
   resources :categories
 
   # Invoice management

@@ -1,0 +1,182 @@
+<div class="container mx-auto px-4 py-6">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">AI Budget Recommendations</h1>
+    <%= link_to "Back to Budgets", budgets_path, class: "px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-50" %>
+  </div>
+
+  <% if @budget_recommendations.present? && @budget_recommendations["recommended_budget"].present? %>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <!-- Summary Card -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-800 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+              Summary
+            </h2>
+          </div>
+          <div class="p-6">
+            <div class="mb-4">
+              <p class="text-gray-500 text-sm mb-1">Monthly Income</p>
+              <h3 class="text-xl font-bold text-green-600">
+                <%= number_to_currency(@budget_recommendations["monthly_income"]) %>
+              </h3>
+            </div>
+
+            <div class="mb-4">
+              <p class="text-gray-500 text-sm mb-1">Recommended Budget Total</p>
+              <h3 class="text-xl font-bold text-blue-600">
+                <%= number_to_currency(@budget_recommendations["recommended_budget"]["total"]) %>
+              </h3>
+            </div>
+
+            <div>
+              <p class="text-gray-500 text-sm mb-1">Savings Goal</p>
+              <h3 class="text-xl font-bold text-purple-600">
+                <%= number_to_currency(@budget_recommendations["recommended_budget"]["savings_goal"]) %>
+              </h3>
+              <p class="text-sm text-gray-500 mt-1">
+                <%= number_to_percentage(@budget_recommendations["recommended_budget"]["savings_percentage"], precision: 0) %> of income
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Approach Card -->
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-800 flex items-center">
+              <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+              Budgeting Approach
+            </h2>
+          </div>
+          <div class="p-6">
+            <% if @budget_recommendations["insights"].present? %>
+              <div class="space-y-4">
+                <% @budget_recommendations["insights"].each do |insight| %>
+                  <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                    <h4 class="font-medium text-blue-800 mb-1"><%= insight["title"] %></h4>
+                    <p class="text-blue-700"><%= insight["description"] %></p>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <p class="text-gray-600">
+                These budget recommendations are based on your recent transaction history and follow the 50/30/20 rule:
+              <ul class="list-disc pl-5 mt-2 space-y-1">
+                <li>50% for needs (housing, utilities, groceries, etc.)</li>
+                <li>30% for wants (entertainment, dining out, etc.)</li>
+                <li>20% for savings and debt repayment</li>
+              </ul>
+              </p>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed Recommendations Card -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-lg font-medium text-gray-800 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+          Category Recommendations
+        </h2>
+      </div>
+      <div class="p-6">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recommended Amount</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current Spending</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Difference</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+            <% @budget_recommendations["recommended_budget"]["by_category"].each do |category_name, amount| %>
+              <%
+                # Find current spending for this category
+                category = Category.find_by(name: category_name.downcase)
+                current_spending = 0
+                if category
+                  current_spending = Transaction.joins(:account)
+                                                .where(category: category,
+                                                       accounts: { user_id: current_user.id },
+                                                       date: Date.today.beginning_of_month..Date.today.end_of_month)
+                                                .where("amount < 0")
+                                                .sum(:amount).abs
+                end
+
+                # Calculate difference
+                difference = amount - current_spending
+                difference_class = difference >= 0 ? 'text-green-600' : 'text-red-600'
+              %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <%= category_name.titleize %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  <%= number_to_currency(amount) %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                  <%= number_to_currency(current_spending) %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium <%= difference_class %>">
+                  <%= difference >= 0 ? '+' : '' %><%= number_to_currency(difference) %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <% existing_budget = current_user.budgets.joins(:category).where(categories: { name: category_name.downcase }).first %>
+                  <% if existing_budget %>
+                    <%= link_to "Update Budget", edit_budget_path(existing_budget), class: "inline-flex items-center px-2.5 py-1.5 border border-blue-600 text-xs font-medium rounded text-blue-600 hover:bg-blue-50" %>
+                  <% elsif category %>
+                    <%= link_to "Create Budget", new_budget_path(category_id: category.id, amount: amount), class: "inline-flex items-center px-2.5 py-1.5 border border-green-600 text-xs font-medium rounded text-green-600 hover:bg-green-50" %>
+                  <% else %>
+                    <%= link_to "Create Category", new_category_path(name: category_name.downcase), class: "inline-flex items-center px-2.5 py-1.5 border border-blue-400 text-xs font-medium rounded text-blue-400 hover:bg-blue-50" %>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Create All Budgets Button -->
+    <div class="mt-6 flex justify-center">
+      <%= link_to "Create All Recommended Budgets", apply_all_recommendations_budgets_path, method: :post, class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700" %>
+    </div>
+
+  <% else %>
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm text-yellow-700">
+            Unable to generate budget recommendations. Please ensure you have:
+          </p>
+          <ul class="mt-2 text-sm text-yellow-700 list-disc list-inside">
+            <li>At least 3 months of transaction history</li>
+            <li>Income transactions recorded in the last month</li>
+            <li>Expenses properly categorized</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

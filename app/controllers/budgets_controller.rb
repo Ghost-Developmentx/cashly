@@ -135,6 +135,80 @@ class BudgetsController < ApplicationController
     end
   end
 
+  def recommendations
+    @budget_recommendations = {}
+
+    # Get user transactions for budget analysis
+    @budget_transactions = current_user.transactions.where("date >= ?", 3.months.ago)
+
+    # Calculate monthly income (only positive transactions)
+    monthly_income = current_user.transactions.where("date >= ? AND amount > 0", 1.month.ago).sum(:amount)
+
+    # Only proceed if we have transactions and income
+    if @budget_transactions.present? && monthly_income > 0
+      budget_response = AiService.generate_budget(
+        current_user.id,
+        @budget_transactions,
+        monthly_income
+      )
+
+      @budget_recommendations = budget_response.is_a?(Hash) ? budget_response : {}
+    end
+
+    respond_to do |format|
+      format.html
+      format.json { render json: @budget_recommendations }
+    end
+  end
+
+  def apply_all_recommendations
+    # Get budget recommendations
+    @budget_transactions = current_user.transactions.where("date >= ?", 3.months.ago)
+    monthly_income = current_user.transactions.where("date >= ? AND amount > 0", 1.month.ago).sum(:amount)
+
+    if @budget_transactions.present? && monthly_income > 0
+      budget_response = AiService.generate_budget(
+        current_user.id,
+        @budget_transactions,
+        monthly_income
+      )
+
+      if budget_response.is_a?(Hash) && budget_response["recommended_budget"].present?
+        # Apply each category recommendation
+        created_count = 0
+        updated_count = 0
+
+        budget_response["recommended_budget"]["by_category"].each do |category_name, amount|
+          # Find or create the category
+          category = Category.find_by(name: category_name.downcase)
+
+          unless category
+            category = Category.create(name: category_name.downcase, description: "Auto-created from AI recommendation")
+          end
+
+          # Find or create the budget
+          budget = current_user.budgets.find_or_initialize_by(category: category)
+          is_new = budget.new_record?
+
+          # Update budget amount
+          budget.amount = amount
+          budget.period_start = Date.today.beginning_of_month
+          budget.period_end = Date.today.end_of_month
+
+          if budget.save
+            is_new ? created_count += 1 : updated_count += 1
+          end
+        end
+
+        redirect_to budgets_path, notice: "Successfully created #{created_count} and updated #{updated_count} budgets based on AI recommendations."
+      else
+        redirect_to recommendations_budgets_path, alert: "Could not apply recommendations. Invalid recommendation data."
+      end
+    else
+      redirect_to recommendations_budgets_path, alert: "Could not apply recommendations. Insufficient transaction data."
+    end
+  end
+
   private
 
   def set_budget

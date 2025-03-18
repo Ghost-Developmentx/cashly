@@ -206,6 +206,95 @@
         <% end %>
       </div>
 
+      <!-- Budget Recommendations Card - add this to the dashboard grid layout -->
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+          <h5 class="font-semibold text-gray-900 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            AI Budget Recommendations
+          </h5>
+          <%= link_to "View All", recommendations_budgets_path, class: "text-sm text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md px-3 py-1" %>
+        </div>
+        <div class="p-6">
+          <%
+            # Get budget recommendations
+            @budget_transactions = current_user.transactions.where("date >= ?", 3.months.ago)
+            monthly_income = current_user.transactions.where("date >= ? AND amount > 0", 1.month.ago).sum(:amount)
+
+            @budget_recommendations = if @budget_transactions.present? && monthly_income > 0
+                                        budget_response = AiService.generate_budget(
+                                          current_user.id,
+                                          @budget_transactions,
+                                          monthly_income
+                                        )
+                                        budget_response.is_a?(Hash) ? budget_response : {}
+                                      else
+                                        {}
+                                      end
+          %>
+
+          <% if @budget_recommendations.present? && @budget_recommendations["recommended_budget"].present? %>
+            <!-- Show top insights -->
+            <% if @budget_recommendations["insights"].present? && @budget_recommendations["insights"]["readable_insights"].present? %>
+              <div class="mb-4">
+                <% insight = @budget_recommendations["insights"]["readable_insights"].first %>
+                <% if insight %>
+                  <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                    <h6 class="font-medium text-blue-800 mb-1"><%= insight["title"] %></h6>
+                    <p class="text-blue-700 text-sm"><%= insight["description"] %></p>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+
+            <!-- Show top 3 category recommendations -->
+            <div class="mt-4">
+              <h6 class="font-medium text-gray-800 mb-2">Top Budget Recommendations</h6>
+              <div class="space-y-3">
+                <% @budget_recommendations["recommended_budget"]["by_category"].first(3).each do |category_name, amount| %>
+                  <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium text-gray-700"><%= category_name.titleize %></span>
+                    <span class="text-sm font-medium text-blue-600"><%= number_to_currency(amount) %></span>
+                  </div>
+                <% end %>
+              </div>
+              <% if @budget_recommendations["recommended_budget"]["by_category"].size > 3 %>
+                <p class="text-xs text-gray-500 mt-2 text-center">
+                  +<%= @budget_recommendations["recommended_budget"]["by_category"].size - 3 %> more recommendations
+                </p>
+              <% end %>
+            </div>
+
+            <!-- Action button -->
+            <div class="mt-4 text-center">
+              <%= link_to recommendations_budgets_path, class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 inline-flex items-center" do %>
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                View AI Recommendations
+              <% end %>
+            </div>
+          <% else %>
+            <div class="flex flex-col items-center justify-center py-6">
+              <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+              </svg>
+              <p class="text-gray-500 mb-4 text-center">
+                Not enough data to generate budget recommendations.<br>
+                Add more transactions to get personalized budget advice.
+              </p>
+              <% if current_user.transactions.count > 0 %>
+                <%= link_to new_transaction_path, class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700" do %>
+                  Add Transactions
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
       <!-- Budget Overview -->
       <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100">
