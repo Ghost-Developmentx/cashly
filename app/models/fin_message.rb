@@ -16,7 +16,7 @@ class FinMessage < ApplicationRecord
   scope :led_to_action, -> { where(led_to_action: true) }
 
   # Get all messages with a specific tool use
-  scope :used_tool, ->(tool_name) { where("tools_used @> ?", [{name: tool_name}].to_json) }
+  scope :used_tool, ->(tool_name) { where("tools_used @> ?", [ { name: tool_name } ].to_json) }
 
   # Record a tool use
   def record_tool_use(tool_name, success)

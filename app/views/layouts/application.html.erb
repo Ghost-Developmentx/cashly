@@ -18,221 +18,93 @@
   <%= javascript_importmap_tags %>
 </head>
 
-<body class="flex flex-col min-h-screen bg-gray-50">
-<!-- Navigation bar -->
-<nav class="bg-blue-600 text-white shadow-md mb-6">
-  <div class="container mx-auto px-4">
+<body class="flex flex-col min-h-screen bg-gray-50" data-controller="sidebar">
+<!-- Top Navigation Bar -->
+<nav class="bg-blue-600 text-white shadow-md fixed w-full z-30">
+  <div class="px-4">
     <div class="flex items-center justify-between h-16">
-      <!-- Logo and brand -->
+      <!-- Left side: Toggle button and logo -->
       <div class="flex items-center">
-        <%= link_to "Cashly", root_path, class: "text-xl font-bold text-white" %>
-      </div>
-
-      <!-- Mobile menu button -->
-      <div class="flex md:hidden">
-        <button type="button" class="text-white hover:text-gray-200 focus:outline-none focus:text-gray-200"
-                data-action="click->navbar#toggleMenu" aria-label="Toggle menu">
-          <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
+        <!-- Sidebar toggle button -->
+        <button
+          class="text-white mr-3 hover:text-gray-200 focus:outline-none"
+          data-action="sidebar#toggle"
+          aria-label="Toggle sidebar">
+          <i class="bi bi-list text-2xl"></i>
         </button>
-      </div>
 
-      <!-- Desktop Nav -->
-      <div class="hidden md:flex md:items-center">
-        <div class="flex space-x-4">
-          <!-- Main nav items -->
-          <%= link_to dashboard_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
-            <i class="bi bi-speedometer2 mr-1"></i> Dashboard
-          <% end %>
-
-          <!-- Transactions Dropdown with invisible bridge -->
-          <div class="relative group">
-            <button class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700 flex items-center">
-              <i class="bi bi-cash-coin mr-1"></i> Transactions
-              <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-              </svg>
-            </button>
-            <!-- Invisible bridge -->
-            <div class="absolute left-0 w-full h-5 top-full"></div>
-            <div class="absolute left-0 mt-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block z-10">
-              <div class="py-1">
-                <%= link_to "View Transactions", transactions_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                <%= link_to "Add Transaction", new_transaction_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                <%= link_to "Import Transactions", new_import_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                <%= link_to "Fin Assistant", fin_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-              </div>
-            </div>
-          </div>
-
-          <%= link_to accounts_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
-            <i class="bi bi-wallet2 mr-1"></i> Accounts
-          <% end %>
-
-          <%= link_to forecasts_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
-            <i class="bi bi-graph-up mr-1"></i> Forecasts
-          <% end %>
-
-          <!-- Invoices Dropdown with invisible bridge -->
-          <div class="relative group">
-            <button class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700 flex items-center">
-              <i class="bi bi-receipt mr-1"></i> Invoices
-              <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-              </svg>
-            </button>
-            <!-- Invisible bridge -->
-            <div class="absolute left-0 w-full h-5 top-full"></div>
-            <div class="absolute left-0 mt-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block z-10">
-              <div class="py-1">
-                <%= link_to "All Invoices", invoices_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                <%= link_to "Recurring Invoices", recurring_invoices_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                <%= link_to "Create Invoice", new_invoice_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-              </div>
-            </div>
-          </div>
-
-          <%= link_to budgets_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
-            <i class="bi bi-pie-chart mr-1"></i> Budgets
-          <% end %>
-
-          <%= link_to integrations_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
-            <i class="bi bi-plug mr-1"></i> Integrations
-          <% end %>
-
-          <%= link_to categories_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" do %>
-            <i class="bi bi-tags mr-1"></i> Categories
-          <% end %>
-          <div class="relative group">
-            <button class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700 flex items-center">
-              <i class="bi bi-journal-text mr-1"></i> Accounting
-              <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-              </svg>
-            </button>
-            <!-- Invisible bridge -->
-            <div class="absolute left-0 w-full h-5 top-full"></div>
-            <div class="absolute left-0 mt-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block z-10">
-              <div class="py-1">
-                <%= link_to "Chart of Accounts", chart_of_accounts_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                <%= link_to "Category Mappings", category_account_mappings_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                <%= link_to "Journal Entries", journal_entries_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                <div class="border-t border-gray-100 my-1"></div>
-                <%= link_to "Financial Reports", reports_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                <%= link_to "Financial Insights", ai_insights_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- User profile dropdown with invisible bridge -->
-      <div class="hidden md:block">
-        <div class="ml-4 flex items-center">
-          <% if user_signed_in? %>
-            <div class="relative group">
-              <button class="flex items-center text-sm font-medium text-white hover:text-gray-200 focus:outline-none">
-                <div class="flex items-center justify-center h-8 w-8 rounded-full bg-blue-800 text-white mr-2">
-                  <span><%= current_user.initials %></span>
-                </div>
-                <span><%= current_user.full_name %></span>
-                <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                </svg>
-              </button>
-              <div class="absolute right-0 w-full h-5 top-full"></div>
-              <div class="absolute right-0 mt-0 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden group-hover:block z-10">
-                <div class="py-1">
-                  <%= link_to "View Profile", profile_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                  <%= link_to "Edit Profile", edit_profile_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                  <div class="border-t border-gray-100"></div>
-                  <%= link_to "Account Settings", edit_user_registration_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                  <div class="border-t border-gray-100"></div>
-                  <%= button_to "Log Out", destroy_user_session_path, method: :delete, class: "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" %>
-                </div>
-              </div>
-            </div>`
-          <% else %>
-            <div class="flex space-x-4">
-              <%= link_to "Sign In", new_user_session_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" %>
-              <%= link_to "Sign Up", new_user_registration_path, class: "px-3 py-2 rounded-md text-sm font-medium bg-white text-blue-600 hover:bg-gray-100" %>
-            </div>
-          <% end %>
-        </div>
-      </div>
-    </div>
-
-    <div class="hidden md:hidden" id="mobile-menu" data-navbar-target="menu">
-      <!-- Mobile menu content unchanged -->
-      <div class="px-2 pt-2 pb-3 space-y-1">
-        <%= link_to dashboard_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
-          <i class="bi bi-speedometer2 mr-1"></i> Dashboard
-        <% end %>
-
-        <%= link_to transactions_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
-          <i class="bi bi-cash-coin mr-1"></i> Transactions
-        <% end %>
-
-        <%= link_to accounts_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
-          <i class="bi bi-wallet2 mr-1"></i> Accounts
-        <% end %>
-
-        <%= link_to invoices_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
-          <i class="bi bi-receipt mr-1"></i> Invoices
-        <% end %>
-
-        <%= link_to budgets_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
-          <i class="bi bi-pie-chart mr-1"></i> Budgets
-        <% end %>
-
-        <%= link_to integrations_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
-          <i class="bi bi-plug mr-1"></i> Integrations
-        <% end %>
-
-        <%= link_to categories_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
-          <i class="bi bi-tags mr-1"></i> Categories
-        <% end %>
-        <%= link_to chart_of_accounts_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
-          <i class="bi bi-journal-text mr-1"></i> Chart of Accounts
-        <% end %>
-
-        <%= link_to category_account_mappings_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
-          <i class="bi bi-diagram-3 mr-1"></i> Category Mappings
-        <% end %>
-
-        <%= link_to journal_entries_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
-          <i class="bi bi-journal-check mr-1"></i> Journal Entries
-        <% end %>
-
-        <%= link_to reports_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" do %>
-          <i class="bi bi-graph-up mr-1"></i> Financial Reports
+        <!-- App logo and name -->
+        <%= link_to root_path, class: "flex items-center" do %>
+          <span class="text-xl font-bold text-white">Cashly</span>
         <% end %>
       </div>
 
-      <div class="pt-4 pb-3 border-t border-blue-700">
+      <!-- Right side: User profile and notifications -->
+      <div class="flex items-center">
         <% if user_signed_in? %>
-          <div class="flex items-center px-5">
-            <div class="flex-shrink-0">
-              <div class="h-10 w-10 rounded-full bg-blue-800 flex items-center justify-center">
-                <span class="text-white font-medium"><%= current_user.initials %></span>
+          <!-- Notifications dropdown -->
+          <div class="relative mr-4">
+            <button class="text-white hover:text-gray-200 focus:outline-none">
+              <i class="bi bi-bell text-xl"></i>
+              <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">3</span>
+            </button>
+          </div>
+
+          <!-- Quick add button -->
+          <div class="relative mr-4 group">
+            <button class="text-white hover:text-gray-200 focus:outline-none">
+              <i class="bi bi-plus-circle text-xl"></i>
+            </button>
+            <!-- Dropdown -->
+            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden group-hover:block z-20">
+              <div class="py-1 rounded-md bg-white shadow-xs">
+                <%= link_to new_transaction_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+                  <i class="bi bi-plus-circle mr-2"></i> Add Transaction
+                <% end %>
+                <%= link_to new_budget_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+                  <i class="bi bi-pie-chart mr-2"></i> Create Budget
+                <% end %>
+                <%= link_to new_invoice_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+                  <i class="bi bi-file-earmark-text mr-2"></i> Create Invoice
+                <% end %>
               </div>
             </div>
-            <div class="ml-3">
-              <div class="text-base font-medium text-white"><%= current_user.full_name %></div>
-              <div class="text-sm font-medium text-blue-300"><%= current_user.email %></div>
-            </div>
           </div>
-          <div class="mt-3 px-2 space-y-1">
-            <%= link_to "View Profile", profile_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
-            <%= link_to "Edit Profile", edit_profile_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
-            <%= link_to "Account Settings", edit_user_registration_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
-            <%= button_to "Log Out", destroy_user_session_path, method: :delete, class: "block w-full text-left px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
+
+          <!-- User profile -->
+          <div class="relative group">
+            <button class="flex items-center text-sm font-medium text-white hover:text-gray-200 focus:outline-none">
+              <div class="flex items-center justify-center h-8 w-8 rounded-full bg-blue-800 text-white mr-2">
+                <span><%= current_user.initials %></span>
+              </div>
+              <span class="hidden sm:block"><%= current_user.full_name %></span>
+              <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+              </svg>
+            </button>
+            <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden group-hover:block z-20">
+              <div class="py-1 rounded-md bg-white shadow-xs">
+                <%= link_to profile_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+                  <i class="bi bi-person mr-2"></i> View Profile
+                <% end %>
+                <%= link_to edit_profile_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+                  <i class="bi bi-pencil mr-2"></i> Edit Profile
+                <% end %>
+                <div class="border-t border-gray-100"></div>
+                <%= link_to edit_user_registration_path, class: "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+                  <i class="bi bi-gear mr-2"></i> Account Settings
+                <% end %>
+                <div class="border-t border-gray-100"></div>
+                <%= button_to destroy_user_session_path, method: :delete, class: "block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" do %>
+                  <i class="bi bi-box-arrow-right mr-2"></i> Log Out
+                <% end %>
+              </div>
+            </div>
           </div>
         <% else %>
-          <div class="mt-3 px-2 space-y-1">
-            <%= link_to "Sign In", new_user_session_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
-            <%= link_to "Sign Up", new_user_registration_path, class: "block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-blue-700" %>
+          <div class="flex space-x-4">
+            <%= link_to "Sign In", new_user_session_path, class: "px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-blue-700" %>
+            <%= link_to "Sign Up", new_user_registration_path, class: "px-3 py-2 rounded-md text-sm font-medium bg-white text-blue-600 hover:bg-gray-100" %>
           </div>
         <% end %>
       </div>
@@ -240,29 +112,220 @@
   </div>
 </nav>
 
+<!-- Sidebar and Main Content Container -->
+<div class="flex pt-16 min-h-screen">
+  <!-- Sidebar Navigation -->
+  <aside
+    data-sidebar-target="sidebar"
+    class="fixed left-0 top-16 h-full w-64 bg-gray-800 text-white transition-all duration-300 ease-in-out z-20 overflow-y-auto"
+  >
+    <!-- Sidebar Menu -->
+    <div class="px-4 py-4">
+      <!-- Dashboard -->
+      <%= link_to dashboard_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{current_page?(dashboard_path) ? 'bg-blue-600' : ''}" do %>
+        <i class="bi bi-speedometer2 mr-3 text-lg"></i>
+        <span class="text-sm font-medium">Dashboard</span>
+      <% end %>
 
-<main class="flex-grow">
-  <div class="container mx-auto px-4">
-    <% if notice %>
-      <div class="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded relative" role="alert">
-        <%= notice %>
-        <button type="button" class="absolute top-0 right-0 mt-2 mr-2 text-green-700 hover:text-green-900" onclick="this.parentElement.style.display='none'">
-          <span class="text-xl">&times;</span>
+      <!-- Finance Section -->
+      <div class="mt-6">
+        <h3 class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Finance</h3>
+        <%= link_to transactions_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'transactions' ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-cash-coin mr-3 text-lg"></i>
+          <span class="text-sm font-medium">Transactions</span>
+        <% end %>
+
+        <%= link_to accounts_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'accounts' ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-wallet2 mr-3 text-lg"></i>
+          <span class="text-sm font-medium">Accounts</span>
+        <% end %>
+
+        <%= link_to categories_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'categories' ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-tags mr-3 text-lg"></i>
+          <span class="text-sm font-medium">Categories</span>
+        <% end %>
+      </div>
+
+      <!-- Planning Section -->
+      <div class="mt-6">
+        <h3 class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Planning</h3>
+
+        <%= link_to forecasts_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'forecasts' ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-graph-up mr-3 text-lg"></i>
+          <span class="text-sm font-medium">Forecasts</span>
+        <% end %>
+
+        <%= link_to budgets_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'budgets' ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-pie-chart mr-3 text-lg"></i>
+          <span class="text-sm font-medium">Budgets</span>
+        <% end %>
+
+        <%= link_to ai_insights_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'insights' && controller.class.module_parent == Ai ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-lightbulb mr-3 text-lg"></i>
+          <span class="text-sm font-medium">AI Insights</span>
+        <% end %>
+
+        <%= link_to fin_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'fin' ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-robot mr-3 text-lg"></i>
+          <span class="text-sm font-medium">Fin Assistant</span>
+        <% end %>
+      </div>
+
+      <!-- Invoicing Section -->
+      <div class="mt-6">
+        <h3 class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Invoicing</h3>
+
+        <%= link_to invoices_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'invoices' && action_name == 'index' ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-receipt mr-3 text-lg"></i>
+          <span class="text-sm font-medium">All Invoices</span>
+        <% end %>
+
+        <%= link_to recurring_invoices_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'invoices' && action_name == 'recurring' ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-arrow-repeat mr-3 text-lg"></i>
+          <span class="text-sm font-medium">Recurring</span>
+        <% end %>
+
+        <%= link_to new_invoice_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'invoices' && action_name == 'new' ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-file-earmark-plus mr-3 text-lg"></i>
+          <span class="text-sm font-medium">Create Invoice</span>
+        <% end %>
+      </div>
+
+      <!-- Accounting Section -->
+      <div class="mt-6">
+        <h3 class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Accounting</h3>
+
+        <%= link_to chart_of_accounts_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'ledger_accounts' ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-journal-text mr-3 text-lg"></i>
+          <span class="text-sm font-medium">Chart of Accounts</span>
+        <% end %>
+
+        <%= link_to category_account_mappings_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'category_account_mappings' ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-diagram-3 mr-3 text-lg"></i>
+          <span class="text-sm font-medium">Category Mappings</span>
+        <% end %>
+
+        <%= link_to journal_entries_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'journal_entries' ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-journal-check mr-3 text-lg"></i>
+          <span class="text-sm font-medium">Journal Entries</span>
+        <% end %>
+
+        <%= link_to reports_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'reports' ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-file-earmark-bar-graph mr-3 text-lg"></i>
+          <span class="text-sm font-medium">Financial Reports</span>
+        <% end %>
+      </div>
+
+      <!-- System Section -->
+      <div class="mt-6">
+        <h3 class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">System</h3>
+
+        <%= link_to integrations_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'integrations' ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-plug mr-3 text-lg"></i>
+          <span class="text-sm font-medium">Integrations</span>
+        <% end %>
+
+        <%= link_to edit_profile_path, class: "flex items-center px-4 py-2 mt-2 text-gray-100 rounded-lg hover:bg-gray-700 #{controller_name == 'profiles' && action_name == 'edit' ? 'bg-blue-600' : ''}" do %>
+          <i class="bi bi-person-gear mr-3 text-lg"></i>
+          <span class="text-sm font-medium">Profile Settings</span>
+        <% end %>
+      </div>
+
+      <!-- Sidebar footer with collapse button -->
+      <div class="mt-8 mb-4 px-4">
+        <button
+          class="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-gray-700 rounded-lg hover:bg-gray-600"
+          data-action="sidebar#toggleCollapse"
+        >
+          <i class="bi bi-chevron-double-left mr-2" data-sidebar-target="collapseIcon"></i>
+          <span data-sidebar-target="collapseText">Collapse Sidebar</span>
         </button>
       </div>
-    <% end %>
-    <% if alert %>
-      <div class="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded relative" role="alert">
-        <%= alert %>
-        <button type="button" class="absolute top-0 right-0 mt-2 mr-2 text-red-700 hover:text-red-900" onclick="this.parentElement.style.display='none'">
-          <span class="text-xl">&times;</span>
-        </button>
-      </div>
+    </div>
+  </aside>
+
+  <!-- Collapsed Sidebar (Icons Only) -->
+  <aside
+    data-sidebar-target="collapsedSidebar"
+    class="fixed left-0 top-16 h-full w-16 bg-gray-800 text-white transition-all duration-300 ease-in-out z-20 overflow-y-auto hidden"
+  >
+    <!-- Dashboard -->
+    <%= link_to dashboard_path, class: "flex flex-col items-center justify-center py-4 text-gray-100 hover:bg-gray-700 #{current_page?(dashboard_path) ? 'bg-blue-600' : ''}", title: "Dashboard" do %>
+      <i class="bi bi-speedometer2 text-xl"></i>
+      <span class="text-xs mt-1">Dashboard</span>
     <% end %>
 
-    <%= yield %>
-  </div>
-</main>
+    <!-- Transactions -->
+    <%= link_to transactions_path, class: "flex flex-col items-center justify-center py-4 text-gray-100 hover:bg-gray-700 #{controller_name == 'transactions' ? 'bg-blue-600' : ''}", title: "Transactions" do %>
+      <i class="bi bi-cash-coin text-xl"></i>
+      <span class="text-xs mt-1">Transactions</span>
+    <% end %>
+
+    <!-- Accounts -->
+    <%= link_to accounts_path, class: "flex flex-col items-center justify-center py-4 text-gray-100 hover:bg-gray-700 #{controller_name == 'accounts' ? 'bg-blue-600' : ''}", title: "Accounts" do %>
+      <i class="bi bi-wallet2 text-xl"></i>
+      <span class="text-xs mt-1">Accounts</span>
+    <% end %>
+
+    <!-- Forecasts -->
+    <%= link_to forecasts_path, class: "flex flex-col items-center justify-center py-4 text-gray-100 hover:bg-gray-700 #{controller_name == 'forecasts' ? 'bg-blue-600' : ''}", title: "Forecasts" do %>
+      <i class="bi bi-graph-up text-xl"></i>
+      <span class="text-xs mt-1">Forecasts</span>
+    <% end %>
+
+    <!-- Budgets -->
+    <%= link_to budgets_path, class: "flex flex-col items-center justify-center py-4 text-gray-100 hover:bg-gray-700 #{controller_name == 'budgets' ? 'bg-blue-600' : ''}", title: "Budgets" do %>
+      <i class="bi bi-pie-chart text-xl"></i>
+      <span class="text-xs mt-1">Budgets</span>
+    <% end %>
+
+    <!-- Invoices -->
+    <%= link_to invoices_path, class: "flex flex-col items-center justify-center py-4 text-gray-100 hover:bg-gray-700 #{controller_name == 'invoices' ? 'bg-blue-600' : ''}", title: "Invoices" do %>
+      <i class="bi bi-receipt text-xl"></i>
+      <span class="text-xs mt-1">Invoices</span>
+    <% end %>
+
+    <!-- Accounting -->
+    <%= link_to chart_of_accounts_path, class: "flex flex-col items-center justify-center py-4 text-gray-100 hover:bg-gray-700 #{controller_name == 'ledger_accounts' ? 'bg-blue-600' : ''}", title: "Chart of Accounts" do %>
+      <i class="bi bi-journal-text text-xl"></i>
+      <span class="text-xs mt-1">Accounting</span>
+    <% end %>
+
+    <!-- Expand Button -->
+    <button
+      class="flex flex-col items-center justify-center w-full py-4 text-gray-100 hover:bg-gray-700 mt-4"
+      data-action="sidebar#toggleCollapse"
+      title="Expand Sidebar"
+    >
+      <i class="bi bi-chevron-double-right text-xl"></i>
+      <span class="text-xs mt-1">Expand</span>
+    </button>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-grow transition-all duration-300 ease-in-out" data-sidebar-target="content">
+    <div class="container mx-auto px-4 py-6">
+      <% if notice %>
+        <div class="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded relative" role="alert">
+          <%= notice %>
+          <button type="button" class="absolute top-0 right-0 mt-2 mr-2 text-green-700 hover:text-green-900" onclick="this.parentElement.style.display='none'">
+            <span class="text-xl">&times;</span>
+          </button>
+        </div>
+      <% end %>
+      <% if alert %>
+        <div class="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded relative" role="alert">
+          <%= alert %>
+          <button type="button" class="absolute top-0 right-0 mt-2 mr-2 text-red-700 hover:text-red-900" onclick="this.parentElement.style.display='none'">
+            <span class="text-xl">&times;</span>
+          </button>
+        </div>
+      <% end %>
+
+      <%= yield %>
+    </div>
+  </main>
+</div>
 
 <footer class="bg-gray-100 py-6 mt-8">
   <div class="container mx-auto px-4 text-center">
@@ -273,18 +336,5 @@
 </footer>
 
 <%= javascript_include_tag "plaid_link" %>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const mobileMenuButton = document.querySelector('[data-action="click->navbar#toggleMenu"]');
-        const mobileMenu = document.getElementById('mobile-menu');
-
-        if(mobileMenuButton && mobileMenu) {
-            mobileMenuButton.addEventListener('click', function() {
-                mobileMenu.classList.toggle('hidden');
-            });
-        }
-    });
-</script>
 </body>
 </html>

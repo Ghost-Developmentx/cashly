@@ -25,5 +25,8 @@ application.register("template-selector", TemplateSelectorController)
 import InvoicePreviewController from "./invoice_preview_controller"
 application.register("invoice-preview", InvoicePreviewController)
 
+import SidebarController from "./sidebar_controller"
+application.register("sidebar", SidebarController)
+
 import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
 eagerLoadControllersFrom("controllers", application)

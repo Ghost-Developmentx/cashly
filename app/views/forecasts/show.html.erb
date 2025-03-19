@@ -92,16 +92,39 @@
         </div>
         <div class="p-6">
           <% if @data["insights"].present? %>
-            <div class="space-y-4">
-              <% @data["insights"].each do |insight| %>
+            <% if @data["insights"].is_a?(Array) %>
+              <div class="space-y-4">
+                <% @data["insights"].each do |insight| %>
+                  <div class="border-l-4 border-blue-400 bg-blue-50 p-4 rounded">
+                    <h3 class="font-medium text-blue-800 mb-1"><%= insight["title"] || "Insight" %></h3>
+                    <p class="text-blue-700 text-sm"><%= insight["description"] %></p>
+                  </div>
+                <% end %>
+              </div>
+            <% elsif @data["insights"].is_a?(Hash) %>
+              <!-- Handle case where insights is a single hash -->
+              <div class="space-y-4">
                 <div class="border-l-4 border-blue-400 bg-blue-50 p-4 rounded">
-                  <h3 class="font-medium text-blue-800 mb-1"><%= insight["title"] %></h3>
-                  <p class="text-blue-700 text-sm"><%= insight["description"] %></p>
+                  <h3 class="font-medium text-blue-800 mb-1"><%= @data["insights"]["title"] || "Insight" %></h3>
+                  <p class="text-blue-700 text-sm"><%= @data["insights"]["description"] %></p>
                 </div>
-              <% end %>
-            </div>
+
+                <!-- If the hash has readable_insights that are iterable -->
+                <% if @data["insights"]["readable_insights"].is_a?(Array) && @data["insights"]["readable_insights"].any? %>
+                  <% @data["insights"]["readable_insights"].each do |insight| %>
+                    <div class="border-l-4 border-blue-400 bg-blue-50 p-4 rounded mt-2">
+                      <h3 class="font-medium text-blue-800 mb-1"><%= insight["title"] || "Insight" %></h3>
+                      <p class="text-blue-700 text-sm"><%= insight["description"] %></p>
+                    </div>
+                  <% end %>
+                <% end %>
+              </div>
+            <% else %>
+              <!-- Fallback for other data structures -->
+              <p class="text-center text-gray-500 py-4">Insights are available in different formats.</p>
+            <% end %>
           <% else %>
-            <p class="text-gray-500 text-center py-4">No insights available for this forecast.</p>
+            <p class="text-center text-gray-500 py-4">No insights are available for this forecast.</p>
           <% end %>
         </div>
       </div>
@@ -135,11 +158,11 @@
               <td class="px-6 py-3 whitespace-nowrap text-sm text-red-600 font-medium">
                 <%= number_to_currency(day["expenses"]) %>
               </td>
-              <td class="px-6 py-3 whitespace-nowrap text-sm <%= day["net_flow"] >= 0 ? 'text-green-600' : 'text-red-600' %> font-medium">
-                <%= number_to_currency(day["net_flow"]) %>
+              <td class="px-6 py-3 whitespace-nowrap text-sm <%= day["net_flow"].present? && day["net_flow"] >= 0 ? 'text-green-600' : 'text-red-600' %> font-medium">
+                <%= number_to_currency(day["net_flow"] || 0) %>
               </td>
-              <td class="px-6 py-3 whitespace-nowrap text-sm <%= day["balance"] >= 0 ? 'text-green-600' : 'text-red-600' %> font-medium">
-                <%= number_to_currency(day["balance"]) %>
+              <td class="px-6 py-3 whitespace-nowrap text-sm <%= day["balance"].present? && day["balance"] >= 0 ? 'text-green-600' : 'text-red-600' %> font-medium">
+                <%= number_to_currency(day["balance"] || 0) %>
               </td>
             </tr>
           <% end %>

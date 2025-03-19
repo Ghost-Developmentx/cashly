@@ -4,19 +4,13 @@ class FinLearningJob < ApplicationJob
   def perform
     Rails.logger.info "Starting Fin learning process..."
 
-    # 1. Analyze feedback statistics
+    # 1. Collect feedback statistics
     analyze_feedback_statistics
 
-    # 2. Identify successful patterns
-    success_patterns = identify_success_patterns
-
-    # 3. Identify failure patterns
-    failure_patterns = identify_failure_patterns
-
-    # 4. Prepare learning dataset
+    # 2. Prepare learning dataset
     learning_dataset = prepare_learning_dataset
 
-    # 5. Send learning dataset to the AI service for fine-tuning
+    # 3. Send learning dataset to the AI service for analysis and learning
     if learning_dataset.present?
       send_learning_dataset(learning_dataset)
     end
@@ -24,10 +18,11 @@ class FinLearningJob < ApplicationJob
     Rails.logger.info "Fin learning process completed."
   end
 
+
   private
 
   def analyze_feedback_statistics
-    # Calculate overall feedback metrics
+    # Calculate overall feedback metrics (just for logging and metrics)
     total_messages = FinMessage.assistant_messages.count
     feedback_messages = FinMessage.assistant_messages.with_feedback.count
     feedback_rate = feedback_messages.to_f / total_messages
@@ -42,8 +37,10 @@ class FinLearningJob < ApplicationJob
 
     # Calculate tool usage statistics
     tools_used = FinMessage.where.not(tools_used: nil).sum { |m| m.tools_used.size }
-    tools_success = FinMessage.where(tool_success: true).count
-    tools_success_rate = tools_success.to_f / tools_used
+    tools_success = FinMessage.where.not(tools_used: nil).sum do |m|
+      m.tools_used.count { |t| t["success"] }
+    end
+    tools_success_rate = tools_success.to_f / [ tools_used, 1 ].max # Avoid div by zero
 
     Rails.logger.info "Tool usage statistics:"
     Rails.logger.info "- Total tool usages: #{tools_used}"
@@ -59,111 +56,94 @@ class FinLearningJob < ApplicationJob
     )
   end
 
-  def identify_success_patterns
-    # Find the most helpful conversations
-    helpful_messages = FinMessage.assistant_messages.where(feedback_rating: 4..5, was_helpful: true)
-
-    # Analyze the preceding user messages to find patterns
-    user_message_patterns = {}
-
-    helpful_messages.each do |message|
-      conversation = message.fin_conversation
-
-      # Find the user message that preceded this assistant message
-      preceding_messages = conversation.fin_messages
-                                       .where("created_at < ?", message.created_at)
-                                       .order(created_at: :desc)
-                                       .limit(3)
-
-      user_message = preceding_messages.find { |m| m.role == "user" }
-      next unless user_message
-
-      # Extract key phrases or patterns from the user message
-      # In a real implementation, you'd use NLP here
-      simple_patterns = extract_simple_patterns(user_message.content)
-
-      # Record how often each pattern appears in helpful conversations
-      simple_patterns.each do |pattern|
-        user_message_patterns[pattern] ||= 0
-        user_message_patterns[pattern] += 1
-      end
-    end
-
-    # Sort patterns by frequency
-    top_patterns = user_message_patterns.sort_by { |_, count| -count }.take(10)
-
-    Rails.logger.info "Top successful user query patterns:"
-    top_patterns.each do |pattern, count|
-      Rails.logger.info "- '#{pattern}': #{count} occurrences"
-    end
-
-    top_patterns
-  end
-
-  def identify_failure_patterns
-    # Find unhelpful messages
-    unhelpful_messages = FinMessage.assistant_messages.where(feedback_rating: 1..2, was_helpful: false)
-
-    # Similar analysis as for success patterns
-    user_message_patterns = {}
-
-    unhelpful_messages.each do |message|
-      conversation = message.fin_conversation
-
-      preceding_messages = conversation.fin_messages
-                                       .where("created_at < ?", message.created_at)
-                                       .order(created_at: :desc)
-                                       .limit(3)
-
-      user_message = preceding_messages.find { |m| m.role == "user" }
-      next unless user_message
-
-      simple_patterns = extract_simple_patterns(user_message.content)
-
-      simple_patterns.each do |pattern|
-        user_message_patterns[pattern] ||= 0
-        user_message_patterns[pattern] += 1
-      end
-    end
-
-    top_patterns = user_message_patterns.sort_by { |_, count| -count }.take(10)
-
-    Rails.logger.info "Top failure user query patterns:"
-    top_patterns.each do |pattern, count|
-      Rails.logger.info "- '#{pattern}': #{count} occurrences"
-    end
-
-    top_patterns
-  end
-
   def prepare_learning_dataset
-    # Find helpful conversations to use for fine-tuning
+    # Identify conversations with different feedback characteristics
     helpful_conversations = FinConversation.joins(:fin_messages)
                                            .where(fin_messages: { was_helpful: true, feedback_rating: 4..5 })
                                            .distinct
 
-    dataset = []
+    unhelpful_conversations = FinConversation.joins(:fin_messages)
+                                             .where(fin_messages: { was_helpful: false, feedback_rating: 1..2 })
+                                             .distinct
 
-    helpful_conversations.each do |conversation|
-      messages = conversation.fin_messages.order(created_at: :asc)
+    # Format dataset for the Python service
+    dataset = {
+      helpful_conversations: format_conversations(helpful_conversations),
+      unhelpful_conversations: format_conversations(unhelpful_conversations),
+      tool_usage: collect_tool_usage_data
+    }
 
-      # Need at least one exchange (user + assistant)
-      next if messages.count < 2
-
-      # Format as training examples
-      conversation_data = {
-        id: conversation.id,
-        messages: messages.map { |m| { role: m.role, content: m.content } },
-        tools_used: messages.flat_map { |m| m.tools_used.present? ? m.tools_used : [] },
-        led_to_action: messages.any? { |m| m.led_to_action }
-      }
-
-      dataset << conversation_data
-    end
-
-    Rails.logger.info "Prepared learning dataset with #{dataset.size} conversations"
+    Rails.logger.info "Prepared learning dataset with #{dataset[:helpful_conversations].size} helpful and #{dataset[:unhelpful_conversations].size} unhelpful conversations"
 
     dataset
+  end
+
+  def format_conversations(conversations)
+    conversations.map do |conversation|
+      messages = conversation.fin_messages.order(created_at: :asc)
+
+      # Format messages with all metadata needed for learning
+      {
+        id: conversation.id,
+        messages: messages.map do |m|
+          {
+            role: m.role,
+            content: m.content,
+            feedback_rating: m.feedback_rating,
+            was_helpful: m.was_helpful,
+            tools_used: m.tools_used,
+            led_to_action: m.led_to_action,
+            financial_decision_made: m.financial_decision_made,
+            decision_amount: m.decision_amount,
+            created_at: m.created_at.to_s
+          }
+        end,
+        user_id: conversation.user_id,
+        created_at: conversation.created_at.to_s,
+        title: conversation.title
+      }
+    end
+  end
+
+  def collect_tool_usage_data
+    # Collect detailed data about tool usage and success rates
+    tools_data = {}
+
+    # Find all messages with tools used
+    messages_with_tools = FinMessage.where.not(tools_used: nil)
+
+    messages_with_tools.each do |message|
+      message.tools_used.each do |tool|
+        tool_name = tool["name"]
+        success = tool["success"] || false
+        query_context = tool["query_context"]
+        parameters = tool["parameters"]
+
+        # Initialize tool data if not exists
+        tools_data[tool_name] ||= {
+          total: 0,
+          success: 0,
+          contexts: [],
+          parameters: []
+        }
+
+        # Update counters
+        tools_data[tool_name][:total] += 1
+        tools_data[tool_name][:success] += 1 if success
+
+        # Store context samples (up to 10)
+        if query_context.present? && tools_data[tool_name][:contexts].size < 10
+          tools_data[tool_name][:contexts] << query_context
+        end
+
+        # Store parameter samples (up to 10)
+        if parameters.present? && tools_data[tool_name][:parameters].size < 10
+          tools_data[tool_name][:parameters] << parameters
+        end
+      end
+    end
+
+    tools_data
   end
 
   def send_learning_dataset(dataset)
@@ -184,40 +164,12 @@ class FinLearningJob < ApplicationJob
 
       if response.code.to_i == 200
         result = JSON.parse(response.body)
-        Rails.logger.info "Learning dataset sent successfully. Model update status: #{result['status']}"
+        Rails.logger.info "Learning dataset sent successfully. Processing results: #{result.inspect}"
       else
         Rails.logger.error "Failed to send learning dataset: #{response.code}: #{response.body}"
       end
     rescue StandardError => e
       Rails.logger.error "Error sending learning dataset: #{e.message}"
     end
-  end
-
-  def extract_simple_patterns(text)
-    # In a real implementation, you'd use NLP or ML techniques
-    # This is a very simple implementation for demonstration
-    words = text.downcase.gsub(/[^\w\s]/, " ").split
-
-    # Extract bigrams (pairs of adjacent words)
-    bigrams = []
-    words.each_cons(2) do |pair|
-      bigrams << pair.join(" ")
-    end
-
-    # Extract key phrases (very simplified)
-    key_phrases = []
-    financial_terms = %w[budget spend expense income forecast saving investment]
-
-    financial_terms.each do |term|
-      if text.downcase.include?(term)
-        start_idx = text.downcase.index(term)
-        end_idx = [start_idx + 30, text.length].min
-        key_phrases << text[start_idx...end_idx].strip
-      end
-    end
-
-    # Combine words, bigrams and key phrases
-    patterns = words + bigrams + key_phrases
-    patterns.uniq
   end
 end

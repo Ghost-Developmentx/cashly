@@ -22,7 +22,7 @@ export default class extends Controller {
     }
 
     disconnect() {
-        // Destroy any charts when controller disconnects
+        // Destroy any charts when the controller disconnects
         Object.values(this.charts).forEach(chart => {
             if (chart) chart.destroy()
         })
@@ -35,7 +35,7 @@ export default class extends Controller {
         const query = this.queryInputTarget.value.trim()
         if (!query) return
 
-        // Add user message to the chat
+        // Add a user message to the chat
         this.addUserMessage(query)
 
         // Show loading indicator
@@ -64,7 +64,7 @@ export default class extends Controller {
                 // Hide loading indicator
                 this.loadingMessageTarget.classList.add("hidden")
 
-                // Add assistant response to the chat
+                // Add an assistant response to the chat
                 this.addAssistantMessage(data.message)
 
                 // Process any actions
@@ -75,7 +75,7 @@ export default class extends Controller {
                 // Hide loading indicator
                 this.loadingMessageTarget.classList.add("hidden")
 
-                // Show error message
+                // Show an error message
                 this.addAssistantMessage(`Sorry, I encountered an error: ${data.error || "Unknown error"}`)
             }
         } catch (error) {
@@ -84,7 +84,7 @@ export default class extends Controller {
             // Hide loading indicator
             this.loadingMessageTarget.classList.add("hidden")
 
-            // Show error message
+            // Show an error message
             this.addAssistantMessage("Sorry, I'm having trouble connecting to the server. Please try again.")
         }
     }
@@ -231,7 +231,7 @@ export default class extends Controller {
 
     // Process actions from the assistant
     processActions(actions) {
-        // Hide empty visualization message
+        // Hide an empty visualization message
         this.emptyVisualizationTarget.classList.add("hidden")
 
         actions.forEach(action => {
@@ -298,7 +298,7 @@ export default class extends Controller {
         }
     }
 
-    // Create options for forecast chart
+    // Create options for the forecast chart
     createForecastChartOptions(data) {
         const dates = data.forecast.map(item => item.date)
         const balances = data.forecast.map(item => item.balance)
@@ -367,7 +367,7 @@ export default class extends Controller {
         }
     }
 
-    // Create options for trends chart (simplified example)
+    // Create options for the trends chart (simplified example)
     createTrendsChartOptions(data) {
         // This would be customized based on your actual data structure
         return {
@@ -385,7 +385,7 @@ export default class extends Controller {
         }
     }
 
-    // Create options for budget chart (simplified example)
+    // Create options for the budget chart (simplified example)
     createBudgetChartOptions(data) {
         // This would be customized based on your actual data structure
         return {
@@ -438,7 +438,7 @@ export default class extends Controller {
         return div.innerHTML
     }
 
-    // Scroll the messages container to the bottom
+    // Scroll the message container to the bottom
     scrollToBottom() {
         this.messagesContainerTarget.scrollTop = this.messagesContainerTarget.scrollHeight
     }

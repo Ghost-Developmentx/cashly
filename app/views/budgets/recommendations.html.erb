@@ -59,11 +59,29 @@
           <div class="p-6">
             <% if @budget_recommendations["insights"].present? %>
               <div class="space-y-4">
-                <% @budget_recommendations["insights"].each do |insight| %>
-                  <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-                    <h4 class="font-medium text-blue-800 mb-1"><%= insight["title"] %></h4>
-                    <p class="text-blue-700"><%= insight["description"] %></p>
-                  </div>
+                <% if @budget_recommendations["insights"].is_a?(Array) %>
+                  <% @budget_recommendations["insights"].each do |insight| %>
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                      <h4 class="font-medium text-blue-800 mb-1"><%= insight["title"] %></h4>
+                      <p class="text-blue-700"><%= insight["description"] %></p>
+                    </div>
+                  <% end %>
+                <% elsif @budget_recommendations["insights"].is_a?(Hash) %>
+                  <% if @budget_recommendations["insights"]["readable_insights"].is_a?(Array) && @budget_recommendations["insights"]["readable_insights"].any? %>
+                    <!-- Handle case where insights contains readable_insights array -->
+                    <% @budget_recommendations["insights"]["readable_insights"].each do |insight| %>
+                      <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                        <h4 class="font-medium text-blue-800 mb-1"><%= insight["title"] %></h4>
+                        <p class="text-blue-700"><%= insight["description"] %></p>
+                      </div>
+                    <% end %>
+                  <% else %>
+                    <!-- Handle case where insights is a single hash -->
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
+                      <h4 class="font-medium text-blue-800 mb-1"><%= @budget_recommendations["insights"]["title"] || "Budget Insight" %></h4>
+                      <p class="text-blue-700"><%= @budget_recommendations["insights"]["description"] %></p>
+                    </div>
+                  <% end %>
                 <% end %>
               </div>
             <% else %>
@@ -74,7 +92,6 @@
                 <li>30% for wants (entertainment, dining out, etc.)</li>
                 <li>20% for savings and debt repayment</li>
               </ul>
-              </p>
             <% end %>
           </div>
         </div>

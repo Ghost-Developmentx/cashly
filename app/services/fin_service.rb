@@ -29,12 +29,15 @@ class FinService
       message = conversation&.fin_messages&.where(role: "assistant")&.order(created_at: :desc)&.first
 
       if message
-        # Record the tools that were used
+        # Record the tools that were used with more detailed context
         tools_used = response["tool_results"].map do |tool_result|
           {
             name: tool_result["tool"],
             success: !tool_result["result"].key?("error"),
-            timestamp: Time.current.to_s
+            timestamp: Time.current.to_s,
+            query_context: query,
+            parameters: tool_result["parameters"],
+            result_summary: summarize_tool_result(tool_result["result"])
           }
         end
 
@@ -43,6 +46,27 @@ class FinService
     end
 
     response
+  end
+
+  def self.summarize_tool_result(result)
+    return "error" if result.key?("error")
+
+    # Create a summary based on the type of result
+    if result.is_a?(Hash)
+      if result.key?("forecast")
+        "forecast with #{result['forecast'].size} days"
+      elsif result.key?("insights")
+        "#{result['insights'].size} insights"
+      elsif result.key?("recommendations")
+        "#{result['recommendations'].size} recommendations"
+      else
+        "success"
+      end
+    elsif result.is_a?(Array)
+      "array with #{result.size} items"
+    else
+      "success"
+    end
   end
 
   private
