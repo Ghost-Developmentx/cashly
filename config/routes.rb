@@ -129,6 +129,14 @@ Rails.application.routes.draw do
     end
   end
 
+  # Fin Assistant routes
+  get "fin", to: "fin#index", as: "fin"
+  post "fin/query", to: "fin#query", as: "fin_query"
+  post "fin/clear", to: "fin#clear", as: "clear_fin"
+  get "fin/history", to: "fin#history", as: "fin_history"
+  post "fin/:id", to: "fin#show", as: "show_fin"
+  post "fin/feedback", to: "fin#feedback", as: "fin_feedback"
+
   # Financial reports
   resources :reports, only: [ :index ] do
     collection do

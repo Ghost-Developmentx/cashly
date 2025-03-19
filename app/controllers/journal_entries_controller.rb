@@ -35,7 +35,7 @@ class JournalEntriesController < ApplicationController
     # Only allow editing draft journal entries
     unless @journal_entry.status == JournalEntry::DRAFT
       redirect_to @journal_entry, alert: "Only draft journal entries can be edited."
-      return
+      nil
     end
   end
 

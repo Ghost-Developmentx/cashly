@@ -226,6 +226,6 @@ class TransactionsController < ApplicationController
   end
 
   def transaction_params
-    params.require(:transaction).permit(:account_id, :amount, :date, :description, :category_id, :recurring)
+    params.expect(transaction: [ :account_id, :amount, :date, :description, :category_id, :recurring ])
   end
 end

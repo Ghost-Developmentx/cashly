@@ -15,7 +15,7 @@ class CreateLedgerAccounts < ActiveRecord::Migration[8.0]
     end
 
     add_index :ledger_accounts, :code, unique: true
-    add_index :ledger_accounts, [:account_type, :account_subtype]
+    add_index :ledger_accounts, [ :account_type, :account_subtype ]
     add_index :ledger_accounts, :active
   end
 end

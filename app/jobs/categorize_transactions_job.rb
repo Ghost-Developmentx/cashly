@@ -8,9 +8,9 @@ class CategorizeTransactionsJob < ApplicationJob
     # Get uncategorized transactions
     transactions = if transaction_ids.present?
                      user.transactions.where(id: transaction_ids, category_id: nil)
-                   else
+    else
                      user.transactions.where(category_id: nil).limit(50)
-                   end
+    end
 
     return if transactions.empty?
 

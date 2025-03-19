@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_17_232732) do
+ActiveRecord::Schema[8.0].define(version: 2025_03_18_235502) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -90,6 +90,50 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_17_232732) do
     t.index ["suggested_category_id"], name: "index_category_feedbacks_on_suggested_category_id"
     t.index ["transaction_record_id"], name: "index_category_feedbacks_on_transaction_record_id"
     t.index ["user_id"], name: "index_category_feedbacks_on_user_id"
+  end
+
+  create_table "fin_conversations", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "title"
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "active"], name: "index_fin_conversations_on_user_id_and_active"
+    t.index ["user_id"], name: "index_fin_conversations_on_user_id"
+  end
+
+  create_table "fin_learning_metrics", force: :cascade do |t|
+    t.integer "total_messages", default: 0
+    t.integer "feedback_messages", default: 0
+    t.integer "helpful_messages", default: 0
+    t.integer "tools_used", default: 0
+    t.integer "tools_success", default: 0
+    t.text "top_success_patterns", default: "{}"
+    t.text "top_failure_patterns", default: "{}"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_fin_learning_metrics_on_created_at"
+  end
+
+  create_table "fin_messages", force: :cascade do |t|
+    t.bigint "fin_conversation_id", null: false
+    t.string "role", null: false
+    t.text "content", null: false
+    t.text "metadata", default: "{}"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "feedback_rating"
+    t.string "feedback_text"
+    t.boolean "was_helpful"
+    t.boolean "led_to_action"
+    t.jsonb "tools_used"
+    t.boolean "tool_success"
+    t.boolean "financial_decision_made"
+    t.decimal "decision_amount", precision: 10, scale: 2
+    t.index ["feedback_rating"], name: "index_fin_messages_on_feedback_rating"
+    t.index ["fin_conversation_id"], name: "index_fin_messages_on_fin_conversation_id"
+    t.index ["led_to_action"], name: "index_fin_messages_on_led_to_action"
+    t.index ["was_helpful"], name: "index_fin_messages_on_was_helpful"
   end
 
   create_table "forecasts", force: :cascade do |t|
@@ -295,6 +339,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_17_232732) do
   add_foreign_key "category_feedbacks", "categories", column: "suggested_category_id"
   add_foreign_key "category_feedbacks", "transactions", column: "transaction_record_id"
   add_foreign_key "category_feedbacks", "users"
+  add_foreign_key "fin_conversations", "users"
+  add_foreign_key "fin_messages", "fin_conversations"
   add_foreign_key "forecasts", "users"
   add_foreign_key "integrations", "users"
   add_foreign_key "invoices", "users"

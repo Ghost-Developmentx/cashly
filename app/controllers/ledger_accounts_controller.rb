@@ -1,6 +1,6 @@
 class LedgerAccountsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_ledger_account, only: [:show, :edit, :update, :toggle_active]
+  before_action :set_ledger_account, only: [ :show, :edit, :update, :toggle_active ]
 
   def index
     @account_type = params[:account_type].presence

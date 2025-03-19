@@ -10,6 +10,6 @@ class CreateJournalLines < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :journal_lines, [:journal_entry_id, :ledger_account_id]
+    add_index :journal_lines, [ :journal_entry_id, :ledger_account_id ]
   end
 end

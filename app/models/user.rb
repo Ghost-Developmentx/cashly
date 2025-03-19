@@ -11,6 +11,7 @@ class User < ApplicationRecord
   has_many :integrations, dependent: :destroy
   has_many :journal_entries, dependent: :destroy
   has_many :forecasts, dependent: :destroy
+  has_many :fin_conversations, dependent: :destroy
 
   # Validations
   validates :first_name, :last_name, :company_name, presence: true, if: :onboarding_completed?

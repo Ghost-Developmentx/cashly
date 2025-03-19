@@ -1,0 +1,286 @@
+<div class="container mx-auto px-4 py-6"
+     data-controller="financial-insights"
+     data-financial-insights-trends-value="<%= @trends.to_json %>"
+     data-financial-insights-anomalies-value="<%= @anomalies.to_json %>">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Financial Insights</h1>
+    <div class="flex space-x-3">
+      <label for="period-selector"></label><select id="period-selector" class="bg-white border border-gray-300 text-gray-700 rounded-md px-3 py-2 text-sm">
+        <option value="1m" <%= @period == '1m' ? 'selected' : '' %>>Last Month</option>
+        <option value="3m" <%= !@period || @period == '3m' ? 'selected' : '' %>>Last 3 Months</option>
+        <option value="6m" <%= @period == '6m' ? 'selected' : '' %>>Last 6 Months</option>
+        <option value="1y" <%= @period == '1y' ? 'selected' : '' %>>Last Year</option>
+      </select>
+
+      <form action="<%= ai_insights_path %>" method="get">
+        <input type="hidden" name="period" id="period-input" value="<%= @period %>">
+        <button type="submit" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
+          <i class="bi bi-arrow-clockwise mr-1"></i> Refresh
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <% if @recent_transactions.empty? %>
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded mb-6">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <i class="bi bi-exclamation-triangle text-yellow-400 text-xl"></i>
+        </div>
+        <div class="ml-3">
+          <p class="text-yellow-700">
+            We need more transaction data to generate insights. Please add transactions or connect your bank accounts.
+          </p>
+          <div class="mt-3">
+            <%= link_to new_transaction_path, class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" do %>
+              <i class="bi bi-plus-circle mr-1"></i> Add Transactions
+            <% end %>
+            <%= link_to accounts_path, class: "ml-3 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" do %>
+              <i class="bi bi-bank mr-1"></i> Connect Accounts
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% else %>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Main insights column -->
+      <div class="lg:col-span-2">
+        <!-- Key Insights Section -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-800">Key Insights</h2>
+          </div>
+          <div class="p-6">
+            <% if @insights.present? %>
+              <div class="space-y-4">
+                <% @insights.each do |insight| %>
+                  <div class="border-l-4 border-blue-400 bg-blue-50 p-4 rounded">
+                    <h3 class="font-medium text-blue-800 mb-1"><%= insight["title"] || insight["type"]&.titleize %></h3>
+                    <p class="text-blue-700"><%= insight["description"] || insight["message"] %></p>
+                    <% if insight["action_items"].present? %>
+                      <div class="mt-2">
+                        <p class="text-sm font-medium text-blue-800">Suggested Actions:</p>
+                        <ul class="list-disc pl-5 text-sm text-blue-700 mt-1">
+                          <% insight["action_items"].each do |action| %>
+                            <li><%= action %></li>
+                          <% end %>
+                        </ul>
+                      </div>
+                    <% elsif insight["actions"].present? %>
+                      <div class="mt-2">
+                        <p class="text-sm font-medium text-blue-800">Suggested Actions:</p>
+                        <ul class="list-disc pl-5 text-sm text-blue-700 mt-1">
+                          <% insight["actions"].each do |action| %>
+                            <li><%= action %></li>
+                          <% end %>
+                        </ul>
+                      </div>
+                    <% end %>
+
+                    <% if insight["score"].present? %>
+                      <div class="mt-2 text-xs text-blue-600">
+                        Insight score: <%= insight["score"] %>
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <div class="text-center py-6">
+                <i class="bi bi-lightbulb text-gray-400 text-4xl"></i>
+                <p class="mt-4 text-gray-600">No insights available for the selected period. Try a different time range or add more transactions.</p>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Income vs Expenses Trend -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-800">Income vs Expenses</h2>
+          </div>
+          <div class="p-6">
+            <div data-financial-insights-target="incomeExpense" class="h-96"></div>
+          </div>
+        </div>
+
+        <!-- Category Spending Distribution -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-800">Spending by Category</h2>
+          </div>
+          <div class="p-6">
+            <div data-financial-insights-target="categoryDistribution" class="h-96"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side column for metrics and anomalies -->
+      <div class="lg:col-span-1 space-y-6">
+        <!-- Financial Health Card -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-800">Financial Health</h2>
+          </div>
+          <div class="p-6">
+            <%
+              # Calculate financial health metrics
+              monthly_income = @recent_transactions.where("amount > 0").sum(:amount) / 3
+              monthly_expenses = @recent_transactions.where("amount < 0").sum(:amount).abs / 3
+
+              income_to_expense_ratio = monthly_income > 0 ? monthly_income / monthly_expenses : 0
+              health_score = [[income_to_expense_ratio * 50, 100].min, 0].max
+
+              health_category = case health_score
+                                when 0..30 then { text: "Needs Attention", color: "text-red-600", bg: "bg-red-100" }
+                                when 31..60 then { text: "Improving", color: "text-yellow-600", bg: "bg-yellow-100" }
+                                else { text: "Excellent", color: "text-green-600", bg: "bg-green-100" }
+                                end
+            %>
+
+            <div class="flex flex-col items-center">
+              <div class="relative w-32 h-32">
+                <svg class="w-full h-full" viewBox="0 0 36 36">
+                  <!-- Background circle -->
+                  <path
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="#eee"
+                    stroke-width="3"
+                    />
+                  <!-- Foreground circle (health score) -->
+                  <path
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    fill="none"
+                    stroke="<%= if health_score < 30
+                                  '#EF4444'
+                                else
+                                  health_score < 60 ? '#F59E0B' : '#10B981'
+                                end %>"
+                    stroke-width="3"
+                    stroke-dasharray="<%= health_score %>, 100"
+                    stroke-linecap="round"
+                    transform="rotate(-90, 18, 18)"
+                    />
+                  <!-- Score display -->
+                  <text x="18" y="20.5" text-anchor="middle" class="text-2xl font-bold">
+                    <%= health_score.round %>
+                  </text>
+                </svg>
+              </div>
+              <p class="mt-2 text-lg font-medium <%= health_category[:color] %>"><%= health_category[:text] %></p>
+
+              <div class="w-full mt-4 space-y-3">
+                <div>
+                  <div class="flex justify-between items-center mb-1">
+                    <p class="text-sm text-gray-600">Income/Expense Ratio</p>
+                    <p class="text-sm font-medium <%= if income_to_expense_ratio >= 1.5
+                                                        'text-green-600'
+                                                      else
+                                                        income_to_expense_ratio >= 1 ? 'text-yellow-600' : 'text-red-600'
+                                                      end %>">
+                      <%= income_to_expense_ratio.round(2) %>
+                    </p>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="<%= if income_to_expense_ratio >= 1.5
+                                      'bg-green-600'
+                                    else
+                                      income_to_expense_ratio >= 1 ? 'bg-yellow-600' : 'bg-red-600'
+                                    end %> h-2 rounded-full" style="width: <%= [(income_to_expense_ratio / 2 * 100).round, 100].min %>%"></div>
+                  </div>
+                </div>
+
+                <!-- Monthly Savings Rate -->
+                <%
+                  savings_rate = monthly_income > 0 ? ((monthly_income - monthly_expenses) / monthly_income * 100).round : 0
+                  savings_rate = [[savings_rate, 100].min, 0].max
+                %>
+                <div>
+                  <div class="flex justify-between items-center mb-1">
+                    <p class="text-sm text-gray-600">Monthly Savings Rate</p>
+                    <p class="text-sm font-medium <%= if savings_rate >= 20
+                                                        'text-green-600'
+                                                      else
+                                                        savings_rate >= 10 ? 'text-yellow-600' : 'text-red-600'
+                                                      end %>">
+                      <%= savings_rate %>%
+                    </p>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="<%= if savings_rate >= 20
+                                      'bg-green-600'
+                                    else
+                                      savings_rate >= 10 ? 'bg-yellow-600' : 'bg-red-600'
+                                    end %> h-2 rounded-full" style="width: <%= savings_rate %>%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Anomaly Transactions -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-800">Unusual Transactions</h2>
+          </div>
+          <div class="p-6">
+            <% if @anomalies.present? && @anomalies["anomalies"].present? && @anomalies["anomalies"].any? %>
+              <div class="space-y-4">
+                <% @anomalies["anomalies"].take(5).each do |anomaly| %>
+                  <%= link_to transaction_path(anomaly["transaction_id"]), class: "block p-3 border border-red-100 rounded-lg hover:bg-red-50 transition" do %>
+                    <div class="flex justify-between items-center">
+                      <div>
+                        <p class="font-medium text-gray-800 truncate max-w-xs"><%= anomaly["description"] %></p>
+                        <p class="text-sm text-gray-500">
+                          <%= Date.parse(anomaly["date"]).strftime("%b %d, %Y") %> •
+                          <%= anomaly["category"] %>
+                        </p>
+                        <p class="text-xs text-red-600 mt-1"><%= anomaly["explanation"] %></p>
+                      </div>
+                      <span class="text-red-600 font-medium"><%= number_to_currency(anomaly["amount"].abs) %></span>
+                    </div>
+                  <% end %>
+                <% end %>
+
+                <% if @anomalies["anomalies"].size > 5 %>
+                  <p class="text-center text-sm text-gray-500 mt-3">
+                    + <%= @anomalies["anomalies"].size - 5 %> more unusual transactions
+                  </p>
+                <% end %>
+              </div>
+            <% else %>
+              <p class="text-center text-gray-500 py-4">No unusual transactions detected.</p>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Spending Trends -->
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-medium text-gray-800">Spending by Day</h2>
+          </div>
+          <div class="p-6">
+            <div data-financial-insights-target="dayOfWeek" class="h-60"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup period selector
+        const periodSelector = document.getElementById('period-selector');
+        const periodInput = document.getElementById('period-input');
+
+        if (periodSelector && periodInput) {
+            periodSelector.addEventListener('change', function() {
+                periodInput.value = this.value;
+            });
+        }
+    });
+</script>

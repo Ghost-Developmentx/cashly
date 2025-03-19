@@ -7,6 +7,6 @@ class CreateCategoryAccountMappings < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :category_account_mappings, [:category_id, :ledger_account_id], unique: true, name: 'index_category_ledger_account_unique'
+    add_index :category_account_mappings, [ :category_id, :ledger_account_id ], unique: true, name: 'index_category_ledger_account_unique'
   end
 end

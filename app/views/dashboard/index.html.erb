@@ -206,6 +206,135 @@
         <% end %>
       </div>
 
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+          <div class="flex justify-between items-center">
+            <h5 class="font-semibold text-gray-900 flex items-center">
+              <i class="bi bi-robot text-blue-600 mr-2"></i>
+              Meet Fin - Your Financial Assistant
+            </h5>
+            <%= link_to "Try Fin", fin_path, class: "text-sm text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md px-3 py-1" %>
+          </div>
+        </div>
+        <div class="p-6">
+          <p class="text-gray-700 mb-4">
+            Ask Fin questions about your finances, create forecasts, and get personalized financial insights - all in natural language.
+          </p>
+
+          <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg mb-4">
+            <div class="flex items-center">
+              <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mr-3">
+                <i class="bi bi-chat-dots"></i>
+              </div>
+              <span class="text-sm text-blue-700">"How much did I spend on dining last month?"</span>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg mb-4">
+            <div class="flex items-center">
+              <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mr-3">
+                <i class="bi bi-graph-up"></i>
+              </div>
+              <span class="text-sm text-blue-700">"Create a forecast for the next 30 days"</span>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+            <div class="flex items-center">
+              <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mr-3">
+                <i class="bi bi-lightbulb"></i>
+              </div>
+              <span class="text-sm text-blue-700">"What are my top spending categories?"</span>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <%= link_to fin_path, class: "w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700" do %>
+              <i class="bi bi-robot mr-2"></i> Chat with Fin
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+          <h5 class="font-semibold text-gray-900 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            Financial Insights
+          </h5>
+          <%= link_to "View All", ai_insights_path, class: "text-sm text-blue-600 hover:text-blue-800 border border-blue-600 rounded-md px-3 py-1" %>
+        </div>
+        <div class="p-6">
+          <%
+            # Get top insights if we have enough transaction data
+            insights = []
+            trends_data = {}
+            recent_transactions = current_user.transactions.order(date: :desc).limit(100)
+
+            if recent_transactions.present?
+              # Format transactions for AI service
+              formatted_transactions = recent_transactions.map do |t|
+                {
+                  id: t.id,
+                  date: t.date.to_s,
+                  amount: t.amount.to_f,
+                  description: t.description,
+                  category: t.category&.name || "uncategorized"
+                }
+              end
+
+              trends_response = AiService.analyze_trends(
+                current_user.id,
+                formatted_transactions,
+                "1m" # Use a short timeframe for dashboard
+              )
+
+              if trends_response.is_a?(Hash)
+                trends_data = trends_response
+                insights = trends_response["insights"].first(1) if trends_response["insights"].present?
+              end
+            end
+          %>
+
+          <% if insights.present? %>
+            <div class="space-y-4">
+              <% insights.each do |insight| %>
+                <div class="border-l-4 border-blue-400 bg-blue-50 p-4 rounded">
+                  <h6 class="font-medium text-blue-800 mb-1"><%= insight["title"] || insight["type"]&.titleize %></h6>
+                  <p class="text-sm text-blue-700"><%= insight["description"] || insight["message"] %></p>
+                </div>
+              <% end %>
+            </div>
+
+            <div class="mt-4 text-center">
+              <%= link_to ai_insights_path, class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 inline-flex items-center" do %>
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                See All Insights
+              <% end %>
+            </div>
+          <% else %>
+            <div class="flex flex-col items-center justify-center py-6">
+              <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <p class="text-gray-500 mb-4 text-center">
+                Not enough transaction data to generate insights.<br>
+                Add more transactions to unlock financial trends.
+              </p>
+              <% if current_user.transactions.count > 0 %>
+                <%= link_to ai_insights_path, class: "px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700" do %>
+                  View Insights
+                <% end %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
       <!-- Budget Recommendations Card - add this to the dashboard grid layout -->
       <div class="bg-white rounded-lg shadow-sm overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">

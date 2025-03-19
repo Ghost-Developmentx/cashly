@@ -41,7 +41,7 @@ class BankStatementsController < ApplicationController
     if @bank_statement.locked?
       redirect_to account_bank_statement_path(@bank_statement.account, @bank_statement),
                   alert: "This bank statement is locked and cannot be edited."
-      return
+      nil
     end
   end
 

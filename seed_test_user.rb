@@ -162,9 +162,9 @@ while current_date <= end_date
         variance_amount = rand(-tx[:variance]..tx[:variance])
         # For negative amounts, make sure variance doesn't flip the sign
         if tx[:amount] < 0
-          final_amount = [tx[:amount] - variance_amount.abs, tx[:amount] + variance_amount.abs].min
+          final_amount = [ tx[:amount] - variance_amount.abs, tx[:amount] + variance_amount.abs ].min
         else
-          final_amount = [tx[:amount] - variance_amount.abs, tx[:amount] + variance_amount.abs].max
+          final_amount = [ tx[:amount] - variance_amount.abs, tx[:amount] + variance_amount.abs ].max
         end
       end
 
@@ -212,9 +212,9 @@ while current_date <= end_date
         variance_amount = rand(-tx[:variance]..tx[:variance])
         # For negative amounts, make sure variance doesn't flip the sign
         if tx[:amount] < 0
-          final_amount = [tx[:amount] - variance_amount.abs, tx[:amount] + variance_amount.abs].min
+          final_amount = [ tx[:amount] - variance_amount.abs, tx[:amount] + variance_amount.abs ].min
         else
-          final_amount = [tx[:amount] - variance_amount.abs, tx[:amount] + variance_amount.abs].max
+          final_amount = [ tx[:amount] - variance_amount.abs, tx[:amount] + variance_amount.abs ].max
         end
       end
 
@@ -323,7 +323,7 @@ account_objects.each do |name, account|
       )
 
       # Reconcile some transactions
-      reconcile_count = [period_transactions.count / 2, 1].max
+      reconcile_count = [ period_transactions.count / 2, 1 ].max
       reconcile_transactions = period_transactions.sample(reconcile_count)
       reconcile_transactions.each do |tx|
         tx.update(
@@ -382,13 +382,13 @@ while invoice_date <= end_date
     # Determine status based on due date and payment rate
     status = if due_date > end_date
                "pending"
-             elsif rand <= client[:payment_rate]
+    elsif rand <= client[:payment_rate]
                "paid"
-             elsif rand < 0.5
+    elsif rand < 0.5
                "overdue"
-             else
+    else
                "cancelled"
-             end
+    end
 
     # Payment status
     payment_status = status == "paid" ? "paid" : "awaiting_payment"

@@ -10,5 +10,7 @@
 //= link controllers/budget_vs_actual_chart_controller.js
 //= link controllers/category_spending_chart_controller.js
 //= link controllers/cash_flow_chart_controller.js
+//= link controllers/financial_insights_chart_controller.js
+//= link controllers/fin_assistant_controller.js
 //= link apexcharts.js
 //= link_tree ../builds

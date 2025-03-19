@@ -60,9 +60,9 @@ class AiService
     # Format transactions for AI service
     formatted_transactions = transactions.map do |t|
       {
-        date: t.date.to_s,
-        amount: t.amount.to_f,
-        category: t.category&.name || "uncategorized"
+        date: t[:date].to_s,
+        amount: t[:amount].to_f,
+        category: t[:category] || "uncategorized"
       }
     end
     payload = {
@@ -80,15 +80,34 @@ class AiService
 
     formatted_transactions = transactions.map do |t|
       {
-        date: t.date.to_s,
-        amount: t.amount.to_f,
-        category: t.category&.name || "uncategorized"
+        date: t[:date].to_s,
+        amount: t[:amount].to_f,
+        category: t[:category] || "uncategorized"
       }
     end
     payload = {
       user_id: user_id,
       transactions: formatted_transactions,
       period: period
+    }
+
+    make_request(endpoint, payload)
+  end
+
+  def self.detect_anomalies(user_id, transactions, threshold = nil)
+    endpoint = "#{AI_SERVICE_URL}/detect/anomalies"
+
+    formatted_transactions = transactions.map do |t|
+      {
+        date: t[:date].to_s,
+        amount: t[:amount].to_f,
+        category: t[:category] || "uncategorized"
+      }
+    end
+    payload = {
+      user_id: user_id,
+      transactions: formatted_transactions,
+      threshold: threshold
     }
 
     make_request(endpoint, payload)
