@@ -23,7 +23,11 @@
           <h2 class="text-lg font-medium text-gray-800">Cash Flow Projection</h2>
         </div>
         <div class="p-6">
-          <div id="forecast-chart" class="h-80"></div>
+          <div id="forecast-chart"
+               class="h-80"
+               data-controller="forecast-chart"
+               data-forecast-chart-forecast-data-value='<%= raw @data.to_json %>'>
+          </div>
         </div>
       </div>
     </div>
@@ -172,78 +176,3 @@
     </div>
   </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const forecastData = <%= raw @forecast.result_data %>;
-
-        const dates = forecastData.forecast.map(item => item.date);
-        const balances = forecastData.forecast.map(item => item.balance);
-        const incomes = forecastData.forecast.map(item => item.income);
-        const expenses = forecastData.forecast.map(item => item.expenses);
-
-        const options = {
-            series: [
-                {
-                    name: 'Balance',
-                    data: balances,
-                    type: 'line'
-                },
-                {
-                    name: 'Income',
-                    data: incomes,
-                    type: 'column'
-                },
-                {
-                    name: 'Expenses',
-                    data: expenses.map(v => -Math.abs(v)), // Make expenses negative
-                    type: 'column'
-                }
-            ],
-            chart: {
-                height: 350,
-                toolbar: {
-                    show: true
-                }
-            },
-            plotOptions: {
-                bar: {
-                    columnWidth: '60%',
-                },
-            },
-            xaxis: {
-                categories: dates,
-                labels: {
-                    rotate: -45,
-                    style: {
-                        fontSize: '10px'
-                    }
-                }
-            },
-            yaxis: {
-                title: {
-                    text: 'Amount'
-                },
-                labels: {
-                    formatter: function(value) {
-                        return '$' + Math.abs(value).toFixed(0);
-                    }
-                }
-            },
-            stroke: {
-                curve: 'smooth',
-                width: [4, 0, 0]  // Line width for balance, no line for columns
-            },
-            colors: ['#3b82f6', '#10b981', '#ef4444'], // Blue, Green, Red
-            dataLabels: {
-                enabled: false
-            },
-            legend: {
-                position: 'top'
-            }
-        };
-
-        const chart = new ApexCharts(document.querySelector("#forecast-chart"), options);
-        chart.render();
-    });
-</script>

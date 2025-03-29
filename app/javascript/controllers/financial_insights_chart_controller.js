@@ -10,6 +10,12 @@ export default class extends Controller {
 
     connect() {
         console.log("Financial Insights Controller Connected");
+        // Add debug logging to help diagnose data issues
+        if (this.trendsValue) {
+            console.log("Trends data available:", this.trendsValue);
+        } else {
+            console.warn("No trends data available");
+        }
         this.renderCharts();
     }
 
@@ -20,22 +26,55 @@ export default class extends Controller {
     }
 
     renderIncomeExpenseChart() {
-        if (!this.hasIncomeExpenseTarget || !this.trendsValue || !this.trendsValue.monthly_trends) return;
+        if (!this.hasIncomeExpenseTarget) {
+            console.warn("Income expense target not found");
+            return;
+        }
+
+        // More robust checking for data structure
+        if (!this.trendsValue) {
+            console.warn("No trends data provided");
+            this.showNoDataMessage(this.incomeExpenseTarget);
+            return;
+        }
 
         const monthlyTrends = this.trendsValue.monthly_trends;
+        if (!monthlyTrends || !Array.isArray(monthlyTrends) || monthlyTrends.length === 0) {
+            console.warn("Monthly trends data is missing or invalid:", monthlyTrends);
+            this.showNoDataMessage(this.incomeExpenseTarget);
+            return;
+        }
 
-        // Convert data format to series for ApexCharts
+        // Convert a data format to a series for ApexCharts
         const months = [];
         const incomeData = [];
         const expensesData = [];
         const netData = [];
 
         monthlyTrends.forEach(month => {
-            months.push(month.month);
-            incomeData.push(month.income || 0);
-            expensesData.push(Math.abs(month.expenses || 0)); // Convert to positive for chart
-            netData.push(month.net || 0);
+            // Make sure 'month' is actually an object
+            if (!month || typeof month !== 'object') {
+                console.warn("Invalid month entry in trends data:", month);
+                return;
+            }
+
+            months.push(month.month || 'Unknown');
+
+            // Handle missing or non-numeric values
+            const income = typeof month.income === 'number' ? month.income : 0;
+            const expenses = typeof month.expenses === 'number' ? Math.abs(month.expenses) : 0;
+            const net = typeof month.net === 'number' ? month.net : 0;
+
+            incomeData.push(income);
+            expensesData.push(expenses); // Convert to positive for chart
+            netData.push(net);
         });
+
+        // If we have no valid data after processing, show a message
+        if (months.length === 0) {
+            this.showNoDataMessage(this.incomeExpenseTarget);
+            return;
+        }
 
         const options = {
             series: [
@@ -95,12 +134,29 @@ export default class extends Controller {
             }
         };
 
-        this.incomeExpenseChart = new ApexCharts(this.incomeExpenseTarget, options);
-        this.incomeExpenseChart.render();
+        try {
+            this.incomeExpenseChart = new ApexCharts(this.incomeExpenseTarget, options);
+            this.incomeExpenseChart.render();
+            console.log("Income/Expense chart rendered successfully");
+        } catch (error) {
+            console.error("Error rendering Income/Expense chart:", error);
+            this.showErrorMessage(this.incomeExpenseTarget);
+        }
     }
 
     renderCategoryDistributionChart() {
-        if (!this.hasCategoryDistributionTarget || !this.trendsValue || !this.trendsValue.category_breakdown) return;
+        if (!this.hasCategoryDistributionTarget) {
+            console.warn("Category distribution target not found");
+            return;
+        }
+
+        // More thorough data validation
+        if (!this.trendsValue || !this.trendsValue.category_breakdown ||
+            typeof this.trendsValue.category_breakdown !== 'object') {
+            console.warn("Category breakdown data is missing or invalid");
+            this.showNoDataMessage(this.categoryDistributionTarget);
+            return;
+        }
 
         const categoryBreakdown = this.trendsValue.category_breakdown;
 
@@ -108,17 +164,27 @@ export default class extends Controller {
         const categories = [];
         const values = [];
 
-        Object.entries(categoryBreakdown).forEach(([category, amount]) => {
-            // Only include expense categories (negative amounts)
-            if (amount < 0) {
-                categories.push(category);
-                values.push(Math.abs(amount));  // Convert to positive for chart
-            }
-        });
+        try {
+            Object.entries(categoryBreakdown).forEach(([category, amount]) => {
+                // Type checking for amount
+                if (typeof amount !== 'number') {
+                    console.warn(`Invalid amount for category ${category}:`, amount);
+                    return;
+                }
+
+                // Only include expense categories (negative amounts)
+                if (amount < 0) {
+                    categories.push(category);
+                    values.push(Math.abs(amount));  // Convert to positive for chart
+                }
+            });
+        } catch (error) {
+            console.error("Error processing category data:", error);
+        }
 
         // Return early if no categories or all values are 0
         if (categories.length === 0 || values.every(v => v === 0)) {
-            this.categoryDistributionTarget.innerHTML = '<div class="text-center p-4 text-gray-500">No category spending data available</div>';
+            this.showNoDataMessage(this.categoryDistributionTarget);
             return;
         }
 
@@ -196,20 +262,31 @@ export default class extends Controller {
         try {
             this.categoryDistributionChart = new ApexCharts(this.categoryDistributionTarget, options);
             this.categoryDistributionChart.render();
+            console.log("Category Distribution chart rendered successfully");
         } catch (error) {
             console.error("Error rendering Category Distribution chart:", error);
-            this.categoryDistributionTarget.innerHTML = '<div class="text-center p-4 text-gray-500">Error rendering chart</div>';
+            this.showErrorMessage(this.categoryDistributionTarget);
         }
     }
 
     renderDayOfWeekChart() {
-        if (!this.hasDayOfWeekTarget || !this.trendsValue || !this.trendsValue.day_of_week_spending) return;
+        if (!this.hasDayOfWeekTarget) {
+            console.warn("Day of week target not found");
+            return;
+        }
+
+        // Enhanced validation
+        if (!this.trendsValue || !this.trendsValue.day_of_week_spending) {
+            console.warn("Day of week spending data is missing");
+            this.showNoDataMessage(this.dayOfWeekTarget);
+            return;
+        }
 
         const dayOfWeekSpending = this.trendsValue.day_of_week_spending;
 
-        // If no day of week data is available
+        // If no day of the week data is available or invalid format
         if (!dayOfWeekSpending || Object.keys(dayOfWeekSpending).length === 0) {
-            this.dayOfWeekTarget.innerHTML = '<div class="text-center p-4 text-gray-500">No day of week data available</div>';
+            this.showNoDataMessage(this.dayOfWeekTarget);
             return;
         }
 
@@ -217,17 +294,36 @@ export default class extends Controller {
         const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
         const data = [];
 
-        // Convert to array format
-        for (let i = 0; i < 7; i++) {
-            const dayAmount = Math.abs(dayOfWeekSpending[i] || 0);
-            data.push({
-                x: dayNames[i],
-                y: dayAmount
-            });
+        try {
+            // Convert to array format with type checking
+            for (let i = 0; i < 7; i++) {
+                // Get the amount, defaulting to 0 if missing or not a number
+                let amount = dayOfWeekSpending[i];
+                if (typeof amount !== 'number') {
+                    amount = 0;
+                }
+
+                const dayAmount = Math.abs(amount);
+
+                data.push({
+                    x: dayNames[i],
+                    y: dayAmount
+                });
+            }
+
+            // Sort by amount descending
+            data.sort((a, b) => b.y - a.y);
+        } catch (error) {
+            console.error("Error processing day of week data:", error);
+            this.showErrorMessage(this.dayOfWeekTarget);
+            return;
         }
 
-        // Sort by amount descending
-        data.sort((a, b) => b.y - a.y);
+        // If all days have zero spending, show a message
+        if (data.every(day => day.y === 0)) {
+            this.showNoDataMessage(this.dayOfWeekTarget);
+            return;
+        }
 
         const options = {
             series: [{
@@ -275,8 +371,23 @@ export default class extends Controller {
             }
         };
 
-        this.dayOfWeekChart = new ApexCharts(this.dayOfWeekTarget, options);
-        this.dayOfWeekChart.render();
+        try {
+            this.dayOfWeekChart = new ApexCharts(this.dayOfWeekTarget, options);
+            this.dayOfWeekChart.render();
+            console.log("Day of Week chart rendered successfully");
+        } catch (error) {
+            console.error("Error rendering Day of Week chart:", error);
+            this.showErrorMessage(this.dayOfWeekTarget);
+        }
+    }
+
+    // Helper methods for showing messages
+    showNoDataMessage(target) {
+        target.innerHTML = '<div class="text-center p-4 text-gray-500">No data available for this chart</div>';
+    }
+
+    showErrorMessage(target) {
+        target.innerHTML = '<div class="text-center p-4 text-gray-500">Error rendering chart</div>';
     }
 
     disconnect() {

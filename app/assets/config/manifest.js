@@ -13,5 +13,9 @@
 //= link controllers/financial_insights_chart_controller.js
 //= link controllers/fin_assistant_controller.js
 //= link controllers/sidebar_controller.js
+//= link controllers/scenario_chart_controller.js
+//= link controllers/compare_chart_controller.js
+//= link controllers/forecast_chart_controller.js
+//= link controllers/default_forecast_chart_controller.js
 //= link apexcharts.js
 //= link_tree./builds

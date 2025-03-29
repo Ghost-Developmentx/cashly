@@ -24,6 +24,7 @@ class AiService
       forecast_days: days
     }
 
+    # No normalization needed as the Python service now returns correctly formatted data
     make_request(endpoint, payload)
   end
 
@@ -37,10 +38,11 @@ class AiService
       adjustments: adjustments
     }
 
+    # No normalization needed as the Python service now returns correctly formatted data
     make_request(endpoint, payload)
   end
 
-  # Categorize transaction based on its description and amount
+  # Categorize a transaction based on its description and amount
   def self.categorize_transaction(description, amount, date)
     endpoint = "#{AI_SERVICE_URL}/categorize/transaction"
 

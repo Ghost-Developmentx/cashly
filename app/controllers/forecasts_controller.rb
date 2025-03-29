@@ -9,6 +9,7 @@ class ForecastsController < ApplicationController
   end
 
   def show
+    # Parse the stored result data
     @data = JSON.parse(@forecast.result_data)
 
     respond_to do |format|
@@ -118,7 +119,7 @@ class ForecastsController < ApplicationController
   def create_scenario
     @original_forecast = current_user.forecasts.find(params[:id])
 
-    # Create a new scenario based on original forecast
+    # Create a new scenario based on the original forecast
     @scenario = current_user.forecasts.new(
       name: "#{@original_forecast.name} - Scenario",
       description: params[:description],

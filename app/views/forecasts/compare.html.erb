@@ -16,7 +16,12 @@
       <h2 class="text-lg font-medium text-gray-800">Forecast Comparison</h2>
     </div>
     <div class="p-6">
-      <div id="comparison-chart" class="h-96"></div>
+      <div id="comparison-chart"
+           class="h-96"
+           data-controller="compare-chart"
+           data-compare-chart-original-data-value="<%= @forecast_data.to_json.html_safe %>"
+           data-compare-chart-comparison-data-value="<%= @comparison_data.to_json.html_safe %>">
+      </div>
     </div>
   </div>
 
@@ -161,67 +166,3 @@
     </div>
   </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const originalData = <%= raw @forecast.result_data %>;
-        const comparisonData = <%= raw @comparison_forecast.result_data %>;
-
-        const dates = originalData.forecast.map(item => item.date);
-        const originalBalances = originalData.forecast.map(item => item.balance);
-        const comparisonBalances = comparisonData.forecast.map(item => item.balance);
-
-        const options = {
-            series: [
-                {
-                    name: '<%= @forecast.name %>',
-                    data: originalBalances
-                },
-                {
-                    name: '<%= @comparison_forecast.name %>',
-                    data: comparisonBalances
-                }
-            ],
-            chart: {
-                height: 400,
-                type: 'line',
-                toolbar: {
-                    show: true
-                }
-            },
-            stroke: {
-                curve: 'smooth',
-                width: 3
-            },
-            colors: ['#3b82f6', '#10b981'], // Blue, Green
-            xaxis: {
-                categories: dates,
-                labels: {
-                    rotate: -45,
-                    style: {
-                        fontSize: '10px'
-                    }
-                }
-            },
-            yaxis: {
-                title: {
-                    text: 'Balance'
-                },
-                labels: {
-                    formatter: function(value) {
-                        return '$' + value.toFixed(0);
-                    }
-                }
-            },
-            markers: {
-                size: 4
-            },
-            legend: {
-                position: 'top'
-            }
-        };
-
-        const chart = new ApexCharts(document.querySelector("#comparison-chart"), options);
-        chart.render();
-    });
-</script>

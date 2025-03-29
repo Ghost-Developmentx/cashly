@@ -28,5 +28,17 @@ application.register("invoice-preview", InvoicePreviewController)
 import SidebarController from "./sidebar_controller"
 application.register("sidebar", SidebarController)
 
+import ForecastChartController from "./forecast_chart_controller"
+application.register("forecast-chart", ForecastChartController)
+
+import ScenarioChartController from "./scenario_chart_controller"
+application.register("scenario-chart", ScenarioChartController)
+
+import CompareChartController from "./compare_chart_controller"
+application.register("compare-chart", CompareChartController)
+
+import DefaultForecastChartController from "./default_forecast_chart_controller"
+application.register("default-forecast-chart", DefaultForecastChartController)
+
 import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
 eagerLoadControllersFrom("controllers", application)

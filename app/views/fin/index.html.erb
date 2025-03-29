@@ -3,9 +3,9 @@
   <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold text-gray-800 flex items-center">
       <i class="bi bi-robot text-blue-600 mr-2"></i>
-      Fin - Your Financial Assistant
+      Fin—Your Financial Assistant
     </h1>
-    <%= link_to clear_fin_path, method: :post, class: "px-4 py-2 border border-red-600 text-red-600 text-sm font-medium rounded-md hover:bg-red-50" do %>
+    <%= button_to clear_fin_path, method: :post, class: "px-4 py-2 border border-red-600 text-red-600 text-sm font-medium rounded-md hover:bg-red-50" do %>
       <i class="bi bi-trash mr-1"></i> Clear History
     <% end %>
   </div>
@@ -107,7 +107,7 @@
               <textarea
                 id="query"
                 rows="2"
-                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm resize-none"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                 placeholder="Ask Fin a question about your finances..."
                 data-fin-assistant-target="queryInput"
                 data-action="keydown->fin-assistant#handleEnter"></textarea>
@@ -136,7 +136,7 @@
           <div class="text-center py-8" data-fin-assistant-target="emptyVisualization">
             <i class="bi bi-bar-chart-line text-gray-400 text-5xl"></i>
             <p class="mt-4 text-gray-500">Ask Fin a question that requires visualization to see charts and data here.</p>
-            <p class="text-sm text-gray-400 mt-2">For example: "Show me my spending trends" or "Create a forecast for the next 30 days"</p>
+            <p class="text-sm text-gray-400 mt-2">For example, "Show me my spending trends" or "Create a forecast for the next 30 days"</p>
           </div>
         </div>
       </div>
