@@ -86,7 +86,7 @@ gem "omniauth-google-oauth2", "~> 1.2"
 
 gem "omniauth-rails_csrf_protection", "~> 1.0"
 
-gem "twilio-ruby", "~> 7.5"
+gem "twilio-ruby", "~> 7.6"
 
 gem "devise-two-factor", "~> 6.1"
 
