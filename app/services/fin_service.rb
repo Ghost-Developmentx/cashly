@@ -1,3 +1,4 @@
+# app/services/fin_service.rb
 class FinService
   AI_SERVICE_URL = ENV["AI_SERVICE_URL"] || "http://localhost:5000"
 
@@ -45,6 +46,9 @@ class FinService
       end
     end
 
+    # Add UI links based on the response actions
+    response = enhance_response_with_links(response)
+
     response
   end
 
@@ -69,6 +73,50 @@ class FinService
     end
   end
 
+  # Add useful UI links based on the actions detected by the AI service
+  def self.enhance_response_with_links(response)
+    # Only enhance if we have actions from the AI service
+    return response unless response["actions"].present?
+
+    # For each action, add appropriate UI links if needed
+    response["actions"].each do |action|
+      case action["type"]
+      when "show_forecast"
+        # Add a link to the relevant forecast
+        action["links"] ||= []
+        action["links"] << {
+          text: "View Full Forecast",
+          url: "/forecasts"
+        }
+      when "show_trends"
+        # Add a link to the insights page
+        action["links"] ||= []
+        action["links"] << {
+          text: "View All Insights",
+          url: "/ai/insights"
+        }
+      when "show_budget"
+        # Add a link to the budget page
+        action["links"] ||= []
+        action["links"] << {
+          text: "Manage Budgets",
+          url: "/budgets"
+        }
+      when "show_categories", "show_anomalies"
+        # Add a link to transactions
+        action["links"] ||= []
+        action["links"] << {
+          text: "View All Transactions",
+          url: "/transactions"
+        }
+      else
+        # type code here
+      end
+    end
+
+    response
+  end
+
   private
 
   def self.fetch_user_transactions(user_id)
@@ -85,6 +133,7 @@ class FinService
     # Format for the AI service
     transactions.map do |t|
       {
+        id: t.id,
         date: t.date.to_s,
         amount: t.amount.to_f,
         description: t.description,

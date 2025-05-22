@@ -1,30 +1,20 @@
-class FinController < ApplicationController
-  before_action :set_conversation, only: [ :query ]
+# app/controllers/fin/conversations_controller.rb
+module Fin
+  class ConversationsController < ApplicationController
+    before_action :set_conversation, only: [ :query ]
 
   # Show the chat interface
   def index
-    # Prioritize specific conversation if provided
-    if params[:conversation].present?
-      @conversation = current_user.fin_conversations.find_by(id: params[:conversation])
-      # Fallbacks
-      @conversation ||= current_user.fin_conversations.where(active: true).first
-      @conversation ||= current_user.fin_conversations.order(created_at: :desc).first
-    else
-      @conversation = current_user.fin_conversations.where(active: true).first ||
-                      current_user.fin_conversations.order(created_at: :desc).first
-    end
+    # Get the active conversation or the most recent one
+    @conversation = current_user.fin_conversations.where(active: true).first ||
+      current_user.fin_conversations.order(created_at: :desc).first
 
-    # 🔥 Mark selected conversation as active, others as inactive
-    if @conversation
-      current_user.fin_conversations.where.not(id: @conversation.id).update_all(active: false)
-      @conversation.update(active: true)
-    end
-
+    # Get conversation history
     @conversation_history = @conversation ? @conversation.conversation_history : []
+
+    # Pass data for any charts that might be needed
     prepare_dashboard_data
   end
-
-
 
   # Process a new user query
   def query
@@ -91,20 +81,27 @@ class FinController < ApplicationController
     redirect_to fin_path, notice: "Started a new conversation with Fin."
   end
 
-  def history
-    @conversations = current_user.fin_conversations.order(created_at: :desc)
-  end
+    def history
+      conversations = current_user.fin_conversations.order(created_at: :desc)
+      render json: conversations.as_json(only: [:id, :title, :created_at, :updated_at, :active])
+    end
 
-  # Load a specific conversation
-  def show
-    @conversation = current_user.fin_conversations.find(params[:id])
-    @conversation.update(active: true)
 
-    # Deactivate all other conversations
-    current_user.fin_conversations.where.not(id: @conversation.id).update_all(active: false)
+    def show
+      @conversation = current_user.fin_conversations.find(params[:id])
+      @conversation.update(active: true)
+      current_user.fin_conversations.where.not(id: @conversation.id).update_all(active: false)
 
-    redirect_to fin_path
-  end
+      # You must render JSON or else Rails will try to render HTML
+      render json: {
+        id: @conversation.id,
+        title: @conversation.title,
+        active: @conversation.active,
+        created_at: @conversation.created_at,
+        updated_at: @conversation.updated_at,
+        messages: @conversation.fin_messages.order(:created_at).as_json(only: [:id, :role, :content, :created_at])
+      }
+    end
 
   def feedback
     message_id = params[:message_id]
@@ -272,5 +269,6 @@ class FinController < ApplicationController
     )
 
     forecast.save ? forecast : nil
+  end
   end
 end

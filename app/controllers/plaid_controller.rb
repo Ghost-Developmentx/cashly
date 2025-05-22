@@ -1,5 +1,4 @@
 class PlaidController < ApplicationController
-  before_action :authenticate_user!
   rescue_from StandardError, with: :handle_error
 
   def create_link_token

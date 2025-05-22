@@ -1,5 +1,4 @@
 class DashboardController < ApplicationController
-  before_action :authenticate_user!
   def index
     # Calculate user account balances
     @total_balance = current_user.accounts.sum(&:balance)
@@ -76,6 +75,25 @@ class DashboardController < ApplicationController
       format.json { render json: { success: true } }
     end
   end
+
+  def summary
+    total_balance = current_user.accounts.sum(:balance).to_f
+    transactions = current_user.transactions.where(date: Date.current.beginning_of_month..Date.current.end_of_month)
+    income = transactions.where("amount > 0").sum(:amount).to_f
+    expenses = transactions.where("amount < 0").sum(:amount).abs.to_f
+    forecast = current_user.forecasts.order(created_at: :desc).limit(1).pluck(:name, :time_horizon).first
+    budget_count = current_user.budgets.count
+
+    render json: {
+      balance: total_balance,
+      income: income,
+      expenses: expenses,
+      forecast: forecast ? { name: forecast[0], time_horizon: forecast[1] } : nil,
+      budget_count: budget_count
+    }
+  end
+
+
 
   def cash_flow
     days = params[:days].present? ? params[:days].to_i : 30

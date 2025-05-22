@@ -1,38 +1,30 @@
 Rails.application.routes.draw do
-  # Root route
-  root "dashboard#index"
+  # Authenticated Clerk user endpoint
+  get "/me", to: "me#show"
 
-  # Authentication routes
-  devise_for :users, controllers: {
-    registrations: "users/registrations",
-    omniauth_callbacks: "users/omniauth_callbacks",
-    confirmations: "users/confirmations"
-  }
-
-  # Dashboard routes
-  get "dashboard", to: "dashboard#index"
-  get "dashboard/hide_getting_started", to: "dashboard#hide_getting_started"
-
-  # Dashboard React component data endpoints
-  get "dashboard/cash_flow", to: "dashboard#cash_flow"
-  get "dashboard/category_spending", to: "dashboard#category_spending"
-  get "dashboard/budget_vs_actual", to: "dashboard#budget_vs_actual"
-
-  # User profile
-  resource :profile, only: [ :show, :edit, :update ] do
-    collection do
-      get "onboarding"
-      patch "complete_onboarding"
-      post "complete_tutorial"
+  # Fin Assistant (AI CFO) routes
+  namespace :fin do
+    resources :conversations, only: [ :index, :show ] do
+      collection do
+        post :query
+        post :clear
+        post :feedback
+        get :history
+      end
     end
+
+    # Optional: legacy route to support /fin or redirect to dashboard
+    get "/", to: "conversations#index"
   end
+
+  get "dashboard/summary", to: "dashboard#summary"
+  get "dashboard/cash_flow", to: "dashboard#cash_flow"
+
 
   # Core financial management
   resources :accounts do
-    resources :bank_statements do
-      member do
-        patch :reconcile
-      end
+    resources :bank_statements, only: [ :index, :show, :create, :update, :destroy ] do
+      patch :reconcile, on: :member
     end
   end
 
@@ -65,7 +57,7 @@ Rails.application.routes.draw do
 
   resources :categories
 
-  # Invoice management
+  # Invoicing
   resources :invoices do
     member do
       post :send
@@ -84,13 +76,6 @@ Rails.application.routes.draw do
     end
   end
 
-  # Import functionality
-  resources :imports, only: [ :new, :create ] do
-    collection do
-      get "failed"
-    end
-  end
-
   # Integrations
   resources :integrations, only: [ :index, :new, :create, :destroy ] do
     collection do
@@ -99,28 +84,24 @@ Rails.application.routes.draw do
     end
   end
 
-  # Stripe webhook
   post "/stripe/webhooks", to: "stripe_webhooks#create"
 
-  # Plaid integration
+  # Plaid
   resources :plaid, only: [] do
     collection do
-      post "create_link_token"
-      post "exchange_public_token"
-      post "sync"
+      post :create_link_token
+      post :exchange_public_token
+      post :sync
     end
   end
 
-  # Accounting features
+  # Accounting
   resources :category_account_mappings, only: [ :index, :create, :update, :destroy ]
 
   resources :ledger_accounts do
-    member do
-      patch :toggle_active
-    end
+    patch :toggle_active, on: :member
   end
-
-  get "chart_of_accounts", to: "ledger_accounts#index", as: "chart_of_accounts"
+  get "/chart_of_accounts", to: "ledger_accounts#index"
 
   resources :journal_entries do
     member do
@@ -129,28 +110,18 @@ Rails.application.routes.draw do
     end
   end
 
-  # Fin Assistant routes
-  get "fin", to: "fin#index", as: "fin"
-  post "fin/query", to: "fin#query", as: "fin_query"
-  post "fin/clear", to: "fin#clear", as: "clear_fin"
-  get "fin/history", to: "fin#history", as: "fin_history"
-  post "fin/:id", to: "fin#show", as: "show_fin"
-  post "fin/feedback", to: "fin#feedback", as: "fin_feedback"
-
   # Financial reports
-  resources :reports, only: [ :index ] do
-    collection do
-      get :trial_balance
-      get :income_statement
-      get :balance_sheet
-      get :cash_flow_statement
-    end
+  namespace :reports do
+    get :trial_balance
+    get :income_statement
+    get :balance_sheet
+    get :cash_flow_statement
   end
 
-  # AI features
+  # AI Insights
   namespace :ai do
-    get "insights", to: "insights#index"
-    get "forecast", to: "insights#forecast"
-    get "recommendation", to: "insights#recommendation"
+    get :insights
+    get :forecast
+    get :recommendation
   end
 end

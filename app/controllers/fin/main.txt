@@ -1,30 +1,20 @@
-class FinController < ApplicationController
-  before_action :set_conversation, only: [ :query ]
+# app/controllers/fin/main_controller.rb
+module Fin
+  class MainController < ApplicationController
+    before_action :set_conversation, only: [ :query ]
 
   # Show the chat interface
   def index
-    # Prioritize specific conversation if provided
-    if params[:conversation].present?
-      @conversation = current_user.fin_conversations.find_by(id: params[:conversation])
-      # Fallbacks
-      @conversation ||= current_user.fin_conversations.where(active: true).first
-      @conversation ||= current_user.fin_conversations.order(created_at: :desc).first
-    else
-      @conversation = current_user.fin_conversations.where(active: true).first ||
-                      current_user.fin_conversations.order(created_at: :desc).first
-    end
+    # Get the active conversation or the most recent one
+    @conversation = current_user.fin_conversations.where(active: true).first ||
+      current_user.fin_conversations.order(created_at: :desc).first
 
-    # 🔥 Mark selected conversation as active, others as inactive
-    if @conversation
-      current_user.fin_conversations.where.not(id: @conversation.id).update_all(active: false)
-      @conversation.update(active: true)
-    end
-
+    # Get conversation history
     @conversation_history = @conversation ? @conversation.conversation_history : []
+
+    # Pass data for any charts that might be needed
     prepare_dashboard_data
   end
-
-
 
   # Process a new user query
   def query
@@ -272,5 +262,6 @@ class FinController < ApplicationController
     )
 
     forecast.save ? forecast : nil
+  end
   end
 end
