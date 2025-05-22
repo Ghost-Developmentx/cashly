@@ -54,7 +54,7 @@ gem "plaid", "~> 36.1"
 
 gem "attr_encrypted", "~> 4.2"
 
-gem "twilio-ruby", "~> 7.5"
+gem "twilio-ruby", "~> 7.6"
 
 gem "stripe", "~> 13.5"
 
