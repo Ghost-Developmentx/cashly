@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_20_233749) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_22_220727) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -322,6 +322,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_20_233749) do
     t.string "uid"
     t.string "stripe_customer_id"
     t.string "clerk_id"
+    t.string "date_format"
+    t.string "theme"
+    t.string "language"
+    t.json "notification_settings"
     t.index ["clerk_id"], name: "index_users_on_clerk_id"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true

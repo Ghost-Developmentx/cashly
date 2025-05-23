@@ -72,14 +72,13 @@ module Fin
     }
   end
 
-  # Clear conversation history
-  def clear
-    # Mark any active conversations as inactive
-    current_user.fin_conversations.where(active: true).update_all(active: false)
+    def clear
+      # Mark any active conversations as inactive
+      current_user.fin_conversations.where(active: true).update_all(active: false)
 
-    # Redirect back to Fin
-    redirect_to fin_path, notice: "Started a new conversation with Fin."
-  end
+      # Return JSON response directly (no respond_to needed in API-only mode)
+      render json: { success: true, message: "Started a new conversation." }
+    end
 
     def history
       conversations = current_user.fin_conversations.order(created_at: :desc)
@@ -92,14 +91,25 @@ module Fin
       @conversation.update(active: true)
       current_user.fin_conversations.where.not(id: @conversation.id).update_all(active: false)
 
-      # You must render JSON or else Rails will try to render HTML
+      # Format messages for frontend consumption
+      formatted_messages = @conversation.fin_messages.order(:created_at).map do |message|
+        {
+          id: message.id,
+          role: message.role,
+          content: message.content,
+          created_at: message.created_at
+        }
+      end
+
+      # Return in the format expected by frontend
       render json: {
         id: @conversation.id,
         title: @conversation.title,
         active: @conversation.active,
         created_at: @conversation.created_at,
         updated_at: @conversation.updated_at,
-        messages: @conversation.fin_messages.order(:created_at).as_json(only: [:id, :role, :content, :created_at])
+        messages: formatted_messages,
+        conversation_history: formatted_messages # Include both for compatibility
       }
     end
 

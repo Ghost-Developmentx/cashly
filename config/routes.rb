@@ -1,9 +1,20 @@
 Rails.application.routes.draw do
   # Authenticated Clerk user endpoint
   get "/me", to: "me#show"
+  patch "/me", to: "me#update"
 
   # Fin Assistant (AI CFO) routes
   namespace :fin do
+    resources :accounts, only: [] do
+      collection do
+        post :create_link_token
+        post :connect_account
+        delete :disconnect_account
+        post :sync_accounts
+        get :account_status
+      end
+    end
+
     resources :conversations, only: [ :index, :show ] do
       collection do
         post :query
@@ -16,6 +27,7 @@ Rails.application.routes.draw do
     # Optional: legacy route to support /fin or redirect to dashboard
     get "/", to: "conversations#index"
   end
+
 
   get "dashboard/summary", to: "dashboard#summary"
   get "dashboard/cash_flow", to: "dashboard#cash_flow"
