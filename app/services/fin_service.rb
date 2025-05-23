@@ -1,4 +1,5 @@
 # app/services/fin_service.rb
+# app/services/fin_service.rb
 class FinService
   AI_SERVICE_URL = ENV["AI_SERVICE_URL"] || "http://localhost:5000"
 
@@ -46,6 +47,9 @@ class FinService
       end
     end
 
+    # Process actions to handle special cases like Plaid connections
+    response = process_actions_for_ui(response)
+
     # Add UI links based on the response actions
     response = enhance_response_with_links(response)
 
@@ -63,6 +67,8 @@ class FinService
         "#{result['insights'].size} insights"
       elsif result.key?("recommendations")
         "#{result['recommendations'].size} recommendations"
+      elsif result.key?("action") && result["action"] == "initiate_plaid_connection"
+        "initiate plaid connection"
       else
         "success"
       end
@@ -71,6 +77,45 @@ class FinService
     else
       "success"
     end
+  end
+
+  # Process actions from AI service to ensure they're properly formatted for UI
+  def self.process_actions_for_ui(response)
+    return response unless response["tool_results"].present?
+
+    # Ensure actions array exists
+    response["actions"] ||= []
+
+    # Check tool results for special actions that need UI handling
+    response["tool_results"].each do |tool_result|
+      tool_name = tool_result["tool"]
+      result = tool_result["result"]
+
+      # Handle initiate_plaid_connection specially
+      if tool_name == "initiate_plaid_connection" && result["action"] == "initiate_plaid_connection"
+        # Check if this action is already in the actions array
+        plaid_action_exists = response["actions"].any? do |action|
+          action["type"] == "initiate_plaid_connection" || action["action"] == "initiate_plaid_connection"
+        end
+
+        # If not, add it
+        unless plaid_action_exists
+          response["actions"] << {
+            "type" => "initiate_plaid_connection",
+            "action" => "initiate_plaid_connection",
+            "data" => result,
+            "user_id" => result["user_id"]
+          }
+        end
+      end
+
+      # Handle get_user_accounts especially if it shows 0 accounts and the user wants to connect
+      if tool_name == "get_user_accounts" && result["account_count"] == 0
+        # This might be followed by an initiate_plaid_connection, so we'll let that handle it
+      end
+    end
+
+    response
   end
 
   # Add useful UI links based on the actions detected by the AI service
@@ -109,8 +154,12 @@ class FinService
           text: "View All Transactions",
           url: "/transactions"
         }
+      when "initiate_plaid_connection"
+        # No additional links needed - this triggers the Plaid modal
+        Rails.logger.info "Plaid connection action detected - UI should show Plaid link"
       else
-        # type code here
+        # Log unknown action types for debugging
+        Rails.logger.info "Unknown action type: #{action['type']}"
       end
     end
 
@@ -153,7 +202,9 @@ class FinService
         name: a.name,
         type: a.account_type,
         balance: a.balance.to_f,
-        id: a.id
+        id: a.id,
+        institution: a.institution,
+        plaid_account_id: a.plaid_account_id
       }
     end
 

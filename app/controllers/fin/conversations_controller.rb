@@ -258,7 +258,14 @@ module Fin
       when "link"
         # Direct link to another part of the application
         processed_actions << action
-      else
+
+      when "initiate_plaid_connection"
+        processed_actions << {
+          type: "initiate_plaid_connection",
+          action: action["action"] || "initiate_plaid_connection",
+          data: action["data"] || {},
+          user_id: action["user_id"]
+        }      else
         # type code here
       end
     end
