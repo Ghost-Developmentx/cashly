@@ -16,7 +16,6 @@ module Fin
     prepare_dashboard_data
   end
 
-  # Process a new user query
   def query
     query_text = params[:query]
 
@@ -32,12 +31,19 @@ module Fin
 
     # Check for errors
     if response[:error].present?
-      render json: { error: response[:error] }, status: :unprocessable_content
+      Rails.logger.error "FinService error: #{response[:error]}"
+      render json: {
+        error: response[:error],
+        message: "I'm having trouble processing your request right now. Please try again."
+      }, status: :unprocessable_content
       return
     end
 
+    # Ensure we have a response_text
+    response_text = response["response_text"] || response[:response_text] || "I'm not sure how to respond to that."
+
     # Add assistant response to conversation
-    @conversation.add_message("assistant", response["response_text"])
+    @conversation.add_message("assistant", response_text)
 
     # Update the conversation title if this is the first exchange
     if @conversation.title.blank? && @conversation.fin_messages.count == 2
@@ -66,7 +72,7 @@ module Fin
 
     # Return response to the client
     render json: {
-      message: response["response_text"],
+      message: response_text,
       actions: actions,
       conversation_history: @conversation.conversation_history
     }

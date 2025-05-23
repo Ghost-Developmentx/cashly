@@ -24,6 +24,12 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :transactions, only: [ :index, :show, :create, :update, :destroy ] do
+      collection do
+        post :categorize_bulk
+      end
+    end
+
     # Optional: legacy route to support /fin or redirect to dashboard
     get "/", to: "conversations#index"
   end
