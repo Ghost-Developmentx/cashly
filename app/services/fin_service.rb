@@ -40,7 +40,7 @@ class FinService
     response = process_actions_for_ui(response, user_id)
 
     Rails.logger.info "🔄 [FinService] After UI processing - Actions: #{response['actions']&.length || 0}"
-    response['actions']&.each_with_index do |action, i|
+    response["actions"]&.each_with_index do |action, i|
       Rails.logger.info "🔄 [FinService] Action #{i}: type=#{action['type']}, has_data=#{action['data'].present?}"
     end
 
@@ -271,6 +271,48 @@ class FinService
           }
         end
 
+      when "setup_stripe_connect"
+        if result["action"] == "setup_stripe_connect"
+          connect_status = check_stripe_connect_status(user_id)
+
+          if connect_status[:connected]
+            response["actions"] << {
+              "type" => "stripe_connect_already_setup",
+              "data" => connect_status,
+              "message" => "Your Stripe Connect account is already set up and ready to accept payments!"
+            }
+          else
+            response["actions"] << {
+              "type" => "setup_stripe_connect",
+              "data" => result.merge(connect_status)
+            }
+          end
+        end
+
+      when "check_stripe_connect_status"
+        connect_status = check_stripe_connect_status(user_id)
+        response["actions"] << {
+          "type" => "show_stripe_connect_status",
+          "data" => connect_status
+        }
+
+      when "create_stripe_connect_dashboard_link"
+        if result["action"] == "create_stripe_connect_dashboard_link"
+          dashboard_result = execute_create_dashboard_link(user_id)
+          if dashboard_result[:success]
+            response["actions"] << {
+              "type" => "open_stripe_dashboard",
+              "data" => dashboard_result,
+              "message" => "Opening your Stripe dashboard..."
+            }
+          else
+            response["actions"] << {
+              "type" => "stripe_connect_error",
+              "error" => dashboard_result[:error]
+            }
+          end
+        end
+
       when "initiate_plaid_connection"
         if result["action"] == "initiate_plaid_connection"
           response["actions"] << {
@@ -342,7 +384,9 @@ class FinService
 
   def self.execute_create_invoice(user_id, invoice_data)
     user = User.find(user_id)
+    connect_account = user.stripe_connect_account
 
+    # Create the Cashly invoice first
     invoice = user.invoices.new(
       client_name: invoice_data["client_name"],
       client_email: invoice_data["client_email"],
@@ -355,11 +399,44 @@ class FinService
     )
 
     if invoice.save
-      {
-        success: true,
-        invoice: format_invoice_for_response(invoice),
-        message: "Invoice created successfully"
-      }
+      # If a user has Stripe Connect, create the Stripe invoice too
+      if connect_account&.can_accept_payments?
+        service = StripeConnectService.new(user)
+        stripe_result = service.create_invoice_with_fee({
+                                                          amount: invoice.amount,
+                                                          client_email: invoice.client_email,
+                                                          client_name: invoice.client_name,
+                                                          description: invoice.description,
+                                                          currency: invoice.currency,
+                                                          cashly_invoice_id: invoice.id
+                                                        })
+
+        if stripe_result[:success]
+          invoice.update!(
+            stripe_invoice_id: stripe_result[:stripe_invoice].id,
+            status: "pending"
+          )
+
+          {
+            success: true,
+            invoice: format_invoice_for_response(invoice),
+            platform_fee: stripe_result[:platform_fee],
+            message: "Invoice created with Stripe Connect! Platform fee: $#{stripe_result[:platform_fee]}"
+          }
+        else
+          {
+            success: true,
+            invoice: format_invoice_for_response(invoice),
+            warning: "Invoice created but Stripe integration failed: #{stripe_result[:error]}"
+          }
+        end
+      else
+        {
+          success: true,
+          invoice: format_invoice_for_response(invoice),
+          message: "Invoice created successfully. Set up Stripe Connect to accept payments."
+        }
+      end
     else
       { success: false, error: invoice.errors.full_messages.join(", ") }
     end
@@ -641,6 +718,73 @@ class FinService
     end
   end
 
+  def self.check_stripe_connect_status(user_id)
+    user = User.find(user_id)
+    connect_account = user.stripe_connect_account
+
+    if connect_account
+      connect_account.sync_from_stripe!
+
+      {
+        connected: true,
+        status: connect_account.status,
+        charges_enabled: connect_account.charges_enabled,
+        payouts_enabled: connect_account.payouts_enabled,
+        details_submitted: connect_account.details_submitted,
+        onboarding_complete: connect_account.onboarding_complete?,
+        platform_fee_percentage: connect_account.platform_fee_percentage,
+        can_accept_payments: connect_account.can_accept_payments?,
+        requirements: connect_account.requirements
+      }
+    else
+      {
+        connected: false,
+        status: "not_connected",
+        charges_enabled: false,
+        payouts_enabled: false,
+        details_submitted: false,
+        onboarding_complete: false,
+        can_accept_payments: false
+      }
+    end
+  end
+
+  def self.execute_create_stripe_connect_account(user_id, account_params)
+    user = User.find(user_id)
+
+    # Check if a user already has a Connect account
+    if user.stripe_connect_account.present?
+      return {
+        success: false,
+        error: "You already have a Stripe Connect account set up"
+      }
+    end
+
+    service = StripeConnectService.new(user)
+    result = service.create_express_account(
+      country: account_params["country"] || "US",
+      business_type: account_params["business_type"] || "individual"
+    )
+
+    if result[:success]
+      {
+        success: true,
+        onboarding_url: result[:onboarding_url],
+        account_id: result[:account].stripe_account_id,
+        message: "Stripe Connect account created! Complete your onboarding to start accepting payments."
+      }
+    else
+      { success: false, error: result[:error] }
+    end
+  end
+
+  def self.execute_create_dashboard_link(user_id)
+    user = User.find(user_id)
+    service = StripeConnectService.new(user)
+    service.create_dashboard_link
+  end
+
+
   def self.fetch_user_context(user_id)
     user = User.find(user_id)
 
@@ -675,13 +819,45 @@ class FinService
       }
     end
 
+    # Get Stripe Connect status
+    stripe_connect_status = user.stripe_connect_status
+
+    # Get integrations
+    integrations = user.integrations.active.map do |integration|
+      {
+        provider: integration.provider,
+        status: integration.status,
+        last_used: integration.last_used_at
+      }
+    end
+
+    # Get invoice statistics for Stripe Connect context
+    invoice_stats = calculate_invoice_stats(user)
+
     # Return combined context
     {
       accounts: accounts,
       budgets: budgets,
       forecasts: forecasts,
+      stripe_connect: stripe_connect_status,
+      integrations: integrations,
+      invoice_stats: invoice_stats,
       currency: user.currency || "USD",
       name: user.full_name
+    }
+  end
+
+  def self.calculate_invoice_stats(user)
+    invoices = user.invoices
+
+    {
+      total_count: invoices.count,
+      pending_count: invoices.where(status: "pending").count,
+      pending_amount: invoices.where(status: "pending").sum(:amount).to_f,
+      overdue_count: invoices.where("status = 'pending' AND due_date < ?", Date.current).count,
+      paid_count: invoices.where(status: "paid").count,
+      paid_amount: invoices.where(status: "paid").sum(:amount).to_f,
+      draft_count: invoices.where(status: "draft").count
     }
   end
 

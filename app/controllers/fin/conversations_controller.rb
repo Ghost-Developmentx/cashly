@@ -322,6 +322,54 @@ module Fin
           links: action["links"]
         }
 
+      when "setup_stripe_connect"
+        processed_actions << {
+          type: "setup_stripe_connect",
+          data: action["data"],
+          message: action["message"] || "Let's set up Stripe Connect to accept payments"
+        }
+
+      when "show_stripe_connect_status"
+        processed_actions << {
+          type: "show_stripe_connect_status",
+          data: action["data"],
+          message: action["message"] || "Here's your Stripe Connect status"
+        }
+
+      when "stripe_connect_already_setup"
+        processed_actions << {
+          type: "stripe_connect_already_setup",
+          data: action["data"],
+          message: action["message"] || "Your Stripe Connect is already set up!"
+        }
+
+      when "open_stripe_dashboard"
+        processed_actions << {
+          type: "open_stripe_dashboard",
+          data: action["data"],
+          message: action["message"] || "Opening your Stripe dashboard..."
+        }
+
+      when "stripe_connect_error"
+        processed_actions << {
+          type: "stripe_connect_error",
+          error: action["error"],
+          message: action["message"] || "There was an error with Stripe Connect"
+        }
+
+      when "show_stripe_connect_earnings"
+        processed_actions << {
+          type: "show_stripe_connect_earnings",
+          data: action["data"],
+          links: action["links"]
+        }
+
+      when "stripe_connect_disconnected"
+        processed_actions << {
+          type: "stripe_connect_disconnected",
+          message: action["message"] || "Stripe Connect has been disconnected"
+        }
+
 
       when "link"
         # Direct link to another part of the application

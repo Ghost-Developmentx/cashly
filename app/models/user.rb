@@ -8,6 +8,7 @@ class User < ApplicationRecord
   has_many :journal_entries, dependent: :destroy
   has_many :forecasts, dependent: :destroy
   has_many :fin_conversations, dependent: :destroy
+  has_one :stripe_connect_account, dependent: :destroy
 
   # Validations
   validates :first_name, :last_name, presence: true, if: :onboarding_completed?
@@ -25,6 +26,41 @@ class User < ApplicationRecord
 
   def needs_onboarding?
     !onboarding_completed?
+  end
+
+  def stripe_connect_enabled?
+    stripe_connect_account&.can_accept_payments?
+  end
+
+  def stripe_connect_setup_complete?
+    stripe_connect_account&.onboarding_complete?
+  end
+
+  def stripe_connect_status
+    if stripe_connect_account
+      {
+        connected: true,
+        status: stripe_connect_account.status,
+        charges_enabled: stripe_connect_account.charges_enabled,
+        payouts_enabled: stripe_connect_account.payouts_enabled,
+        details_submitted: stripe_connect_account.details_submitted,
+        onboarding_complete: stripe_connect_account.onboarding_complete?,
+        can_accept_payments: stripe_connect_account.can_accept_payments?,
+        platform_fee_percentage: stripe_connect_account.platform_fee_percentage,
+        requirements: stripe_connect_account.requirements
+      }
+    else
+      {
+        connected: false,
+        status: "not_connected",
+        charges_enabled: false,
+        payouts_enabled: false,
+        details_submitted: false,
+        onboarding_complete: false,
+        can_accept_payments: false,
+        platform_fee_percentage: 2.9
+      }
+    end
   end
 
   private

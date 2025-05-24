@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_22_220727) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_24_151120) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -262,6 +262,31 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_22_220727) do
     t.index ["user_id"], name: "index_plaid_tokens_on_user_id"
   end
 
+  create_table "stripe_connect_accounts", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "stripe_account_id"
+    t.string "account_type"
+    t.string "country"
+    t.string "email"
+    t.string "business_type"
+    t.json "capabilities"
+    t.json "requirements"
+    t.string "charges_enabled"
+    t.string "payouts_enabled"
+    t.string "details_submitted"
+    t.datetime "created_at_stripe"
+    t.json "settings"
+    t.decimal "platform_fee_percentage"
+    t.string "status"
+    t.text "status_reason"
+    t.datetime "last_synced_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["status"], name: "index_stripe_connect_accounts_on_status"
+    t.index ["stripe_account_id"], name: "index_stripe_connect_accounts_on_stripe_account_id", unique: true
+    t.index ["user_id"], name: "index_stripe_connect_accounts_on_user_id"
+  end
+
   create_table "transactions", force: :cascade do |t|
     t.bigint "account_id", null: false
     t.decimal "amount"
@@ -357,6 +382,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_22_220727) do
   add_foreign_key "journal_lines", "ledger_accounts"
   add_foreign_key "ledger_accounts", "ledger_accounts", column: "parent_account_id"
   add_foreign_key "plaid_tokens", "users"
+  add_foreign_key "stripe_connect_accounts", "users"
   add_foreign_key "transactions", "accounts"
   add_foreign_key "transactions", "categories"
   add_foreign_key "transactions", "journal_entries"

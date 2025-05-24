@@ -39,6 +39,18 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :stripe_connect, only: [] do
+      collection do
+        get :status
+        post :setup
+        post :create_onboarding_link
+        post :dashboard_link
+        get :earnings
+        delete :disconnect
+        post :webhook  # Keep webhook here for Stripe to call
+      end
+    end
+
     resources :invoices, only: [ :create, :update ] do
       member do
         post :send_reminder
@@ -51,7 +63,9 @@ Rails.application.routes.draw do
     get "/", to: "conversations#index"
   end
 
-
+  # Stripe Connect onboarding flow - these need to be outside namespace for Stripe redirects
+  get "/stripe/connect/onboarding/refresh", to: "fin/stripe_connect#onboarding_refresh"
+  get "/stripe/connect/onboarding/success", to: "fin/stripe_connect#onboarding_success"
   get "dashboard/summary", to: "dashboard#summary"
   get "dashboard/cash_flow", to: "dashboard#cash_flow"
 
