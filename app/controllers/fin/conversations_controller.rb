@@ -19,6 +19,8 @@ module Fin
   def query
     query_text = params[:query]
 
+    Rails.logger.info "🎯 [Controller] Received query: #{query_text}"
+
     # Add a user message to a conversation
     @conversation.add_message("user", query_text)
 
@@ -28,6 +30,11 @@ module Fin
       query_text,
       @conversation.conversation_history
     )
+
+    Rails.logger.info "📤 [Controller] FinService response keys: #{response.keys}"
+    Rails.logger.info "📤 [Controller] Actions count: #{response['actions']&.length || 0}"
+    Rails.logger.info "📤 [Controller] Response text present: #{response['response_text'].present?}"
+
 
     # Check for errors
     if response[:error].present?
@@ -70,12 +77,15 @@ module Fin
       )
     end
 
-    # Return response to the client
-    render json: {
+    final_response = {
       message: response_text,
       actions: actions,
       conversation_history: @conversation.conversation_history
     }
+
+    Rails.logger.info "🚀 [Controller] Sending response with #{final_response[:actions]&.length || 0} actions"
+
+    render json: final_response
   end
 
     def clear
@@ -257,9 +267,61 @@ module Fin
           links: action["links"]
         }
 
-      when "show_data"
-        # Generic data display action
-        processed_actions << action
+      when "show_transactions"
+        # Process transaction data for display
+        processed_actions << {
+          type: "show_transactions",
+          data_type: "transactions",
+          data: action["data"],
+          links: action["links"]
+        }
+
+      when "connect_stripe"
+        processed_actions << {
+          type: "connect_stripe",
+          data: action["data"]
+        }
+
+      when "show_invoices"
+        processed_actions << {
+          type: "show_invoices",
+          data: action["data"],
+          links: action["links"]
+        }
+
+      when "invoice_created", "invoice_marked_paid"
+        processed_actions << {
+          type: action["type"],
+          data: action["data"],
+          message: action["message"]
+        }
+
+        # Also show an updated invoice list
+        if action["data"]["invoice"]
+          invoices = FinService.fetch_user_invoices(current_user.id)
+          processed_actions << {
+            type: "show_invoices",
+            data: {
+              invoices: FinService.format_invoices_for_display(invoices)
+            }
+          }
+        end
+
+      when "reminder_sent"
+        processed_actions << {
+          type: "notification",
+          message: action["message"]
+        }
+
+      when "show_accounts"
+        # Process transaction data for display
+        processed_actions << {
+          type: "show_accounts",
+          data_type: "accounts",
+          data: action["data"],
+          links: action["links"]
+        }
+
 
       when "link"
         # Direct link to another part of the application

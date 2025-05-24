@@ -30,6 +30,23 @@ Rails.application.routes.draw do
       end
     end
 
+
+    resources :stripe, only: [] do
+      collection do
+        post :connect
+        delete :disconnect
+        get :status
+      end
+    end
+
+    resources :invoices, only: [ :create, :update ] do
+      member do
+        post :send_reminder
+        patch :mark_paid
+      end
+    end
+
+
     # Optional: legacy route to support /fin or redirect to dashboard
     get "/", to: "conversations#index"
   end

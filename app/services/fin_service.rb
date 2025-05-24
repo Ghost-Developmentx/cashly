@@ -26,6 +26,11 @@ class FinService
 
     response = make_request(endpoint, payload)
 
+    Rails.logger.info "📥 [FinService] Raw response keys: #{response.keys}"
+    Rails.logger.info "📥 [FinService] Actions count: #{response['actions']&.length || 0}"
+    Rails.logger.info "📥 [FinService] Tool results count: #{response['tool_results']&.length || 0}"
+
+
     # If there was no error, and we have tool results, record them for learning
     if !response[:error] && response["tool_results"].present?
       record_tool_usage(user_id, query, response["tool_results"])
@@ -34,8 +39,15 @@ class FinService
     # Process actions to handle special cases like transaction management
     response = process_actions_for_ui(response, user_id)
 
+    Rails.logger.info "🔄 [FinService] After UI processing - Actions: #{response['actions']&.length || 0}"
+    response['actions']&.each_with_index do |action, i|
+      Rails.logger.info "🔄 [FinService] Action #{i}: type=#{action['type']}, has_data=#{action['data'].present?}"
+    end
+
     # Add UI links based on the response actions
     response = enhance_response_with_links(response)
+
+    Rails.logger.info "✅ [FinService] Final response - Actions: #{response['actions']&.length || 0}"
 
     response
   end
@@ -96,6 +108,10 @@ class FinService
 
   # Process actions from AI service to ensure they're properly formatted for UI
   def self.process_actions_for_ui(response, user_id)
+    Rails.logger.info "🔧 [FinService] Processing actions for UI"
+    Rails.logger.info "🔧 [FinService] Input - tool_results: #{response['tool_results']&.length || 0}, actions: #{response['actions']&.length || 0}"
+
+
     return response unless response["tool_results"].present?
 
     response["actions"] ||= []
@@ -104,27 +120,36 @@ class FinService
       tool_name = tool_result["tool"]
       result = tool_result["result"]
 
+      Rails.logger.info "🔧 [FinService] Processing tool: #{tool_name}"
+      Rails.logger.info "🔧 [FinService] Result keys: #{result.keys}" if result.is_a?(Hash)
+
+
       case tool_name
       when "get_transactions"
-        # FIXED: Properly handle transaction display
         if result["transactions"].present?
-          response["actions"] << {
+          Rails.logger.info "🔧 [FinService] Found #{result['transactions'].length} transactions"
+          action = {
             "type" => "show_transactions",
             "data" => {
               "transactions" => format_transactions_for_display(result["transactions"]),
               "summary" => result["summary"] || calculate_summary_from_transactions(result["transactions"])
             }
           }
+          response["actions"] << action
+          Rails.logger.info "✅ [FinService] Added show_transactions action"
         end
 
       when "get_user_accounts"
         if result["accounts"].present?
-          response["actions"] << {
+          Rails.logger.info "🔧 [FinService] Found #{result['accounts'].length} accounts"
+          action = {
             "type" => "show_accounts",
             "data" => {
               "accounts" => result["accounts"]
             }
           }
+          response["actions"] << action
+          Rails.logger.info "✅ [FinService] Added show_accounts action"
         end
 
       when "create_transaction"
@@ -189,6 +214,63 @@ class FinService
           }
         end
 
+      when "connect_stripe"
+        if result["action"] == "connect_stripe"
+          response["actions"] << {
+            "type" => "connect_stripe",
+            "data" => result
+          }
+        end
+
+      when "get_invoices"
+        # Execute the invoice fetch
+        invoices = fetch_user_invoices(user_id, result["filters"] || {})
+        if invoices.any?
+          response["actions"] << {
+            "type" => "show_invoices",
+            "data" => {
+              "invoices" => format_invoices_for_display(invoices)
+            }
+          }
+        end
+
+      when "create_invoice"
+        if result["action"] == "create_invoice"
+          created_invoice = execute_create_invoice(user_id, result["invoice"])
+          if created_invoice[:success]
+            response["actions"] << {
+              "type" => "invoice_created",
+              "data" => created_invoice,
+              "message" => "Invoice created successfully!"
+            }
+          else
+            response["actions"] << {
+              "type" => "invoice_error",
+              "error" => created_invoice[:error]
+            }
+          end
+        end
+
+      when "send_invoice_reminder"
+        if result["action"] == "send_invoice_reminder"
+          reminder_result = execute_send_reminder(user_id, result["invoice_id"])
+          response["actions"] << {
+            "type" => "reminder_sent",
+            "data" => reminder_result,
+            "message" => reminder_result[:message]
+          }
+        end
+
+      when "mark_invoice_paid"
+        if result["action"] == "mark_invoice_paid"
+          paid_result = execute_mark_invoice_paid(user_id, result["invoice_id"])
+          response["actions"] << {
+            "type" => "invoice_marked_paid",
+            "data" => paid_result,
+            "message" => paid_result[:message]
+          }
+        end
+
       when "initiate_plaid_connection"
         if result["action"] == "initiate_plaid_connection"
           response["actions"] << {
@@ -200,7 +282,7 @@ class FinService
         end
       end
     end
-
+    Rails.logger.info "🔧 [FinService] Output - actions: #{response['actions'].length}"
     response
   end
 
@@ -220,6 +302,112 @@ class FinService
         created_at: transaction["created_at"]
       }
     end
+  end
+
+  def self.fetch_user_invoices(user_id, filters = {})
+    user = User.find(user_id)
+    invoices = user.invoices
+
+    # Apply filters
+    invoices = invoices.where(status: filters["status"]) if filters["status"].present?
+
+    if filters["days"].present?
+      start_date = filters["days"].to_i.days.ago
+      invoices = invoices.where("created_at >= ?", start_date)
+    end
+
+    if filters["client_name"].present?
+      invoices = invoices.where("client_name ILIKE ?", "%#{filters['client_name']}%")
+    end
+
+    invoices.order(created_at: :desc).limit(20)
+  end
+
+  def self.format_invoices_for_display(invoices)
+    invoices.map do |invoice|
+      {
+        id: invoice.id,
+        client_name: invoice.client_name,
+        client_email: invoice.client_email,
+        amount: invoice.amount.to_f,
+        status: invoice.status,
+        issue_date: invoice.issue_date.strftime("%Y-%m-%d"),
+        due_date: invoice.due_date.strftime("%Y-%m-%d"),
+        invoice_number: invoice.generate_invoice_number,
+        description: invoice.description,
+        stripe_invoice_id: invoice.stripe_invoice_id
+      }
+    end
+  end
+
+  def self.execute_create_invoice(user_id, invoice_data)
+    user = User.find(user_id)
+
+    invoice = user.invoices.new(
+      client_name: invoice_data["client_name"],
+      client_email: invoice_data["client_email"],
+      amount: invoice_data["amount"],
+      description: invoice_data["description"],
+      issue_date: Date.current,
+      due_date: invoice_data["due_date"] || 30.days.from_now,
+      status: "draft",
+      currency: user.currency || "USD"
+    )
+
+    if invoice.save
+      {
+        success: true,
+        invoice: format_invoice_for_response(invoice),
+        message: "Invoice created successfully"
+      }
+    else
+      { success: false, error: invoice.errors.full_messages.join(", ") }
+    end
+  end
+
+  def self.execute_send_reminder(user_id, invoice_id)
+    user = User.find(user_id)
+    invoice = user.invoices.find_by(id: invoice_id)
+
+    return { success: false, error: "Invoice not found" } unless invoice
+    return { success: false, error: "Can only send reminders for pending invoices" } unless invoice.status == "pending"
+
+    invoice.send_reminder
+
+    {
+      success: true,
+      invoice_id: invoice.id,
+      message: "Payment reminder sent to #{invoice.client_name}"
+    }
+  end
+
+  def self.execute_mark_invoice_paid(user_id, invoice_id)
+    user = User.find(user_id)
+    invoice = user.invoices.find_by(id: invoice_id)
+
+    return { success: false, error: "Invoice not found" } unless invoice
+
+    invoice.mark_as_paid
+
+    {
+      success: true,
+      invoice: format_invoice_for_response(invoice),
+      message: "Invoice marked as paid"
+    }
+  end
+
+  def self.format_invoice_for_response(invoice)
+    {
+      id: invoice.id,
+      client_name: invoice.client_name,
+      client_email: invoice.client_email,
+      amount: invoice.amount.to_f,
+      status: invoice.status,
+      issue_date: invoice.issue_date.strftime("%Y-%m-%d"),
+      due_date: invoice.due_date.strftime("%Y-%m-%d"),
+      invoice_number: invoice.generate_invoice_number,
+      description: invoice.description
+    }
   end
 
   def self.calculate_summary_from_transactions(transactions)
