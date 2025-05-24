@@ -8,7 +8,7 @@ class FinService
 
   # Process a user query with Fin
   def self.process_query(user_id, query, conversation_history = nil)
-    endpoint = "#{AI_SERVICE_URL}/fin/query"
+    endpoint = "#{AI_SERVICE_URL}/fin/conversations/query"
 
     # Get user's transactions
     transactions = fetch_user_transactions(user_id)
