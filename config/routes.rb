@@ -43,6 +43,7 @@ Rails.application.routes.draw do
       collection do
         get :status
         post :setup
+        post :restart_setup
         post :create_onboarding_link
         post :dashboard_link
         get :earnings

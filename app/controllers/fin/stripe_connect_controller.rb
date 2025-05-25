@@ -1,8 +1,9 @@
 module Fin
   class StripeConnectController < ApplicationController
     def status
-      # Get current Stripe Connect status through FinService
-      status_data = FinService.check_stripe_connect_status(current_user.id)
+      # Use the new refactored service
+      manager = Fin::StripeConnectManager.new(current_user)
+      status_data = manager.status
 
       render json: {
         success: true,
@@ -11,17 +12,15 @@ module Fin
     end
 
     def setup
-      # Handle Stripe Connect setup through Fin
+      # Handle Stripe Connect setup through the new service
       business_type = params[:business_type] || "individual"
       country = params[:country] || "US"
 
-      setup_result = FinService.execute_create_stripe_connect_account(
-        current_user.id,
-        {
-          "business_type" => business_type,
-          "country" => country
-        }
-      )
+      manager = Fin::StripeConnectManager.new(current_user)
+      setup_result = manager.create_account({
+                                              "business_type" => business_type,
+                                              "country" => country
+                                            })
 
       if setup_result[:success]
         render json: {
@@ -53,11 +52,18 @@ module Fin
       begin
         onboarding_link = service.create_onboarding_link
 
-        render json: {
-          success: true,
-          onboarding_url: onboarding_link.url,
-          message: "Onboarding link created successfully"
-        }
+        if onboarding_link
+          render json: {
+            success: true,
+            onboarding_url: onboarding_link.url,
+            message: "Onboarding link created successfully"
+          }
+        else
+          render json: {
+            success: false,
+            error: "Failed to create onboarding link"
+          }, status: :unprocessable_entity
+        end
       rescue => e
         render json: {
           success: false,
@@ -67,8 +73,9 @@ module Fin
     end
 
     def dashboard_link
-      # Create dashboard link through FinService
-      dashboard_result = FinService.execute_create_dashboard_link(current_user.id)
+      # Use the new refactored service
+      manager = Fin::StripeConnectManager.new(current_user)
+      dashboard_result = manager.create_dashboard_link
 
       if dashboard_result[:success]
         render json: {
@@ -77,11 +84,66 @@ module Fin
           message: dashboard_result[:message]
         }
       else
+        # Handle different error scenarios with proper response codes
+        case dashboard_result[:action_needed]
+        when "restart_setup"
+          render json: {
+            success: false,
+            error: dashboard_result[:error],
+            action_needed: "restart_setup",
+            can_restart: dashboard_result[:can_restart],
+            restart_message: dashboard_result[:restart_message]
+          }, status: :unprocessable_entity
+        when "complete_onboarding"
+          render json: {
+            success: false,
+            error: dashboard_result[:error],
+            action_needed: "complete_onboarding",
+            onboarding_url: dashboard_result[:onboarding_url],
+            onboarding_message: dashboard_result[:onboarding_message]
+          }, status: :unprocessable_entity
+        when "contact_support"
+          render json: {
+            success: false,
+            error: dashboard_result[:error],
+            action_needed: "contact_support",
+            support_message: dashboard_result[:support_message]
+          }, status: :unprocessable_entity
+        else
+          render json: {
+            success: false,
+            error: dashboard_result[:error]
+          }, status: :unprocessable_entity
+        end
+      end
+    end
+
+    def restart_setup
+      # New method using the refactored service
+      Rails.logger.info "Restarting Stripe Connect setup for user #{current_user.id}"
+
+      manager = Fin::StripeConnectManager.new(current_user)
+      restart_result = manager.restart_setup
+
+      if restart_result[:success]
+        render json: {
+          success: true,
+          onboarding_url: restart_result[:onboarding_url],
+          account_id: restart_result[:account_id],
+          message: restart_result[:message]
+        }
+      else
         render json: {
           success: false,
-          error: dashboard_result[:error]
+          error: restart_result[:error]
         }, status: :unprocessable_entity
       end
+    rescue => e
+      Rails.logger.error "Error in restart_setup: #{e.message}"
+      render json: {
+        success: false,
+        error: "Failed to restart Stripe setup. Please try again."
+      }, status: :unprocessable_entity
     end
 
     def earnings
@@ -107,37 +169,27 @@ module Fin
     end
 
     def disconnect
-      connect_account = current_user.stripe_connect_account
+      # Use the new refactored service
+      manager = Fin::StripeConnectManager.new(current_user)
+      disconnect_result = manager.disconnect
 
-      unless connect_account
+      if disconnect_result[:success]
+        render json: {
+          success: true,
+          message: disconnect_result[:message] || "Stripe Connect account disconnected successfully"
+        }
+      else
         render json: {
           success: false,
-          error: "No Stripe Connect account to disconnect"
-        }, status: :not_found
-        return
-      end
-
-      begin
-        # Deauthorize through Stripe
-        service = StripeConnectService.new(current_user)
-        if service.disconnect_account
-          render json: {
-            success: true,
-            message: "Stripe Connect account disconnected successfully"
-          }
-        else
-          render json: {
-            success: false,
-            error: "Failed to disconnect Stripe Connect account"
-          }, status: :unprocessable_entity
-        end
-      rescue => e
-        Rails.logger.error "Error disconnecting Stripe Connect: #{e.message}"
-        render json: {
-          success: false,
-          error: "Error disconnecting account"
+          error: disconnect_result[:error] || "Failed to disconnect Stripe Connect account"
         }, status: :unprocessable_entity
       end
+    rescue => e
+      Rails.logger.error "Error disconnecting Stripe Connect: #{e.message}"
+      render json: {
+        success: false,
+        error: "Error disconnecting account"
+      }, status: :unprocessable_entity
     end
 
     def onboarding_refresh
@@ -217,14 +269,22 @@ module Fin
 
       return unless cashly_invoice_id
 
-      # Update the Cashly invoice status
-      cashly_invoice = Invoice.find_by(id: cashly_invoice_id)
-      if cashly_invoice
-        cashly_invoice.mark_as_paid
+      # Update the Cashly invoice status using the new service
+      user = User.joins(:stripe_connect_account)
+                 .where(stripe_connect_accounts: { stripe_account_id: invoice.account })
+                 .first
 
-        # Log platform fee earned
-        platform_fee = invoice.application_fee_amount.to_f / 100
-        Rails.logger.info "Platform fee earned: $#{platform_fee} from invoice #{cashly_invoice_id}"
+      if user && cashly_invoice_id
+        invoice_manager = Fin::InvoiceManager.new(user)
+        result = invoice_manager.mark_paid(cashly_invoice_id)
+
+        if result[:success]
+          # Log platform fee earned
+          platform_fee = invoice.application_fee_amount.to_f / 100
+          Rails.logger.info "Platform fee earned: $#{platform_fee} from invoice #{cashly_invoice_id}"
+        else
+          Rails.logger.error "Failed to mark invoice as paid: #{result[:error]}"
+        end
       end
     end
 
@@ -232,17 +292,17 @@ module Fin
       # Calculate date range based on a period
       end_date = Date.current
       start_date = case period
-      when "week"
+                   when "week"
                      1.week.ago.to_date
-      when "month"
+                   when "month"
                      1.month.ago.to_date
-      when "quarter"
+                   when "quarter"
                      3.months.ago.to_date
-      when "year"
+                   when "year"
                      1.year.ago.to_date
-      else
+                   else
                      1.month.ago.to_date
-      end
+                   end
 
       begin
         # Get balance transactions from Stripe

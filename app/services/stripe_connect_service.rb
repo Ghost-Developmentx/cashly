@@ -61,7 +61,7 @@ class StripeConnectService
                                  account: account_id,
                                  refresh_url: stripe_connect_onboarding_refresh_url,
                                  return_url: stripe_connect_onboarding_success_url,
-                                 type: "account_onboarding",
+                                 type: "account_onboarding"
                                })
   end
 
@@ -70,7 +70,7 @@ class StripeConnectService
     return nil unless connect_account&.can_accept_payments?
 
     begin
-      login_link = Stripe::Account.create_login_link(
+      login_link = Stripe::LoginLink.create(
         connect_account.stripe_account_id
       )
 
@@ -97,7 +97,7 @@ class StripeConnectService
     when "account.updated"
       connect_account.sync_from_stripe!
 
-      # Notify user if status changed significantly
+      # Notify the user if status changed significantly
       if connect_account.saved_change_to_status?
         notify_user_of_status_change(connect_account)
       end
@@ -105,6 +105,8 @@ class StripeConnectService
     when "account.application.deauthorized"
       connect_account.update!(status: "inactive")
 
+    else
+      # type code here
     end
   end
 
@@ -118,7 +120,7 @@ class StripeConnectService
       amount = invoice_params[:amount].to_f
       platform_fee = (amount * connect_account.platform_fee_percentage / 100).round(2)
 
-      # Create customer for the client
+      # Create a customer for the client
       customer = create_or_find_customer(
         email: invoice_params[:client_email],
         name: invoice_params[:client_name],
@@ -130,7 +132,7 @@ class StripeConnectService
                                                   customer: customer.id,
                                                   amount: (amount * 100).to_i, # Convert to cents
                                                   currency: invoice_params[:currency] || "usd",
-                                                  description: invoice_params[:description],
+                                                  description: invoice_params[:description]
                                                 }, {
                                                   stripe_account: connect_account.stripe_account_id
                                                 })
@@ -194,7 +196,7 @@ class StripeConnectService
       # User can now accept payments
       UserMailer.stripe_connect_activated(@user).deliver_later
     when "rejected"
-      # Account was rejected
+      # The Account was rejected
       UserMailer.stripe_connect_rejected(@user, connect_account.status_reason).deliver_later
     else
       # type code here
