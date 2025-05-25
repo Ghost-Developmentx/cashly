@@ -241,21 +241,45 @@ module Fin
     end
 
     def process_dashboard_link(result)
-      return nil unless result["action"] == "create_stripe_connect_dashboard_link"
+      return nil unless result.present? && result["action"] == "create_stripe_connect_dashboard_link"
+
+      log_info "Processing dashboard link result: #{result.inspect}"
 
       dashboard_result = Fin::StripeConnectManager.new(@user).create_dashboard_link
-      if dashboard_result[:success]
+
+      if dashboard_result.present? && dashboard_result[:success]
         {
           "type" => "open_stripe_dashboard",
           "data" => dashboard_result,
-          "message" => "Opening your Stripe dashboard..."
+          "message" => dashboard_result[:message] || "Opening your Stripe dashboard..."
         }
       else
-        {
-          "type" => "stripe_connect_error",
-          "error" => dashboard_result[:error]
-        }
+        # Handle error scenarios gracefully
+        error_message = dashboard_result&.dig(:error) || "Failed to create dashboard link"
+        action_needed = dashboard_result&.dig(:action_needed)
+
+        case action_needed
+        when "restart_setup"
+          {
+            "type" => "stripe_connect_setup_needed",
+            "error" => error_message,
+            "message" => "You need to set up Stripe Connect first. Would you like me to start the setup process?"
+          }
+        else
+          {
+            "type" => "stripe_connect_error",
+            "error" => error_message,
+            "message" => "I wasn't able to open your Stripe dashboard right now. #{error_message}"
+          }
+        end
       end
+    rescue StandardError => e
+      log_error "Error in process_dashboard_link: #{e.message}"
+      {
+        "type" => "stripe_connect_error",
+        "error" => e.message,
+        "message" => "There was an error accessing your Stripe dashboard. Please try again."
+      }
     end
 
     def process_plaid_connection(result)
@@ -342,8 +366,20 @@ module Fin
         when "transaction_created", "transaction_updated", "transaction_deleted"
           action["links"] ||= []
           action["links"] << { text: "View All Transactions", url: "/transactions" }
+        when "open_stripe_dashboard"
+          log_info "Stripe dashboard action detected - UI should open dashboard"
+          # No additional links needed - dashboard will open in new window
+        when "stripe_connect_error"
+          log_info "Stripe Connect error action detected"
+          # Add helpful links for error recovery
+          action["links"] ||= []
+          action["links"] << { text: "Stripe Connect Help", url: "/help/stripe-connect" }
+        when "create_stripe_connect_dashboard_link"
+          log_info "Direct Stripe dashboard link creation"
+          # This might be a legacy action type - convert it
+          action["type"] = "open_stripe_dashboard"
         else
-          log_info "Unknown action type: #{action['type']}"
+          log_info "Processing action type: #{action['type']}"
         end
       end
 

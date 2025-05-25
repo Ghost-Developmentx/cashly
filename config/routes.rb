@@ -48,7 +48,9 @@ Rails.application.routes.draw do
         post :dashboard_link
         get :earnings
         delete :disconnect
-        post :webhook  # Keep webhook here for Stripe to call
+        post :webhook
+        get :onboarding_refresh
+        get :onboarding_success
       end
     end
 
@@ -65,8 +67,6 @@ Rails.application.routes.draw do
   end
 
   # Stripe Connect onboarding flow - these need to be outside namespace for Stripe redirects
-  get "/stripe/connect/onboarding/refresh", to: "fin/stripe_connect#onboarding_refresh"
-  get "/stripe/connect/onboarding/success", to: "fin/stripe_connect#onboarding_success"
   get "dashboard/summary", to: "dashboard#summary"
   get "dashboard/cash_flow", to: "dashboard#cash_flow"
 

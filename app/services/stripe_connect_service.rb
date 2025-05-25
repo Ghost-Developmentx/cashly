@@ -67,19 +67,37 @@ class StripeConnectService
 
   def create_dashboard_link
     connect_account = @user.stripe_connect_account
-    return nil unless connect_account&.can_accept_payments?
+
+    unless connect_account&.stripe_account_id.present?
+      return {
+        success: false,
+        error: "No Stripe Connect account found"
+      }
+    end
 
     begin
-      login_link = Stripe::LoginLink.create(
-        connect_account.stripe_account_id
+      login_link = Stripe::Account.create_login_link(
+        connect_account.stripe_account_id,
       )
+      message = case connect_account.status
+                when "active"
+                  "Opening your Stripe dashboard..."
+                when "pending"
+                  "Opening your Stripe dashboard to complete setup requirements..."
+                when "rejected"
+                  "Opening your Stripe dashboard to address account requirements..."
+                else
+                  "Opening your Stripe dashboard..."
+                end
 
       {
         success: true,
         dashboard_url: login_link.url,
-        message: "Dashboard link created successfully"
+        message: message,
+        account_status: connect_account.status
       }
     rescue Stripe::StripeError => e
+      Rails.logger.error "Stripe dashboard link creation failed: #{e.message}"
       {
         success: false,
         error: e.message
@@ -203,19 +221,20 @@ class StripeConnectService
     end
   end
 
-  def stripe_connect_onboarding_refresh_url
-    if Rails.env.production?
-      "https://app.cashly.com/stripe/connect/onboarding/refresh"
-    else
-      "http://localhost:4000/stripe/connect/onboarding/refresh"
+    def stripe_connect_onboarding_refresh_url
+      if Rails.env.production?
+        "https://app.cashly.com/api/fin/stripe_connect/onboarding_refresh"
+      else
+        # Point to Rails backend (localhost:3000)
+        "http://localhost:3000/fin/stripe_connect/onboarding_refresh"
+      end
     end
-  end
 
   def stripe_connect_onboarding_success_url
     if Rails.env.production?
       "https://app.cashly.com/stripe/connect/onboarding/success"
     else
-      "http://localhost:4000/stripe/connect/onboarding/success"
+      "http://localhost:3000/fin/stripe_connect/onboarding_success"
     end
   end
   end

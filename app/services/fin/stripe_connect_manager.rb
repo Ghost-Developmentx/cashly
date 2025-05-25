@@ -44,8 +44,51 @@ module Fin
     end
 
     def create_dashboard_link
+      connect_account = @user.stripe_connect_account
+
+      unless connect_account
+        return {
+          success: false,
+          error: "No Stripe Connect account found",
+          action_needed: "restart_setup",
+          restart_message: "You need to set up Stripe Connect first.",
+          can_restart: true
+        }
+      end
+
+      # Sync the latest status from Stripe
+      connect_account.sync_from_stripe!
+
+      # Always try to create a dashboard link-users need access to complete requirements
       service = StripeConnectService.new(@user)
-      service.create_dashboard_link
+      dashboard_result = service.create_dashboard_link
+
+      if dashboard_result && dashboard_result[:success]
+        # Add helpful context based on account status
+        enhanced_message = case connect_account.status
+                           when "active"
+                             "✅ Your Stripe dashboard is ready! Your account is active and can accept payments."
+                           when "pending"
+                             "⚠️ Opening your Stripe dashboard. Please complete any remaining requirements to activate your account."
+                           when "rejected"
+                             "⚠️ Opening your Stripe dashboard. Please address the requirements (like uploading ID) to reactivate your account."
+                           else
+                             dashboard_result[:message] || "Opening your Stripe dashboard..."
+                           end
+
+        success_response(
+          {
+            dashboard_url: dashboard_result[:dashboard_url],
+            account_status: connect_account.status,
+            can_accept_payments: connect_account.can_accept_payments?
+          },
+          enhanced_message
+        )
+      else
+        error_response(
+          dashboard_result&.dig(:error) || "Failed to create dashboard link"
+        )
+      end
     rescue StandardError => e
       log_error "Failed to create dashboard link: #{e.message}"
       error_response("Failed to create dashboard link: #{e.message}")

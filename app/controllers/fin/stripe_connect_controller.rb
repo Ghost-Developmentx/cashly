@@ -193,14 +193,16 @@ module Fin
     end
 
     def onboarding_refresh
-      # User refreshed during onboarding - create new link
+      # User refreshed during onboarding - create a new link
       service = StripeConnectService.new(current_user)
       onboarding_link = service.create_onboarding_link
 
       if onboarding_link
         redirect_to onboarding_link.url
       else
-        redirect_to "#{ENV['FRONTEND_URL']}/dashboard", alert: "Unable to continue onboarding. Please try again."
+        # Redirect back to conversation with an error message
+        redirect_to "#{frontend_url}/dashboard?stripe_error=onboarding_failed",
+                    alert: "Unable to continue onboarding. Please try again."
       end
     end
 
@@ -208,16 +210,22 @@ module Fin
       connect_account = current_user.stripe_connect_account
 
       if connect_account
-        # Sync latest status
+        # Sync the latest status from Stripe
         connect_account.sync_from_stripe!
 
         if connect_account.onboarding_complete?
-          redirect_to "#{ENV['FRONTEND_URL']}/dashboard", notice: "Stripe Connect setup completed! You can now send invoices and accept payments."
+          # Success - redirect back to conversation
+          redirect_to "#{frontend_url}/dashboard?stripe_success=true",
+                      notice: "Stripe Connect setup completed! You can now send invoices and accept payments."
         else
-          redirect_to "#{ENV['FRONTEND_URL']}/dashboard", alert: "Onboarding needs to be completed. Please finish setting up your Stripe account."
+          # Still needs completion
+          redirect_to "#{frontend_url}/dashboard?stripe_incomplete=true",
+                      alert: "Onboarding needs to be completed. Please finish setting up your Stripe account."
         end
       else
-        redirect_to "#{ENV['FRONTEND_URL']}/dashboard", alert: "Something went wrong with your Stripe setup. Please try again."
+        # Something went wrong
+        redirect_to "#{frontend_url}/dashboard?stripe_error=setup_failed",
+                    alert: "Something went wrong with your Stripe setup. Please try again."
       end
     end
 
@@ -262,6 +270,14 @@ module Fin
     end
 
     private
+
+    def frontend_url
+      if Rails.env.production?
+        "https://app.cashly.com"
+      else
+        "http://localhost:4000"  # Next.js frontend
+      end
+    end
 
     def handle_invoice_payment(event)
       invoice = event.data.object
