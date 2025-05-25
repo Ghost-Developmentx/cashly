@@ -702,11 +702,19 @@ class FinService
                        .includes(:category, :account)
                        .order(date: :desc)
 
-    # Format for the AI service
-    transactions.map do |t|
+    Rails.logger.info "🔍 [FinService] User #{user_id} has #{transactions.count} transactions"
+    Rails.logger.info "🔍 [FinService] Date range: #{start_date} to #{Date.current}"
+
+    # Log the first few transactions for debugging
+    transactions.limit(3).each_with_index do |t, i|
+      Rails.logger.info "🔍 [FinService] Transaction #{i}: ID=#{t.id}, Date=#{t.date}, Account=#{t.account.name} (ID=#{t.account.id}), Amount=#{t.amount}"
+    end
+
+    # Format for the AI service - FIX THE DATE FORMAT HERE
+    formatted_transactions = transactions.map do |t|
       {
         id: t.id,
-        date: t.date.to_s,
+        date: t.date.strftime("%Y-%m-%d"),  # ✅ FIXED: Use strftime instead of to_s
         amount: t.amount.to_f,
         description: t.description,
         category: t.category&.name || "uncategorized",
@@ -716,6 +724,16 @@ class FinService
         plaid_transaction_id: t.plaid_transaction_id
       }
     end
+
+    Rails.logger.info "🔍 [FinService] Formatted #{formatted_transactions.count} transactions for AI service"
+
+    # Log first formatted transaction for debugging
+    if formatted_transactions.any?
+      first_txn = formatted_transactions.first
+      Rails.logger.info "🔍 [FinService] First formatted transaction: #{first_txn}"
+    end
+
+    formatted_transactions
   end
 
   def self.check_stripe_connect_status(user_id)
@@ -788,9 +806,12 @@ class FinService
   def self.fetch_user_context(user_id)
     user = User.find(user_id)
 
-    # Get accounts
-    accounts = user.accounts.map do |a|
-      {
+    # Get accounts with debugging
+    accounts_query = user.accounts
+    Rails.logger.info "🔍 [FinService] User #{user_id} has #{accounts_query.count} accounts"
+
+    accounts = accounts_query.map do |a|
+      account_data = {
         name: a.name,
         type: a.account_type,
         balance: a.balance.to_f,
@@ -798,6 +819,8 @@ class FinService
         institution: a.institution,
         plaid_account_id: a.plaid_account_id
       }
+      Rails.logger.info "🔍 [FinService] Account: ID=#{account_data[:id]}, Name='#{account_data[:name]}'"
+      account_data
     end
 
     # Get budgets
@@ -835,7 +858,7 @@ class FinService
     invoice_stats = calculate_invoice_stats(user)
 
     # Return combined context
-    {
+    context = {
       accounts: accounts,
       budgets: budgets,
       forecasts: forecasts,
@@ -845,6 +868,10 @@ class FinService
       currency: user.currency || "USD",
       name: user.full_name
     }
+
+    Rails.logger.info "🔍 [FinService] User context: #{accounts.count} accounts, #{budgets.count} budgets, #{integrations.count} integrations"
+
+    context
   end
 
   def self.calculate_invoice_stats(user)
@@ -862,21 +889,42 @@ class FinService
   end
 
   def self.make_request(endpoint, payload)
+    # Add debugging for the payload
+    Rails.logger.info "🔍 [FinService] Making request to: #{endpoint}"
+    Rails.logger.info "🔍 [FinService] Payload keys: #{payload.keys}"
+    Rails.logger.info "🔍 [FinService] Payload transactions count: #{payload[:transactions]&.length || 0}"
+    Rails.logger.info "🔍 [FinService] Payload user_context accounts count: #{payload[:user_context]&.dig(:accounts)&.length || 0}"
+
+    # Log first transaction if available
+    if payload[:transactions]&.any?
+      first_txn = payload[:transactions].first
+      Rails.logger.info "🔍 [FinService] First transaction in payload: #{first_txn}"
+    end
+
     uri = URI.parse(endpoint)
     http = Net::HTTP.new(uri.host, uri.port)
 
     request = Net::HTTP::Post.new(uri.path, "Content-Type" => "application/json")
     request.body = payload.to_json
 
+    # Log the request body size for debugging
+    Rails.logger.info "🔍 [FinService] Request body size: #{request.body.length} characters"
+
     begin
       response = http.request(request)
 
+      Rails.logger.info "🔍 [FinService] Response status: #{response.code}"
+
       if response.code.to_i == 200
-        JSON.parse(response.body)
+        parsed_response = JSON.parse(response.body)
+        Rails.logger.info "🔍 [FinService] Response keys: #{parsed_response.keys}"
+        parsed_response
       else
+        Rails.logger.error "🔍 [FinService] API request failed: #{response.code}: #{response.body}"
         { error: "API request failed with status: #{response.code}: #{response.body}" }
       end
     rescue StandardError => e
+      Rails.logger.error "🔍 [FinService] Connection error: #{e.message}"
       { error: "Failed to connect to AI service: #{e.message}" }
     end
   end
