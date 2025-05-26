@@ -51,6 +51,8 @@ module Fin
         process_invoices_result(result)
       when "create_invoice"
         process_invoice_creation(result)
+      when "send_invoice"
+        process_invoice_send(result)
       when "send_invoice_reminder"
         process_reminder_result(result)
       when "mark_invoice_paid"
@@ -164,12 +166,23 @@ module Fin
     end
 
     def process_invoices_result(result)
-      invoices = Fin::InvoiceManager.new(@user).fetch_invoices(result["filters"] || {})
+      # If the result already has invoices, use them
+      if result["invoices"].present?
+        invoices = result["invoices"]
+      else
+        # Otherwise, fetch invoices based on filters
+        filters = result["filters"] || {}
+        invoices = Fin::InvoiceManager.new(@user).fetch_invoices(filters)
+        invoices = Fin::InvoiceManager.new(@user).format_for_display(invoices)
+      end
+
       return nil unless invoices.any?
+
+      log_info "Found #{invoices.length} invoices"
 
       {
         "type" => "show_invoices",
-        "data" => { "invoices" => Fin::InvoiceManager.new(@user).format_for_display(invoices) }
+        "data" => { "invoices" => invoices }
       }
     end
 
@@ -178,15 +191,50 @@ module Fin
 
       created_invoice = Fin::InvoiceManager.new(@user).create(result["invoice"])
       if created_invoice[:success]
+        invoice_id = created_invoice[:invoice][:id]
         {
           "type" => "invoice_created",
           "data" => created_invoice,
-          "message" => "Invoice created successfully!"
+          "message" => "Invoice created successfully!",
+          "invoice_id" => invoice_id
         }
       else
         {
           "type" => "invoice_error",
           "error" => created_invoice[:error]
+        }
+      end
+    end
+
+    def process_invoice_send(result)
+      return nil unless result["action"] == "send_invoice"
+
+      log_info "Processing send invoice action for invoice ID: #{result['invoice_id']}"
+
+      # Find and send the invoice
+      invoice = @user.invoices.find_by(id: result["invoice_id"])
+
+      unless invoice
+        log_error "Invoice not found: #{result['invoice_id']}"
+        return {
+          "type" => "invoice_error",
+          "error" => "Invoice not found. Please check the invoice ID."
+        }
+      end
+
+      sent_result = Fin::InvoiceManager.new(@user).send(:send_invoice, result["invoice_id"])
+
+      if sent_result[:success]
+        {
+          "type" => "invoice_sent",
+          "data" => sent_result,
+          "message" => sent_result[:message],
+          "invoice_url" => sent_result[:stripe_invoice_url]
+        }
+      else
+        {
+          "type" => "invoice_error",
+          "error" => sent_result[:error]
         }
       end
     end
@@ -205,12 +253,22 @@ module Fin
     def process_invoice_payment(result)
       return nil unless result["action"] == "mark_invoice_paid"
 
+      log_info "Marking invoice #{result['invoice_id']} as paid"
+
       paid_result = Fin::InvoiceManager.new(@user).mark_paid(result["invoice_id"])
-      {
-        "type" => "invoice_marked_paid",
-        "data" => paid_result,
-        "message" => paid_result[:message]
-      }
+
+      if paid_result[:success]
+        {
+          "type" => "invoice_marked_paid",
+          "data" => paid_result,
+          "message" => paid_result[:message]
+        }
+      else
+        {
+          "type" => "invoice_error",
+          "error" => paid_result[:error]
+        }
+      end
     end
 
     def process_stripe_connect_setup(result)

@@ -67,12 +67,9 @@ module Fin
 
     def build_invoice(invoice_data)
       log_info "Building invoice with: #{invoice_data.keys}"
-
-      # Parse due date if it's a string, ensuring it's in the future
       due_date = if invoice_data["due_date"].present?
                    begin
                      parsed_date = Date.parse(invoice_data["due_date"].to_s)
-                     # If the date is in the past, use 30 days from now instead
                      parsed_date < Date.current ? 30.days.from_now.to_date : parsed_date
                    rescue ArgumentError
                      30.days.from_now.to_date
@@ -85,7 +82,7 @@ module Fin
         client_name: invoice_data["client_name"],
         client_email: invoice_data["client_email"],
         amount: invoice_data["amount"].to_f,
-        description: invoice_data["description"], # This should now work
+        description: invoice_data["description"],
         issue_date: Date.current,
         due_date: due_date,
         status: "draft",
@@ -129,30 +126,19 @@ module Fin
       if stripe_result[:success]
         invoice.update!(
           stripe_invoice_id: stripe_result[:stripe_invoice].id,
-          status: "pending"
+          status: "draft"
         )
 
-        # Use the StripeConnectService method to finalize and send
-        send_result = service.finalize_and_send_invoice(invoice)
-
-        if send_result[:success]
-          success_response(
-            {
-              invoice: format_for_response(invoice),
-              platform_fee: stripe_result[:platform_fee],
-              stripe_invoice_url: send_result[:hosted_invoice_url]
-            },
-            "Invoice created and sent to #{invoice.client_name}! Platform fee: $#{stripe_result[:platform_fee]}"
-          )
-        else
-          success_response(
-            {
-              invoice: format_for_response(invoice),
-              platform_fee: stripe_result[:platform_fee]
-            },
-            "Invoice created but failed to send: #{send_result[:error]}"
-          )
-        end
+        # Don't auto-send! Return the draft invoice
+        success_response(
+          {
+            invoice: format_for_response(invoice),
+            platform_fee: stripe_result[:platform_fee],
+            stripe_invoice: stripe_result[:stripe_invoice],
+            is_draft: true
+          },
+          "Invoice draft created! Review the details and let me know when you're ready to send it."
+        )
       else
         log_error "Stripe invoice creation failed: #{stripe_result[:error]}"
         success_response(
@@ -160,6 +146,34 @@ module Fin
           "Invoice created but Stripe integration failed: #{stripe_result[:error]}"
         )
       end
+    end
+
+    def send_invoice(invoice_id)
+      invoice = @user.invoices.find_by(id: invoice_id)
+      return error_response("Invoice not found") unless invoice
+      return error_response("Invoice already sent") if invoice.status == "pending" || invoice.status == "paid"
+      return error_response("No Stripe invoice ID") unless invoice.stripe_invoice_id
+
+      service = StripeConnectService.new(@user)
+      send_result = service.finalize_and_send_invoice(invoice)
+
+      if send_result[:success]
+        invoice.update!(status: "pending")
+
+        success_response(
+          {
+            invoice: format_for_response(invoice),
+            stripe_invoice_url: send_result[:hosted_invoice_url],
+            invoice_pdf: send_result[:invoice_pdf]
+          },
+          "Invoice sent successfully to #{invoice.client_name}! They can pay at: #{send_result[:hosted_invoice_url]}"
+        )
+      else
+        error_response("Failed to send invoice: #{send_result[:error]}")
+      end
+    rescue StandardError => e
+      log_error "Failed to send invoice: #{e.message}"
+      error_response("Failed to send invoice: #{e.message}")
     end
 
     def apply_filters(invoices, filters)

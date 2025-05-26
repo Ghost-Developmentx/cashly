@@ -25,6 +25,18 @@ module Fin
       end
     end
 
+    def send_invoice
+      invoice_id = params[:id]
+
+      result = Fin::InvoiceManager.new(current_user).send_invoice(invoice_id)
+
+      if result[:success]
+        render json: result
+      else
+        render json: result, status: :unprocessable_entity
+      end
+    end
+
     def update
       if @invoice.update(invoice_params)
         render json: {

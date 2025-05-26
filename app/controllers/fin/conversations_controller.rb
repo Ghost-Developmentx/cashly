@@ -21,14 +21,14 @@ module Fin
 
       Rails.logger.info "🎯 [Controller] Received query: #{query_text}"
 
-      # Add a user message to conversation
+      # Add a user message to a conversation
       @conversation.add_message("user", query_text)
 
       # Process query using the new service
       response = FinService.process_query(
         current_user.id,
         query_text,
-        @conversation.conversation_history
+        @conversation.conversation_history,
       )
 
       Rails.logger.info "📤 [Controller] FinService response keys: #{response.keys}"

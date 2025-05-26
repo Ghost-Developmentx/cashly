@@ -56,6 +56,7 @@ Rails.application.routes.draw do
 
     resources :invoices, only: [ :create, :update ] do
       member do
+        post :send_invoice
         post :send_reminder
         patch :mark_paid
       end
