@@ -10,11 +10,19 @@ module Fin
 
       return response unless response["tool_results"].present?
 
+      # Initialize an action array if not present
       response["actions"] ||= []
 
+      # Track processed tool results to avoid duplicates
+      processed_tools = Set.new
+
       response["tool_results"].each do |tool_result|
+        tool_key = "#{tool_result['tool']}_#{tool_result.hash}"
+        next if processed_tools.include?(tool_key)
+
         action = process_tool_result(tool_result)
         response["actions"] << action if action
+        processed_tools.add(tool_key)
       end
 
       enhance_with_links(response)
@@ -190,13 +198,22 @@ module Fin
       return nil unless result["action"] == "create_invoice"
 
       created_invoice = Fin::InvoiceManager.new(@user).create(result["invoice"])
+
       if created_invoice[:success]
+        # Extract the invoice ID from the created invoice
         invoice_id = created_invoice[:invoice][:id]
+
+        # Log for debugging
+        log_info "Created invoice with ID: #{invoice_id}"
+
         {
           "type" => "invoice_created",
-          "data" => created_invoice,
-          "message" => "Invoice created successfully!",
-          "invoice_id" => invoice_id
+          "data" => {
+            **created_invoice,
+            "invoice_id" => invoice_id  # Make sure ID is explicitly included
+          },
+          "message" => "Invoice ##{invoice_id} created successfully! It's currently a draft. When you're ready, you can send it to #{result['invoice']['client_name']}.",
+          "invoice_id" => invoice_id  # Include at top level too
         }
       else
         {
@@ -426,18 +443,17 @@ module Fin
           action["links"] << { text: "View All Transactions", url: "/transactions" }
         when "open_stripe_dashboard"
           log_info "Stripe dashboard action detected - UI should open dashboard"
-          # No additional links needed - dashboard will open in new window
         when "stripe_connect_error"
           log_info "Stripe Connect error action detected"
-          # Add helpful links for error recovery
           action["links"] ||= []
           action["links"] << { text: "Stripe Connect Help", url: "/help/stripe-connect" }
         when "create_stripe_connect_dashboard_link"
           log_info "Direct Stripe dashboard link creation"
-          # This might be a legacy action type - convert it
           action["type"] = "open_stripe_dashboard"
         else
-          log_info "Processing action type: #{action['type']}"
+          unless %w[invoice_created invoice_sent reminder_sent].include?(action["type"])
+            log_info "Processing action type: #{action['type']}"
+          end
         end
       end
 

@@ -29,7 +29,7 @@ module Fin
         current_user.id,
         query_text,
         @conversation.conversation_history,
-      )
+        )
 
       Rails.logger.info "📤 [Controller] FinService response keys: #{response.keys}"
 
@@ -55,10 +55,13 @@ module Fin
       # Record tool usage for learning
       record_tool_usage_if_present(response)
 
+      # Process actions before sending them to the frontend
+      processed_actions = process_actions(response["actions"] || [])
+
       # Prepare a final response
       final_response = {
         message: response_text,
-        actions: response["actions"] || [],
+        actions: processed_actions,
         conversation_history: @conversation.conversation_history
       }
 
@@ -128,8 +131,9 @@ module Fin
     def record_tool_usage_if_present(response)
       return unless response["tool_results"].present?
 
+      # Check if tools have already been recorded
       assistant_message = @conversation.fin_messages.where(role: "assistant").order(created_at: :desc).first
-      return unless assistant_message
+      return if assistant_message&.tools_used.present?
 
       assistant_message.update(
         tools_used: response["tool_results"].map do |result|
@@ -141,6 +145,7 @@ module Fin
         end
       )
     end
+
 
     def format_messages_for_response(messages)
       messages.order(:created_at).map do |message|
@@ -255,23 +260,64 @@ module Fin
           links: action["links"]
         }
 
-      when "invoice_created", "invoice_marked_paid"
+      when "invoice_created"
+        # Extract invoice details from the action data
+        invoice_data = action["data"]
+        invoice = invoice_data["invoice"] || {}
+        invoice_id = invoice_data["invoice_id"] || invoice[:id] || invoice["id"]
+
+        # Create an enhanced message without redundant logging
+        enhanced_message = if invoice_id
+                             "I've created draft invoice ##{invoice_id} for #{invoice[:client_name] || invoice['client_name']} " \
+                               "for $#{invoice[:amount] || invoice['amount']}. " \
+                               "When you're ready to send it, just say 'send it' or 'send invoice #{invoice_id}'."
+                           else
+                             action["message"] || "Invoice created successfully!"
+                           end
+
+        processed_actions << {
+          type: action["type"],
+          data: {
+            **action["data"],
+            invoice_id: invoice_id  # Ensure ID is at the top level
+          },
+          message: enhanced_message,
+          invoice_id: invoice_id  # Also include at action level for easy access
+        }
+
+
+      when "invoice_marked_paid"
         processed_actions << {
           type: action["type"],
           data: action["data"],
           message: action["message"]
         }
-
-        # Also show an updated invoice list
         if action["data"]["invoice"]
-          invoices = FinService.fetch_user_invoices(current_user.id)
+          invoices = current_user.invoices.order(created_at: :desc).limit(10)
           processed_actions << {
             type: "show_invoices",
             data: {
-              invoices: FinService.format_invoices_for_display(invoices)
+              invoices: invoices.map { |inv| format_invoice(inv) }
             }
           }
         end
+
+      when "invoice_sent"
+        # Process invoice sent action
+        invoice_data = action["data"]
+        invoice_url = invoice_data["stripe_invoice_url"] || invoice_data["invoice_url"]
+
+        enhanced_message = if invoice_url
+                             "Invoice sent successfully! Your client can pay at: #{invoice_url}"
+                           else
+                             action["message"] || "Invoice sent successfully!"
+                           end
+
+        processed_actions << {
+          type: action["type"],
+          data: action["data"],
+          message: enhanced_message
+        }
 
       when "reminder_sent"
         processed_actions << {
@@ -354,6 +400,21 @@ module Fin
 
     processed_actions
   end
+
+    def format_invoice(invoice)
+      {
+        id: invoice.id,
+        client_name: invoice.client_name,
+        client_email: invoice.client_email,
+        amount: invoice.amount.to_f,
+        status: invoice.status,
+        issue_date: invoice.issue_date.strftime("%Y-%m-%d"),
+        due_date: invoice.due_date.strftime("%Y-%m-%d"),
+        invoice_number: invoice.generate_invoice_number,
+        description: invoice.description,
+        stripe_invoice_id: invoice.stripe_invoice_id
+      }
+    end
 
   def save_forecast(forecast_data)
     return nil unless forecast_data.present?
