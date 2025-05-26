@@ -5,15 +5,20 @@ module Fin
     end
 
     def create(invoice_data)
+      log_info "Creating invoice with data: #{invoice_data.inspect}"
+
       invoice = build_invoice(invoice_data)
 
-      if invoice.save
+      if invoice.valid?
+        invoice.save!
         handle_stripe_integration(invoice, invoice_data)
       else
+        log_error "Invoice validation failed: #{invoice.errors.full_messages.join(', ')}"
         error_response(invoice.errors.full_messages.join(", "))
       end
     rescue StandardError => e
       log_error "Failed to create invoice: #{e.message}"
+      log_error "Backtrace: #{e.backtrace.first(5).join('\n')}"
       error_response("Failed to create invoice: #{e.message}")
     end
 
@@ -61,17 +66,37 @@ module Fin
     private
 
     def build_invoice(invoice_data)
-      @user.invoices.new(
+      log_info "Building invoice with: #{invoice_data.keys}"
+
+      # Parse due date if it's a string, ensuring it's in the future
+      due_date = if invoice_data["due_date"].present?
+                   begin
+                     parsed_date = Date.parse(invoice_data["due_date"].to_s)
+                     # If the date is in the past, use 30 days from now instead
+                     parsed_date < Date.current ? 30.days.from_now.to_date : parsed_date
+                   rescue ArgumentError
+                     30.days.from_now.to_date
+                   end
+                 else
+                   30.days.from_now.to_date
+                 end
+
+      invoice_params = {
         client_name: invoice_data["client_name"],
         client_email: invoice_data["client_email"],
-        amount: invoice_data["amount"],
-        description: invoice_data["description"],
+        amount: invoice_data["amount"].to_f,
+        description: invoice_data["description"], # This should now work
         issue_date: Date.current,
-        due_date: invoice_data["due_date"] || 30.days.from_now,
+        due_date: due_date,
         status: "draft",
         currency: @user.currency || "USD"
-      )
+      }
+
+      log_info "Invoice params: #{invoice_params}"
+      log_info "Due date: #{due_date} (#{(due_date - Date.current).to_i} days from now)"
+      @user.invoices.new(invoice_params)
     end
+
 
     def handle_stripe_integration(invoice, invoice_data)
       connect_account = @user.stripe_connect_account
@@ -79,6 +104,7 @@ module Fin
       if connect_account&.can_accept_payments?
         create_stripe_invoice(invoice, invoice_data, connect_account)
       else
+        log_info "No Stripe Connect or not ready for payments"
         success_response(
           { invoice: format_for_response(invoice) },
           "Invoice created successfully. Set up Stripe Connect to accept payments."
@@ -87,6 +113,8 @@ module Fin
     end
 
     def create_stripe_invoice(invoice, invoice_data, connect_account)
+      log_info "Creating Stripe invoice for invoice ID: #{invoice.id}"
+
       service = StripeConnectService.new(@user)
       stripe_result = service.create_invoice_with_fee({
                                                         amount: invoice.amount,
@@ -94,7 +122,8 @@ module Fin
                                                         client_name: invoice.client_name,
                                                         description: invoice.description,
                                                         currency: invoice.currency,
-                                                        cashly_invoice_id: invoice.id
+                                                        cashly_invoice_id: invoice.id,
+                                                        days_until_due: (invoice.due_date - invoice.issue_date).to_i
                                                       })
 
       if stripe_result[:success]
@@ -103,14 +132,29 @@ module Fin
           status: "pending"
         )
 
-        success_response(
-          {
-            invoice: format_for_response(invoice),
-            platform_fee: stripe_result[:platform_fee]
-          },
-          "Invoice created with Stripe Connect! Platform fee: $#{stripe_result[:platform_fee]}"
-        )
+        # Use the StripeConnectService method to finalize and send
+        send_result = service.finalize_and_send_invoice(invoice)
+
+        if send_result[:success]
+          success_response(
+            {
+              invoice: format_for_response(invoice),
+              platform_fee: stripe_result[:platform_fee],
+              stripe_invoice_url: send_result[:hosted_invoice_url]
+            },
+            "Invoice created and sent to #{invoice.client_name}! Platform fee: $#{stripe_result[:platform_fee]}"
+          )
+        else
+          success_response(
+            {
+              invoice: format_for_response(invoice),
+              platform_fee: stripe_result[:platform_fee]
+            },
+            "Invoice created but failed to send: #{send_result[:error]}"
+          )
+        end
       else
+        log_error "Stripe invoice creation failed: #{stripe_result[:error]}"
         success_response(
           { invoice: format_for_response(invoice) },
           "Invoice created but Stripe integration failed: #{stripe_result[:error]}"

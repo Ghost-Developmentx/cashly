@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_24_151120) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_26_024647) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -193,7 +193,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_24_151120) do
     t.text "notes"
     t.text "terms"
     t.jsonb "custom_fields", default: {}
+    t.text "description"
+    t.index ["due_date"], name: "index_invoices_on_due_date"
     t.index ["payment_status"], name: "index_invoices_on_payment_status"
+    t.index ["status"], name: "index_invoices_on_status"
     t.index ["stripe_invoice_id"], name: "index_invoices_on_stripe_invoice_id"
     t.index ["stripe_subscription_id"], name: "index_invoices_on_stripe_subscription_id"
     t.index ["user_id"], name: "index_invoices_on_user_id"

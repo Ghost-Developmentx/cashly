@@ -134,16 +134,27 @@ class StripeConnectService
     return { success: false, error: "No Stripe Connect account found" } unless connect_account&.can_accept_payments?
 
     begin
+      Rails.logger.info "Creating Stripe invoice with params: #{invoice_params.inspect}"
+
       # Calculate platform fee
       amount = invoice_params[:amount].to_f
       platform_fee = (amount * connect_account.platform_fee_percentage / 100).round(2)
 
-      # Create a customer for the client
+      # Validate days_until_due
+      days_until_due = invoice_params[:days_until_due].to_i
+      if days_until_due <= 0
+        Rails.logger.warn "Invalid days_until_due: #{days_until_due}, using 30 days"
+        days_until_due = 30
+      end
+
+      # Create or find a customer for the client
       customer = create_or_find_customer(
         email: invoice_params[:client_email],
         name: invoice_params[:client_name],
         connected_account: connect_account.stripe_account_id
       )
+
+      Rails.logger.info "Customer created/found: #{customer.id}"
 
       # Create invoice item
       invoice_item = Stripe::InvoiceItem.create({
@@ -155,11 +166,13 @@ class StripeConnectService
                                                   stripe_account: connect_account.stripe_account_id
                                                 })
 
+      Rails.logger.info "Invoice item created: #{invoice_item.id}"
+
       # Create invoice
       stripe_invoice = Stripe::Invoice.create({
                                                 customer: customer.id,
                                                 collection_method: "send_invoice",
-                                                days_until_due: invoice_params[:days_until_due] || 30,
+                                                days_until_due: days_until_due,
                                                 description: invoice_params[:description],
                                                 application_fee_amount: (platform_fee * 100).to_i, # Platform fee in cents
                                                 metadata: {
@@ -171,10 +184,13 @@ class StripeConnectService
                                                 stripe_account: connect_account.stripe_account_id
                                               })
 
+      Rails.logger.info "Stripe invoice created: #{stripe_invoice.id}"
+
       {
         success: true,
-        stripe_invoice: stripe_invoice,
+        stripe_invoice: stripe_invoice,  # This is the actual Stripe::Invoice object
         platform_fee: platform_fee,
+        customer: customer,
         message: "Invoice created successfully with #{connect_account.platform_fee_percentage}% platform fee"
       }
 
@@ -186,6 +202,49 @@ class StripeConnectService
       }
     end
   end
+
+  def finalize_and_send_invoice(invoice)
+    connect_account = @user.stripe_connect_account
+    return { success: false, error: "No Stripe Connect account" } unless connect_account
+
+    begin
+      Rails.logger.info "Finalizing and sending invoice: #{invoice.stripe_invoice_id}"
+
+      # Step 1: Finalize the invoice (makes it ready to send)
+      finalized_invoice = Stripe::Invoice.finalize_invoice(
+        invoice.stripe_invoice_id,
+        {},
+        { stripe_account: connect_account.stripe_account_id }
+      )
+
+      Rails.logger.info "Invoice finalized: #{finalized_invoice.id}"
+
+      # Step 2: Send the invoice to the client
+      sent_invoice = Stripe::Invoice.send_invoice(
+        invoice.stripe_invoice_id,
+        {},
+        { stripe_account: connect_account.stripe_account_id }
+      )
+
+      Rails.logger.info "Invoice sent successfully. Hosted URL: #{sent_invoice.hosted_invoice_url}"
+
+      {
+        success: true,
+        hosted_invoice_url: sent_invoice.hosted_invoice_url,
+        invoice_pdf: sent_invoice.invoice_pdf,
+        message: "Invoice sent successfully to #{invoice.client_email}"
+      }
+
+    rescue Stripe::StripeError => e
+      Rails.logger.error "Failed to finalize/send invoice: #{e.message}"
+      {
+        success: false,
+        error: "Failed to send invoice: #{e.message}"
+      }
+    end
+  end
+
+
 
   private
 
@@ -206,6 +265,7 @@ class StripeConnectService
                               }, {
                                 stripe_account: connected_account
                               })
+    end
     end
 
   def notify_user_of_status_change(connect_account)
@@ -236,6 +296,5 @@ class StripeConnectService
     else
       "http://localhost:3000/fin/stripe_connect/onboarding_success"
     end
-  end
   end
 end

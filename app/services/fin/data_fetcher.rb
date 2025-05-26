@@ -97,7 +97,12 @@ module Fin
     end
 
     def fetch_stripe_connect_status
-      @user.stripe_connect_status
+      status = @user.stripe_connect_status
+
+      # Log the status for debugging
+      log_info "Stripe Connect status for user #{@user.id}: connected=#{status[:connected]}, can_accept_payments=#{status[:can_accept_payments]}"
+
+      status
     end
 
     def fetch_integrations
