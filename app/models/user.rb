@@ -11,10 +11,8 @@ class User < ApplicationRecord
   has_one :stripe_connect_account, dependent: :destroy
 
   # Validations
-  validates :first_name, :last_name, presence: true, if: :onboarding_completed?
-  validates :phone_number, format: { with: /\A\+?\d+\z/, message: "only allows numbers and optionally a leading +" },
-            allow_blank: true
-  validates :email, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :clerk_id, presence: true, uniqueness: true
 
   after_initialize :set_default_settings, if: :new_record?
 
@@ -24,8 +22,8 @@ class User < ApplicationRecord
     [ first_name, last_name ].compact.join(" ")
   end
 
-  def needs_onboarding?
-    !onboarding_completed?
+  def display_name
+    full_name.presence || email.split('@').first
   end
 
   def stripe_connect_enabled?
@@ -71,5 +69,6 @@ class User < ApplicationRecord
     self.theme ||= "light"
     self.language ||= "en"
     self.notification_settings ||= {}
+    self.onboarding_completed = true # Auto-complete since using Clerk
   end
 end

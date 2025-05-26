@@ -1,6 +1,11 @@
 class Invoice < ApplicationRecord
   belongs_to :user
 
+  scope :draft, -> { where(status: "draft") }
+  scope :pending, -> { where(status: "pending") }
+  scope :paid, -> { where(status: "paid") }
+  scope :overdue, -> { where("status = 'pending' AND due_date < ?", Date.current) }
+
   # Validations
   validates :client_name, :amount, :issue_date, :due_date, presence: true
   validates :client_email, format: { with: URI::MailTo::EMAIL_REGEXP }, allow_blank: true
@@ -13,13 +18,6 @@ class Invoice < ApplicationRecord
   PAYMENT_STATUSES = %w[awaiting_payment processing paid failed].freeze
   RECURRING_INTERVALS = %w[weekly monthly quarterly yearly].freeze
   TEMPLATES = %w[default professional minimalist modern elegant].freeze
-
-  # Scopes
-  scope :drafts, -> { where(status: "draft") }
-  scope :pending, -> { where(status: "pending") }
-  scope :paid, -> { where(status: "paid") }
-  scope :overdue, -> { where("status = 'pending' AND due_date < ?", Date.today) }
-  scope :recurring, -> { where(recurring: true) }
 
   # Methods for invoice creation and management
   def generate_invoice_number

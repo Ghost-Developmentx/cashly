@@ -67,76 +67,6 @@ Rails.application.routes.draw do
     get "/", to: "conversations#index"
   end
 
-  # Stripe Connect onboarding flow - these need to be outside namespace for Stripe redirects
-  get "dashboard/summary", to: "dashboard#summary"
-  get "dashboard/cash_flow", to: "dashboard#cash_flow"
-
-
-  # Core financial management
-  resources :accounts do
-    resources :bank_statements, only: [ :index, :show, :create, :update, :destroy ] do
-      patch :reconcile, on: :member
-    end
-  end
-
-  resources :transactions do
-    collection do
-      post :categorize_all
-      post :category_feedback
-    end
-
-    member do
-      patch :unreconcile
-      patch :update_category
-    end
-  end
-
-  resources :forecasts do
-    member do
-      get :compare
-      get :scenarios
-      post :create_scenario
-    end
-  end
-
-  resources :budgets do
-    collection do
-      get :recommendations
-      post :apply_all_recommendations
-    end
-  end
-
-  resources :categories
-
-  # Invoicing
-  resources :invoices do
-    member do
-      post :send
-      post :mark_as_paid
-      post :set_recurring
-      post :cancel_recurring
-      get :preview
-      post :send_reminder
-      get :payment_status
-    end
-
-    collection do
-      get :templates
-      get :recurring
-      post :preview_template
-    end
-  end
-
-  # Integrations
-  resources :integrations, only: [ :index, :new, :create, :destroy ] do
-    collection do
-      get :stripe
-      post :connect_stripe
-    end
-  end
-
-  post "/stripe/webhooks", to: "stripe_webhooks#create"
-
   # Plaid
   resources :plaid, only: [] do
     collection do
@@ -144,35 +74,5 @@ Rails.application.routes.draw do
       post :exchange_public_token
       post :sync
     end
-  end
-
-  # Accounting
-  resources :category_account_mappings, only: [ :index, :create, :update, :destroy ]
-
-  resources :ledger_accounts do
-    patch :toggle_active, on: :member
-  end
-  get "/chart_of_accounts", to: "ledger_accounts#index"
-
-  resources :journal_entries do
-    member do
-      patch :post
-      patch :reverse
-    end
-  end
-
-  # Financial reports
-  namespace :reports do
-    get :trial_balance
-    get :income_statement
-    get :balance_sheet
-    get :cash_flow_statement
-  end
-
-  # AI Insights
-  namespace :ai do
-    get :insights
-    get :forecast
-    get :recommendation
   end
 end

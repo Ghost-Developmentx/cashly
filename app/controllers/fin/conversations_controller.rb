@@ -2,19 +2,15 @@
 module Fin
   class ConversationsController < ApplicationController
     before_action :set_conversation, only: [ :query ]
+    def index
+      @conversation = current_user.fin_conversations.active.first ||
+                      current_user.fin_conversations.order(created_at: :desc).first
 
-  # Show the chat interface
-  def index
-    # Get the active conversation or the most recent one
-    @conversation = current_user.fin_conversations.where(active: true).first ||
-      current_user.fin_conversations.order(created_at: :desc).first
-
-    # Get conversation history
-    @conversation_history = @conversation ? @conversation.conversation_history : []
-
-    # Pass data for any charts that might be needed
-    prepare_dashboard_data
-  end
+      render json: {
+        conversation: @conversation,
+        messages: @conversation&.fin_messages&.order(:created_at)
+      }
+    end
 
     def query
       query_text = params[:query]

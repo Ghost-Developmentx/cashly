@@ -28,7 +28,7 @@ module Fin
     def send_invoice
       invoice_id = params[:id]
 
-      result = Fin::InvoiceManager.new(current_user).send_invoice(invoice_id)
+      result = Fin::InvoiceManager.new(current_user).send(:send_invoice, invoice_id)
 
       if result[:success]
         render json: result
