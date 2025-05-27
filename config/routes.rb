@@ -59,12 +59,19 @@ Rails.application.routes.draw do
         post :send_invoice
         post :send_reminder
         patch :mark_paid
+        post :sync
       end
     end
 
 
     # Optional: legacy route to support /fin or redirect to dashboard
     get "/", to: "conversations#index"
+  end
+
+  namespace :api do
+    namespace :internal do
+      resources :invoices, only: [ :create ]
+    end
   end
 
   # Plaid
