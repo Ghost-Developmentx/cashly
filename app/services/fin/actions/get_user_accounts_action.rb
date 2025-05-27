@@ -6,9 +6,12 @@ module Fin
 
         log_info "Found #{tool_result['accounts'].length} accounts"
 
-        success_response(
-          "data" => { "accounts" => tool_result["accounts"] }
-        )
+        {
+          "type" => "show_accounts",
+          "success" => true,
+          "data" => { "accounts" => tool_result["accounts"] },
+          "message" => "Found #{tool_result['accounts'].length} connected account#{tool_result['accounts'].length == 1 ? '' : 's'}"
+        }
       end
     end
   end

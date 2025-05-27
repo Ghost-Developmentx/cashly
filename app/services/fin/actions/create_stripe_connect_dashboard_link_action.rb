@@ -10,10 +10,12 @@ module Fin
         dashboard_result = manager.create_dashboard_link
 
         if dashboard_result[:success]
-          success_response(
+          {
+            "type" => "open_stripe_dashboard",
+            "success" => true,
             "data" => dashboard_result,
             "message" => dashboard_result[:message] || "Opening your Stripe dashboard..."
-          )
+          }
         else
           handle_dashboard_error(dashboard_result)
         end
@@ -26,12 +28,14 @@ module Fin
         when "restart_setup"
           {
             "type" => "stripe_connect_setup_needed",
+            "success" => false,
             "error" => result[:error],
             "message" => "You need to set up Stripe Connect first. Would you like me to start the setup process?"
           }
         else
           {
             "type" => "stripe_connect_error",
+            "success" => false,
             "error" => result[:error],
             "message" => "I wasn't able to open your Stripe dashboard right now."
           }

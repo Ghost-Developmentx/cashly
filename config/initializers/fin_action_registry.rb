@@ -5,7 +5,6 @@ Rails.application.config.after_initialize do
   Fin::ActionRegistry.register("update_transaction", Fin::Actions::UpdateTransactionAction)
   Fin::ActionRegistry.register("delete_transaction", Fin::Actions::DeleteTransactionAction)
   Fin::ActionRegistry.register("categorize_transactions", Fin::Actions::CategorizeTransactionsAction)
-  Fin::ActionRegistry.register("connect_stripe", Fin::Actions::ConnectStripeAction)
   Fin::ActionRegistry.register("get_invoices", Fin::Actions::GetInvoicesAction)
   Fin::ActionRegistry.register("create_invoice", Fin::Actions::CreateInvoiceAction)
   Fin::ActionRegistry.register("send_invoice", Fin::Actions::SendInvoiceAction)

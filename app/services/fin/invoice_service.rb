@@ -132,18 +132,6 @@ module Fin
           name: invoice_data["client_name"]
         )
 
-        # Create invoice item
-        Stripe::InvoiceItem.create(
-          {
-            customer: customer.id,
-            amount: (amount * 100).to_i,
-            currency: invoice_data["currency"] || "usd",
-            description: invoice_data["description"]
-          },
-          { stripe_account: @connect_account.stripe_account_id }
-        )
-
-        # Create invoice
         stripe_invoice = Stripe::Invoice.create(
           {
             customer: customer.id,
@@ -151,6 +139,7 @@ module Fin
             days_until_due: invoice_data["days_until_due"] || 30,
             description: invoice_data["description"],
             application_fee_amount: (platform_fee * 100).to_i,
+            auto_advance: false,
             metadata: {
               cashly_user_id: @user.id,
               cashly_invoice_id: invoice_data["cashly_invoice_id"]
@@ -159,9 +148,26 @@ module Fin
           { stripe_account: @connect_account.stripe_account_id }
         )
 
+        Stripe::InvoiceItem.create(
+          {
+            customer: customer.id,
+            invoice: stripe_invoice.id,
+            amount: (amount * 100).to_i,
+            currency: invoice_data["currency"] || "usd",
+            description: invoice_data["description"]
+          },
+          { stripe_account: @connect_account.stripe_account_id }
+        )
+
+        # Refresh the invoice to get updated totals
+        updated_invoice = Stripe::Invoice.retrieve(
+          stripe_invoice.id,
+          { stripe_account: @connect_account.stripe_account_id }
+        )
+
         {
           success: true,
-          stripe_invoice: stripe_invoice,
+          stripe_invoice: updated_invoice,
           platform_fee: platform_fee,
           customer: customer
         }

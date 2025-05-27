@@ -11,12 +11,20 @@ module Fin
         result = manager.send_invoice(tool_result["invoice_id"])
 
         if result[:success]
-          success_response(
+          {
+            "type" => "send_invoice",
+            "success" => true,
             "data" => result,
-            "message" => result[:message]
-          )
+            "silent" => true
+
+          }
         else
-          error_response(result[:error])
+          {
+            "type" => "send_invoice_error",
+            "success" => false,
+            "error" => result[:error],
+            "message" => result[:error]
+          }
         end
       end
     end
