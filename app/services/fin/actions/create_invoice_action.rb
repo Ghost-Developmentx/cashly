@@ -8,16 +8,16 @@ module Fin
       def perform
         if tool_result["invoice_id"].present?
           {
-            "type" => "invoice_created",
+            "type" => "invoice_create_success", # Updated action type
             "success" => true,
             "invoice_id" => tool_result["invoice_id"],
             "invoice" => tool_result["invoice"],
             "data" => tool_result,
-            "silent" => true
+            "silent" => false
           }
         else
           {
-            "type" => "invoice_created",
+            "type" => "invoice_create_success", # Updated action type
             "success" => true,
             "silent" => true
           }

@@ -1,7 +1,8 @@
 module Fin
   module Actions
-    class SendInvoiceAction < BaseAction
+    class SendInvoiceInitiatedAction < BaseAction
       def validate!
+        raise "Invalid action" unless tool_result["action"] == "send_invoice_initiated"
         raise "Invoice ID required" unless tool_result["invoice_id"].present?
       end
 
@@ -11,7 +12,7 @@ module Fin
 
         if result[:success]
           {
-            "type" => "invoice_send_success", # Updated action type
+            "type" => "invoice_send_success",
             "success" => true,
             "data" => result[:data],
             "message" => result[:message],
@@ -19,7 +20,7 @@ module Fin
           }
         else
           {
-            "type" => "invoice_send_error", # Updated action type
+            "type" => "invoice_send_error",
             "success" => false,
             "error" => result[:error],
             "message" => result[:error]

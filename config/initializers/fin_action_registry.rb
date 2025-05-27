@@ -8,6 +8,7 @@ Rails.application.config.after_initialize do
   Fin::ActionRegistry.register("get_invoices", Fin::Actions::GetInvoicesAction)
   Fin::ActionRegistry.register("create_invoice", Fin::Actions::CreateInvoiceAction)
   Fin::ActionRegistry.register("send_invoice", Fin::Actions::SendInvoiceAction)
+  Fin::ActionRegistry.register("send_invoice_initiated", Fin::Actions::SendInvoiceInitiatedAction)
   Fin::ActionRegistry.register("send_invoice_reminder", Fin::Actions::SendInvoiceReminderAction)
   Fin::ActionRegistry.register("mark_invoice_paid", Fin::Actions::MarkInvoicePaidAction)
   Fin::ActionRegistry.register("setup_stripe_connect", Fin::Actions::SetupStripeConnectAction)
