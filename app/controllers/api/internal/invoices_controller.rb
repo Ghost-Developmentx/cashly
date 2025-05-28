@@ -31,6 +31,38 @@ module Api
         end
       end
 
+      def destroy
+        invoice_id = params[:id]
+        user_id = params[:user_id]
+
+        Rails.logger.info "[Internal API] Delete request for invoice #{invoice_id} by user #{user_id}"
+
+        @user = User.find_by(id: user_id)
+        unless @user
+          render json: { error: "User not found" }, status: :not_found
+          return
+        end
+
+        service = Fin::InvoiceService.new(@user)
+        result = service.send(:delete, invoice_id)
+
+        Rails.logger.info "[Internal API] Delete result: #{result.inspect}"
+
+        if result[:success]
+          render json: {
+            success: true,
+            deleted_invoice: result[:deleted_invoice],
+            stripe_deleted: result[:stripe_deleted],
+            message: result[:message]
+          }
+        else
+          render json: {
+            success: false,
+            error: result[:error]
+          }, status: :unprocessable_entity
+        end
+      end
+
       private
 
       def authenticate_internal_api

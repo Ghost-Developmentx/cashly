@@ -36,6 +36,10 @@ module Fin
         invoices = invoices.where(status: filters["status"]) if filters["status"].present?
         invoices = invoices.where("client_name ILIKE ?", "%#{filters['client_name']}%") if filters["client_name"].present?
 
+        # Add invoice ID filtering for deletion/specific lookup
+        invoices = invoices.where(id: filters["invoice_id"]) if filters["invoice_id"].present?
+        invoices = invoices.where(id: filters["id"]) if filters["id"].present?
+
         # Add date filter if specified
         if filters["days"].present?
           start_date = filters["days"].to_i.days.ago

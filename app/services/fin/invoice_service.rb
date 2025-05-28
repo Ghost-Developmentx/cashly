@@ -205,6 +205,89 @@ module Fin
       end
     end
 
+    def delete(invoice_id)
+      log_info "Deleting invoice with ID: #{invoice_id}"
+
+      invoice = find_invoice(invoice_id)
+      return error_response("Invoice not found") unless invoice
+
+      # Only allow deletion of draft invoices
+      unless invoice.status == "draft"
+        return error_response("Only draft invoices can be deleted. This invoice is #{invoice.status}.")
+      end
+
+      # Store invoice info for response before deletion
+      invoice_info = {
+        id: invoice.id,
+        client_name: invoice.client_name,
+        amount: invoice.amount.to_f,
+        invoice_number: invoice.generate_invoice_number,
+        status: invoice.status
+      }
+
+      begin
+        # Delete it from Stripe first if it exists
+        if invoice.stripe_invoice_id.present? && @connect_account
+          stripe_result = delete_stripe_invoice(invoice)
+
+          # Log but don't fail if Stripe deletion fails
+          unless stripe_result[:success]
+            log_error "Stripe deletion failed: #{stripe_result[:error]}"
+            # Continue with local deletion anyway
+          end
+        end
+
+        # Delete it from a local database
+        if invoice.destroy
+          success_response(
+            {
+              deleted_invoice: invoice_info,
+              invoice_id: invoice_id
+            },
+            "Invoice '#{invoice_info[:invoice_number]}' for #{invoice_info[:client_name]} has been deleted successfully."
+          )
+        else
+          error_response("Failed to delete invoice from database: #{invoice.errors.full_messages.join(', ')}")
+        end
+
+      rescue StandardError => e
+        log_error "Error during invoice deletion: #{e.message}"
+        error_response("Failed to delete invoice: #{e.message}")
+      end
+    end
+
+    def delete_stripe_invoice(invoice)
+      begin
+        log_info "Deleting Stripe invoice: #{invoice.stripe_invoice_id}"
+
+        deleted_invoice = Stripe::Invoice.delete(
+          invoice.stripe_invoice_id,
+          {},
+          { stripe_account: @connect_account.stripe_account_id }
+        )
+
+        log_info "Successfully deleted Stripe invoice: #{invoice.stripe_invoice_id}"
+
+        {
+          success: true,
+          stripe_response: deleted_invoice
+        }
+      rescue Stripe::StripeError => e
+        log_error "Stripe deletion failed: #{e.message}"
+
+        # Common Stripe errors for invoice deletion
+        case e.code
+        when "invoice_not_found"
+          log_info "Invoice not found in Stripe (may have been deleted already)"
+          { success: true, message: "Invoice not found in Stripe (already deleted)" }
+        when "invoice_finalized"
+          { success: false, error: "Cannot delete finalized invoice from Stripe" }
+        else
+          { success: false, error: e.message }
+        end
+      end
+    end
+
     def find_or_create_stripe_customer(email:, name:)
       customers = Stripe::Customer.search(
         { query: "email:'#{email}'" },

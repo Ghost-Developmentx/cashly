@@ -33,6 +33,17 @@ module Fin
       end
     end
 
+    def destroy
+      service = InvoiceService.new(current_user)
+      result = service.send(:delete, params[:id])
+
+      if result[:success]
+        render_success(result)
+      else
+        render_error(result[:error])
+      end
+    end
+
     def update
       if @invoice.update(invoice_params)
         render_success(

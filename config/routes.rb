@@ -47,7 +47,7 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :invoices, only: [ :create, :update ] do
+    resources :invoices, only: [ :index, :show, :create, :update, :destroy ] do
       member do
         post :send_invoice
         post :send_reminder
@@ -63,7 +63,7 @@ Rails.application.routes.draw do
 
   namespace :api do
     namespace :internal do
-      resources :invoices, only: [ :create ]
+      resources :invoices, only: [ :create, :destroy ]
     end
   end
 
