@@ -15,6 +15,8 @@ Rails.application.routes.draw do
       end
     end
 
+    get "debug/action_registry", to: "debug#action_registry"
+
     resources :conversations, only: [ :index, :show ] do
       collection do
         post :query
@@ -27,15 +29,6 @@ Rails.application.routes.draw do
     resources :transactions, only: [ :index, :show, :create, :update, :destroy ] do
       collection do
         post :categorize_bulk
-      end
-    end
-
-
-    resources :stripe, only: [] do
-      collection do
-        post :connect
-        delete :disconnect
-        get :status
       end
     end
 

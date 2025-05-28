@@ -228,6 +228,7 @@ class StripeConnectService
 
       Rails.logger.info "Invoice sent successfully. Hosted URL: #{sent_invoice.hosted_invoice_url}"
 
+      # Make sure we're returning the payment URL
       {
         success: true,
         hosted_invoice_url: sent_invoice.hosted_invoice_url,

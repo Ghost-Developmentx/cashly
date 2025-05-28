@@ -60,13 +60,15 @@ module Fin
           sent_at: Time.current
         )
 
+        # Include all the data the frontend expects
         success_response(
           {
             invoice: InvoiceFormatter.format(invoice),
             stripe_invoice_url: send_result[:hosted_invoice_url],
+            hosted_invoice_url: send_result[:hosted_invoice_url],
             invoice_pdf: send_result[:invoice_pdf]
           },
-          send_result[:message]
+          send_result[:message] || "Invoice sent successfully!"
         )
       else
         error_response(send_result[:error])

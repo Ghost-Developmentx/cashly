@@ -1,4 +1,9 @@
+Dir[Rails.root.join("app/services/fin/actions/*.rb")].each { |f| require f }
+
 Rails.application.config.after_initialize do
+  Rails.logger.info "[ActionRegistry] Initializing action registry..."
+
+  # Register all actions
   Fin::ActionRegistry.register("get_transactions", Fin::Actions::GetTransactionsAction)
   Fin::ActionRegistry.register("get_user_accounts", Fin::Actions::GetUserAccountsAction)
   Fin::ActionRegistry.register("create_transaction", Fin::Actions::CreateTransactionAction)
@@ -15,4 +20,7 @@ Rails.application.config.after_initialize do
   Fin::ActionRegistry.register("check_stripe_connect_status", Fin::Actions::CheckStripeConnectStatusAction)
   Fin::ActionRegistry.register("create_stripe_connect_dashboard_link", Fin::Actions::CreateStripeConnectDashboardLinkAction)
   Fin::ActionRegistry.register("initiate_plaid_connection", Fin::Actions::InitiatePlaidConnectionAction)
+
+  Rails.logger.info "[ActionRegistry] Registered #{Fin::ActionRegistry.actions.count} actions"
+  Rails.logger.info "[ActionRegistry] Actions: #{Fin::ActionRegistry.actions.keys.join(', ')}"
 end
