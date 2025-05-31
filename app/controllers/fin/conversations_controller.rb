@@ -19,8 +19,20 @@ module Fin
       # Add a user message
       @conversation.add_message("user", query_text)
 
-      # Process query
-      response = process_fin_query(query_text)
+      # Get recent conversation history for context
+      recent_messages = @conversation.fin_messages
+                                     .order(created_at: :desc)
+                                     .limit(10)
+                                     .reverse
+                                     .map { |msg| { role: msg.role, content: msg.content } }
+
+      Rails.logger.info "📝 Including #{recent_messages.length} messages in conversation history"
+
+      # Process query with conversation history
+      response = FinService.new(current_user).process_query(
+        query_text,
+        recent_messages  # Pass the recent messages
+      )
 
       # Handle errors
       if response[:error].present?
@@ -30,19 +42,30 @@ module Fin
 
       # Add assistant response
       response_text = extract_response_text(response)
-      @conversation.add_message("assistant", response_text)
+      assistant_message = @conversation.add_message("assistant", response_text)
 
       # Update conversation metadata
       update_conversation_metadata(query_text)
 
       # Record tool usage
-      record_tool_usage(response["tool_results"]) if response["tool_results"].present?
+      if response["tool_results"].present?
+        assistant_message.update(
+          tools_used: response["tool_results"].map do |result|
+            {
+              name: result["tool"],
+              success: !result["result"].key?("error"),
+              timestamp: Time.current
+            }
+          end
+        )
+      end
 
-      # Send response with actions as-is from ResponseProcessor
+      # Send a response with actions and full conversation history
       render json: {
         message: response_text,
         actions: response["actions"] || [],
-        conversation_history: @conversation.conversation_history
+        conversation_history: @conversation.conversation_history,
+        conversation_id: @conversation.id
       }
     end
 

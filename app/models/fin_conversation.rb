@@ -1,6 +1,7 @@
 class FinConversation < ApplicationRecord
   belongs_to :user
   has_many :fin_messages, -> { order(created_at: :asc) }, dependent: :destroy
+  scope :active, -> { where(active: true) }
 
   # Serialize the conversation history to the format expected by the FinService
   def conversation_history

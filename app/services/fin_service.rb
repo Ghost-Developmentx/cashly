@@ -11,11 +11,20 @@ class FinService
 
   def process_query(query, conversation_history = nil)
     Rails.logger.info "[FinService] Processing query: #{query}"
+    Rails.logger.info "[FinService] Conversation history: #{conversation_history&.length || 0} messages"
 
     # Build context
     context = context_builder.build
 
-    # Call AI
+    # Get active conversation ID if available
+    active_conversation = user.fin_conversations.active.first
+    conversation_id = active_conversation&.id
+
+    # Add conversation ID to user context
+    context[:user_context][:conversation_id] = "fin_conv_#{conversation_id}" if conversation_id
+    context[:user_context][:fin_conversation_id] = conversation_id if conversation_id
+
+    # Call AI with conversation history
     ai_response = ai_client.query(
       user_id: user.id,
       query: query,
@@ -31,4 +40,3 @@ class FinService
     { error: e.message }
   end
 end
-
