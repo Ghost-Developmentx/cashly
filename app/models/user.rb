@@ -69,6 +69,6 @@ class User < ApplicationRecord
     self.theme ||= "light"
     self.language ||= "en"
     self.notification_settings ||= {}
-    self.onboarding_completed = true # Auto-complete since using Clerk
+    self.onboarding_completed ||= false
   end
 end
