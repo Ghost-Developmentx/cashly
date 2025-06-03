@@ -61,6 +61,8 @@ module Fin
             "delete_invoice" => Fin::Actions::DeleteInvoiceAction,
             "delete_invoice_completed" => Fin::Actions::DeleteInvoiceCompletedAction,
             "delete_invoice_failed" => Fin::Actions::DeleteInvoiceFailedAction,
+            "forecast_cash_flow" => Fin::Actions::ForecastCashFlowAction,
+            "forecast_cash_flow_scenario" => Fin::Actions::ForecastCashFlowScenarioAction,
             "send_invoice_initiated" => Fin::Actions::SendInvoiceInitiatedAction,
             "send_invoice_reminder" => Fin::Actions::SendInvoiceReminderAction,
             "mark_invoice_paid" => Fin::Actions::MarkInvoicePaidAction,
