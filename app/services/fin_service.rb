@@ -24,12 +24,17 @@ class FinService
     context[:user_context][:conversation_id] = "fin_conv_#{conversation_id}" if conversation_id
     context[:user_context][:fin_conversation_id] = conversation_id if conversation_id
 
-    # Call AI with conversation history
+    # Add debug logging to verify transactions are being fetched
+    Rails.logger.info "[FinService] Transactions count: #{context[:transactions]&.length || 0}"
+    Rails.logger.info "[FinService] First transaction: #{context[:transactions]&.first}" if context[:transactions]&.any?
+
+    # Call AI with conversation history - Pass transactions and user_context explicitly
     ai_response = ai_client.query(
       user_id: user.id,
       query: query,
       conversation_history: conversation_history,
-      **context
+      transactions: context[:transactions] || [],  # Explicitly pass transactions
+      user_context: context[:user_context] || {}   # Explicitly pass user_context
     )
 
     # Process response (handles all tool results -> actions)

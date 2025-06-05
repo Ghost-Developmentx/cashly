@@ -1,0 +1,57 @@
+
+  ↳ app/services/fin_service.rb:20:in 'FinService#process_query'
+[FinService] Transactions count: 10
+[FinService] First transaction: {id: 2556, date: "2025-05-23 00:00:00 UTC", amount: -25.0, description: "Coffee expense", category: "Uncategorized", account: "Plaid Credit Card", account_id: 36}
+[Fin::AiClient] Making request to: http://localhost:8000/api/v1/fin/conversations/query
+[Fin::AiClient] Payload keys: [:user_id, :query, :transactions, :conversation_history, :user_context]
+[Fin::AiClient] Transactions count: 10
+[Fin::AiClient] User context accounts: 0
+[Fin::AiClient] User context user_id: 7
+[Fin::AiClient] First transaction: {id: 2556, date: "2025-05-23 00:00:00 UTC", amount: -25.0, description: "Coffee expense", category: "Uncategorized", account: "Plaid Credit Card", account_id: 36}
+[Fin::AiClient] Request body size: 2852 characters
+[Fin::AiClient] Response status: 200
+[Fin::AiClient] Response keys: ["message", "response_text", "actions", "tool_results", "classification", "routing", "success", "metadata", "error", "conversation_id"]
+[Fin::AiClient] Actions count: 1
+[Fin::AiClient] Tool results count: 1
+[ResponseProcessor] Processing AI response
+[ResponseProcessor] Tool results: 1
+[ActionRegistry] Executing tool: forecast_cash_flow
+[ActionRegistry] Available actions: get_transactions, get_user_accounts, create_transaction, update_transaction, delete_transaction, categorize_transactions, get_invoices, create_invoice, send_invoice, delete_invoice, delete_invoice_completed, delete_invoice_failed, send_invoice_initiated, send_invoice_reminder, mark_invoice_paid, setup_stripe_connect, check_stripe_connect_status, create_stripe_connect_dashboard_link, initiate_plaid_connection
+[ActionRegistry] No action registered for tool: forecast_cash_flow
+[ActionRegistry] Tool result was: {"forecast_days" => 30, "message" => "No historical data available for forecasting", "daily_forecast" => [], "summary" => {"projected_income" => 0, "projected_expenses" => 0, "projected_net" => 0, "ending_balance" => 0, "confidence_score" => 0}}
+[ResponseProcessor] Final actions: 1
+  TRANSACTION (0.1ms)  BEGIN /*action='query',application='Cashly',controller='conversations'*/
+  ↳ app/models/fin_conversation.rb:18:in 'FinConversation#add_message'
+  FinMessage Create (1.1ms)  INSERT INTO "fin_messages" ("fin_conversation_id", "role", "content", "metadata", "created_at", "updated_at", "feedback_rating", "feedback_text", "was_helpful", "led_to_action", "tools_used", "tool_success", "financial_decision_made", "decision_amount") VALUES (134, 'assistant', 'Due to the lack of historical transaction data, I was unable to generate a detailed cash flow forecast. Here’s what this means:
+
+- **Projected Income:** Unable to predict without prior income data.
+- **Projected Expenses:** Unable to estimate without prior spending patterns.
+- **Projected Net Cash Flow:** Neutral, with no assumptions made.
+- **Ending Balance:** Unchanged from your current amount of $70,902.
+- **Confidence Score:** Low, due to absence of data.
+
+### Suggestions:
+- **Connect Transaction Data:** To provide detailed forecasts, connect your transaction history to offer insights on your income and spending trends.
+- **Manual Adjustments:** Consider providing expected changes in income or expenses, like upcoming large sales through Stripe or planned purchases, for better scenario modeling.
+
+If you expect certain income or expenses in the next 30 days, let me know, and I can update the forecast with those assumptions!', '{}', '2025-06-05 02:22:05.613398', '2025-06-05 02:22:05.613398', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL) RETURNING "id" /*action='query',application='Cashly',controller='conversations'*/
+  ↳ app/models/fin_conversation.rb:18:in 'FinConversation#add_message'
+  TRANSACTION (13.3ms)  COMMIT /*action='query',application='Cashly',controller='conversations'*/
+  ↳ app/models/fin_conversation.rb:18:in 'FinConversation#add_message'
+  FinMessage Count (0.2ms)  SELECT COUNT(*) FROM "fin_messages" WHERE "fin_messages"."fin_conversation_id" = 134 /*action='query',application='Cashly',controller='conversations'*/
+  ↳ app/controllers/fin/conversations_controller.rb:135:in 'Fin::ConversationsController#update_conversation_metadata'
+  TRANSACTION (0.0ms)  BEGIN /*action='query',application='Cashly',controller='conversations'*/
+  ↳ app/controllers/fin/conversations_controller.rb:136:in 'Fin::ConversationsController#update_conversation_metadata'
+  FinConversation Update (0.8ms)  UPDATE "fin_conversations" SET "title" = 'Can you show me a cashflow forecast for 30 days...', "updated_at" = '2025-06-05 02:22:05.630482' WHERE "fin_conversations"."id" = 134 /*action='query',application='Cashly',controller='conversations'*/
+  ↳ app/controllers/fin/conversations_controller.rb:136:in 'Fin::ConversationsController#update_conversation_metadata'
+  TRANSACTION (5.3ms)  COMMIT /*action='query',application='Cashly',controller='conversations'*/
+  ↳ app/controllers/fin/conversations_controller.rb:136:in 'Fin::ConversationsController#update_conversation_metadata'
+  TRANSACTION (0.0ms)  BEGIN /*action='query',application='Cashly',controller='conversations'*/
+  ↳ app/controllers/fin/conversations_controller.rb:52:in 'Fin::ConversationsController#query'
+  FinMessage Update (1.0ms)  UPDATE "fin_messages" SET "updated_at" = '2025-06-05 02:22:05.638055', "tools_used" = '[{"name":"forecast_cash_flow","success":true,"timestamp":"2025-06-05T02:22:05.637Z"}]' WHERE "fin_messages"."id" = 719 /*action='query',application='Cashly',controller='conversations'*/
+  ↳ app/controllers/fin/conversations_controller.rb:52:in 'Fin::ConversationsController#query'
+  TRANSACTION (5.3ms)  COMMIT /*action='query',application='Cashly',controller='conversations'*/
+  ↳ app/controllers/fin/conversations_controller.rb:52:in 'Fin::ConversationsController#query'
+  FinMessage Load (0.2ms)  SELECT "fin_messages".* FROM "fin_messages" WHERE "fin_messages"."fin_conversation_id" = 134 ORDER BY "fin_messages"."created_at" ASC /*action='query',application='Cashly',controller='conversations'*/
+  ↳ app/models/fin_conversation.rb:8:in 'Enumerable#map'
+Completed 200 OK in 19212ms (Views: 0.1ms | ActiveRecord: 44.3ms (22 queries, 0 cached) | GC: 0.9ms)

@@ -14,12 +14,21 @@ module Fin
     private
 
     def build_transactions
-      @user.transactions
-           .includes(:category, :account)
-           .where("date >= ?", 6.months.ago)
-           .order(date: :desc)
-           .limit(100)
-           .map { |t| format_transaction(t) }
+      transactions = @user.transactions
+                          .includes(:category, :account)
+                          .where("date >= ?", 6.months.ago)
+                          .order(date: :desc)
+                          .limit(100)
+
+      Rails.logger.info "[ContextBuilder] Found #{transactions.count} transactions for user #{@user.id}"
+
+      formatted_transactions = transactions.map { |t| format_transaction(t) }
+
+      if formatted_transactions.any?
+        Rails.logger.info "[ContextBuilder] Sample transaction: #{formatted_transactions.first.inspect}"
+      end
+
+      formatted_transactions
     end
 
     def build_user_context
