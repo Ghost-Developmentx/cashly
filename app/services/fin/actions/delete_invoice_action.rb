@@ -7,28 +7,28 @@ module Fin
       end
 
       def perform
-        service = Fin::InvoiceService.new(user)
-        result = service.send(:delete, tool_result["invoice_id"])
+        result = Billing::DeleteInvoice.call(
+          user: user,
+          invoice_id: tool_result["invoice_id"]
+        )
 
-        Rails.logger.info "[DeleteInvoiceAction] Service result: #{result.inspect}"
-
-        if result[:success]
+        if result.success?
           {
             "type" => "invoice_delete_success",
             "success" => true,
             "data" => {
-              "deleted_invoice" => result[:deleted_invoice],
-              "stripe_deleted" => result[:stripe_deleted]
+              "deleted_invoice" => result.data[:deleted_invoice],
+              "stripe_deleted" => true
             },
-            "message" => result[:message],
+            "message" => result.data[:message],
             "silent" => false
           }
         else
           {
             "type" => "invoice_delete_error",
             "success" => false,
-            "error" => result[:error],
-            "message" => result[:error]
+            "error" => result.error,
+            "message" => result.error
           }
         end
       end

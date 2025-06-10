@@ -8,47 +8,23 @@ module Fin
       end
 
       def perform
-        transaction = user.transactions.find_by(id: tool_result["transaction_id"])
-        return error_response("Transaction not found") unless transaction
-        return error_response("Cannot edit bank-synced transactions") if transaction.plaid_transaction_id.present?
+        result = Banking::UpdateTransaction.call(
+          user: user,
+          transaction_id: tool_result["transaction_id"],
+          params: tool_result["updates"]
+        )
 
-        updates = prepare_updates(tool_result["updates"])
-
-        if transaction.update(updates)
+        if result.success?
           success_response(
             "data" => {
-              "transaction" => format_transaction(transaction)
+              "transaction" => result.data[:transaction],
+              "changes" => result.data[:changes]
             },
-            "message" => "Transaction updated successfully!"
+            "message" => result.data[:message]
           )
         else
-          error_response(transaction.errors.full_messages.join(", "))
+          error_response(result.error)
         end
-      end
-
-      private
-
-      def prepare_updates(updates)
-        prepared = updates.dup
-
-        if prepared["category"]
-          category = Category.find_or_create_by(name: prepared["category"])
-          prepared["category_id"] = category.id
-          prepared.delete("category")
-        end
-
-        prepared
-      end
-
-      def format_transaction(transaction)
-        {
-          id: transaction.id,
-          amount: transaction.amount.to_f,
-          description: transaction.description,
-          date: transaction.date.strftime("%Y-%m-%d"),
-          category: transaction.category&.name || "Uncategorized",
-          account: transaction.account.name
-        }
       end
     end
   end

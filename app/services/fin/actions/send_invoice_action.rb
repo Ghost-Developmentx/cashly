@@ -6,31 +6,30 @@ module Fin
       end
 
       def perform
-        service = Fin::InvoiceService.new(user)
-        result = service.send_invoice(tool_result["invoice_id"])
+        result = Billing::SendInvoice.call(
+          user: user,
+          invoice_id: tool_result["invoice_id"]
+        )
 
-        Rails.logger.info "[SendInvoiceAction] Service result: #{result.inspect}"
-
-        if result[:success]
-          # Return the full data structure that the frontend expects
+        if result.success?
           {
             "type" => "invoice_send_success",
             "success" => true,
             "data" => {
-              "invoice" => result[:invoice],
-              "stripe_invoice_url" => result[:stripe_invoice_url],
-              "hosted_invoice_url" => result[:stripe_invoice_url],
-              "invoice_pdf" => result[:invoice_pdf]
+              "invoice" => result.data[:invoice],
+              "stripe_invoice_url" => result.data[:stripe_invoice_url],
+              "hosted_invoice_url" => result.data[:hosted_invoice_url],
+              "invoice_pdf" => result.data[:invoice_pdf]
             },
-            "message" => result[:message],
+            "message" => result.data[:message],
             "silent" => false
           }
         else
           {
             "type" => "invoice_send_error",
             "success" => false,
-            "error" => result[:error],
-            "message" => result[:error]
+            "error" => result.error,
+            "message" => result.error
           }
         end
       end

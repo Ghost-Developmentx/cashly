@@ -6,20 +6,28 @@ module Fin
       end
 
       def perform
-        if tool_result["invoice_id"].present?
+        # Use the new operation
+        result = Billing::CreateInvoice.call(
+          user: user,
+          params: tool_result["invoice"] || {}
+        )
+
+        if result.success?
           {
-            "type" => "invoice_create_success", # Updated action type
+            "type" => "invoice_create_success",
             "success" => true,
-            "invoice_id" => tool_result["invoice_id"],
-            "invoice" => tool_result["invoice"],
-            "data" => tool_result,
+            "invoice_id" => result.data[:invoice_id],
+            "invoice" => result.data[:invoice],
+            "data" => result.data,
+            "message" => result.data[:message],
             "silent" => false
           }
         else
           {
-            "type" => "invoice_create_success", # Updated action type
-            "success" => true,
-            "silent" => true
+            "type" => "invoice_create_error",
+            "success" => false,
+            "error" => result.error,
+            "message" => result.error
           }
         end
       end

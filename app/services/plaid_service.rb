@@ -72,138 +72,127 @@ class PlaidService
     access_token = @user.plaid_tokens.last&.access_token
     return false unless access_token
 
-    begin
-      # STEP 1: First, get and save the accounts
-      Rails.logger.info "Fetching accounts for user #{@user.id} with token ending in ...#{access_token[-4..]}"
-
-      # Get accounts response which includes both accounts and institution info
-      accounts_request = Plaid::AccountsGetRequest.new({ access_token: access_token })
-      accounts_response = @client.accounts_get(accounts_request)
-      accounts = accounts_response.accounts
-
-      # Get the institution ID from the item
-      item_id = accounts_response.item&.item_id
-      institution_id = accounts_response.item&.institution_id || "unknown_institution"
-
-      if accounts.empty?
-        Rails.logger.warn "No accounts found for user #{@user.id}"
-        return false
-      end
-
-      # Log the number of accounts found
-      Rails.logger.info "Found #{accounts.size} accounts for user #{@user.id}"
-
-      # Save all accounts first
-      plaid_accounts = {}
-      accounts.each do |plaid_account|
-        begin
-          # Find or create the account
-          account = @user.accounts.find_or_initialize_by(plaid_account_id: plaid_account.account_id)
-
-          # Update account details
-          account.name = plaid_account.name || "Unnamed Account"
-          account.account_type = plaid_account.type || "other"
-          account.balance = plaid_account.balances.current || 0
-          account.institution = institution_id # Use the institution ID from the item
-          account.last_synced = Time.now
-
-          # Add additional error checking and logging
-          Rails.logger.info "Saving account: #{account.name} (#{plaid_account.account_id})"
-
-          if account.save
-            Rails.logger.info "Successfully saved account #{account.id}"
-            plaid_accounts[plaid_account.account_id] = account
-          else
-            Rails.logger.error "Failed to save account: #{account.errors.full_messages.join(', ')}"
-          end
-        rescue => e
-          Rails.logger.error "Error saving account #{plaid_account.account_id}: #{e.message}"
-        end
-      end
-
-      # STEP 2: Now fetch transactions
-      Rails.logger.info "Fetching transactions from #{start_date} to #{end_date}"
-      request = Plaid::TransactionsGetRequest.new(
-        {
-          access_token: access_token,
-          start_date: start_date.to_s,
-          end_date: end_date.to_s
-        }
-      )
-      response = @client.transactions_get(request)
-      transactions = response.transactions
-
-      # Log transaction count
-      Rails.logger.info "Found #{transactions.size} transactions"
-
-      uncategorized_category = Category.find_or_create_by(name: "Uncategorized") do |cat|
-        cat.description = "Default category for uncategorized transactions"
-        cat.parent_category_id = nil
-      end
-
-      # Track stats for logging
-      created_count = 0
-      skipped_count = 0
-      error_count = 0
-
-      # Process and save transactions
-      transactions.each do |plaid_transaction|
-        # Skip if transaction already exists
-        if Transaction.exists?(plaid_transaction_id: plaid_transaction.transaction_id)
-          skipped_count += 1
-          next
-        end
-
-        # Get the account (should have been created above)
-        account = plaid_accounts[plaid_transaction.account_id]
-
-        unless account
-          Rails.logger.error "Account not found for transaction #{plaid_transaction.transaction_id} (account_id: #{plaid_transaction.account_id})"
-          error_count += 1
-          next
-        end
-
-        # Create transaction
-        transaction = account.transactions.new(
-          date: plaid_transaction.date,
-          amount: plaid_transaction.amount * -1, # Plaid uses opposite sign convention
-          description: plaid_transaction.name,
-          plaid_transaction_id: plaid_transaction.transaction_id,
-          category_id: uncategorized_category.id,
-          recurring: false,
-        )
-
-        if transaction.save
-          created_count += 1
-
-          # Categorize via AI service (if available)
-          begin
-            category_response = AiService.categorize_transaction(
-              transaction.description,
-              transaction.amount,
-              transaction.date
-            )
-
-            if category_response.is_a?(Hash) && !category_response[:error]
-              category_name = category_response["category"]
-              category = Category.find_or_create_by(name: category_name)
-              transaction.update(category: category)
-            end
-          rescue => e
-            Rails.logger.error "Error categorizing transaction: #{e.message}"
-          end
-        else
-          Rails.logger.error "Failed to save transaction: #{transaction.errors.full_messages.join(', ')}"
-          error_count += 1
-        end
-      end
-
-      Rails.logger.info "Sync complete: Created #{created_count} transactions, Skipped #{skipped_count}, Errors #{error_count}"
-      true
-    rescue => e
-      Rails.logger.error "Unexpected error syncing transactions: #{e.message}"
-      Rails.logger.error e.backtrace.join("\n")
-      false
+    ActiveRecord::Base.transaction do
+      sync_accounts(access_token)
+      sync_transaction_data(access_token, start_date, end_date)
     end
+
+    true
+  rescue Plaid::ApiError => e
+    handle_plaid_error(e)
+    false
+  rescue StandardError => e
+    Rails.logger.error "Unexpected error in sync: #{e.message}"
+    false
+  end
+
+  private
+
+  def sync_accounts(access_token)
+    Rails.logger.info "[PlaidService] Syncing accounts for user #{@user.id}"
+
+    accounts_response = @client.accounts_get(
+      Plaid::AccountsGetRequest.new({ access_token: access_token })
+    )
+
+    accounts_response.accounts.each do |plaid_account|
+      sync_single_account(plaid_account, accounts_response.item)
+    end
+  end
+
+  def sync_single_account(plaid_account, item)
+    account = @user.accounts.find_or_initialize_by(
+      plaid_account_id: plaid_account.account_id
+    )
+
+    account.update!(
+      name: plaid_account.name || "Unnamed Account",
+      account_type: plaid_account.type || "other",
+      balance: plaid_account.balances.current || 0,
+      institution: item&.institution_id || "unknown",
+      last_synced: Time.current
+    )
+
+    Rails.logger.info "[PlaidService] Synced account: #{account.name} (#{account.id})"
+  rescue StandardError => e
+    Rails.logger.error "[PlaidService] Failed to sync account #{plaid_account.account_id}: #{e.message}"
+  end
+
+  def sync_transaction_data(access_token, start_date, end_date)
+    Rails.logger.info "[PlaidService] Syncing transactions from #{start_date} to #{end_date}"
+
+    request = Plaid::TransactionsGetRequest.new(
+      {
+        access_token: access_token,
+        start_date: start_date.to_s,
+        end_date: end_date.to_s
+      }
+    )
+
+    response = @client.transactions_get(request)
+    process_transactions(response.transactions)
+  end
+
+  def process_transactions(transactions)
+    Rails.logger.info "[PlaidService] Processing #{transactions.size} transactions"
+
+    transactions.each do |plaid_transaction|
+      process_single_transaction(plaid_transaction)
+    end
+  end
+
+  def process_single_transaction(plaid_transaction)
+    # Skip if already exists
+    return if Transaction.exists?(plaid_transaction_id: plaid_transaction.transaction_id)
+
+    account = @user.accounts.find_by(plaid_account_id: plaid_transaction.account_id)
+    return unless account
+
+    transaction = create_transaction_from_plaid(account, plaid_transaction)
+    categorize_transaction(transaction) if transaction.persisted?
+  rescue StandardError => e
+    Rails.logger.error "[PlaidService] Failed to process transaction #{plaid_transaction.transaction_id}: #{e.message}"
+  end
+
+  def create_transaction_from_plaid(account, plaid_transaction)
+    account.transactions.create!(
+      date: plaid_transaction.date,
+      amount: plaid_transaction.amount * -1, # Plaid uses opposite sign convention
+      description: plaid_transaction.name,
+      plaid_transaction_id: plaid_transaction.transaction_id,
+      category: find_or_create_default_category,
+      recurring: false
+    )
+  end
+
+  def find_or_create_default_category
+    Category.find_or_create_by(name: "Uncategorized") do |cat|
+      cat.description = "Default category for uncategorized transactions"
+    end
+  end
+
+  def categorize_transaction(transaction)
+    CategorizeTransactionsJob.perform_later(transaction.id)
+  end
+
+  def handle_plaid_error(error)
+    Rails.logger.error "[PlaidService] Plaid API Error: #{error.error_code} - #{error.error_message}"
+
+    case error.error_code
+    when "ITEM_LOGIN_REQUIRED"
+      # Handle re-authentication needed
+      notify_user_reauth_needed
+    when "RATE_LIMIT_EXCEEDED"
+      # Handle rate limiting
+      Rails.logger.warn "[PlaidService] Rate limit exceeded, will retry later"
+    else
+      # Generic error handling
+      Rails.logger.error "[PlaidService] Unhandled Plaid error: #{error.inspect}"
+    end
+  end
+
+  def notify_user_reauth_needed
+    # This could send an email or create a notification
+    Rails.logger.warn "[PlaidService] User #{@user.id} needs to re-authenticate bank connection"
   end
 end

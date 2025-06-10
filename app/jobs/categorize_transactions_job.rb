@@ -5,39 +5,50 @@ class CategorizeTransactionsJob < ApplicationJob
     user = User.find_by(id: user_id)
     return unless user
 
-    # Get uncategorized transactions
     transactions = if transaction_ids.present?
-                     user.transactions.where(id: transaction_ids, category_id: nil)
-    else
+                     Transaction.where(id: transaction_ids, category_id: nil)
+                   else
                      user.transactions.where(category_id: nil).limit(50)
-    end
+                   end
 
     return if transactions.empty?
 
     transactions.each do |transaction|
-      # Skip if already processed
-      next if transaction.ai_categorized
+      categorize_single_transaction(transaction)
+    end
+  end
 
-      # Call AI service
-      category_response = AiService.categorize_transaction(
-        transaction.description,
-        transaction.amount,
-        transaction.date
+  private
+
+  def categorize_single_transaction(transaction)
+    # Skip if already categorized
+    return if transaction.ai_categorized || transaction.category_id.present?
+
+    # Call AI service
+    category_response = AiService.categorize_transaction(
+      transaction.description,
+      transaction.amount,
+      transaction.date
+    )
+
+    # Process response
+    if category_response.is_a?(Hash) && !category_response[:error]
+      category_name = category_response["category"]
+      confidence = category_response["confidence"].to_f
+
+      category = Category.find_or_create_by(name: category_name)
+
+      transaction.update(
+        category: category,
+        ai_categorized: true,
+        categorization_confidence: confidence
       )
 
-      # Process response
-      if category_response.is_a?(Hash) && !category_response[:error]
-        category_name = category_response["category"]
-        confidence = category_response["confidence"].to_f
-
-        category = Category.find_or_create_by(name: category_name)
-
-        transaction.update(
-          category: category,
-          ai_categorized: true,
-          categorization_confidence: confidence
-        )
-      end
+      Rails.logger.info "Categorized transaction #{transaction.id} as #{category_name} (confidence: #{confidence})"
+    else
+      Rails.logger.error "Failed to categorize transaction #{transaction.id}: #{category_response[:error]}"
     end
+  rescue StandardError => e
+    Rails.logger.error "Error categorizing transaction #{transaction.id}: #{e.message}"
   end
 end

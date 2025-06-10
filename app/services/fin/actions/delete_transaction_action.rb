@@ -7,25 +7,20 @@ module Fin
       end
 
       def perform
-        transaction = user.transactions.find_by(id: tool_result["transaction_id"])
-        return error_response("Transaction not found") unless transaction
-        return error_response("Cannot delete bank-synced transactions") if transaction.plaid_transaction_id.present?
+        result = Banking::DeleteTransaction.call(
+          user: user,
+          transaction_id: tool_result["transaction_id"]
+        )
 
-        transaction_info = {
-          description: transaction.description,
-          amount: transaction.amount,
-          account: transaction.account.name
-        }
-
-        if transaction.destroy
+        if result.success?
           success_response(
             "data" => {
-              "deleted_transaction" => transaction_info
+              "deleted_transaction" => result.data[:deleted_transaction]
             },
-            "message" => "Transaction deleted successfully!"
+            "message" => result.data[:message]
           )
         else
-          error_response("Failed to delete transaction")
+          error_response(result.error)
         end
       end
     end

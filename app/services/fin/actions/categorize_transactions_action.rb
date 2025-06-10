@@ -6,22 +6,20 @@ module Fin
       end
 
       def perform
-        uncategorized = user.transactions.where(category_id: nil).limit(50)
+        result = Banking::CategorizeTransactions.call(
+          user: user,
+          transaction_ids: tool_result["transaction_ids"]
+        )
 
-        if uncategorized.any?
-          CategorizeTransactionsJob.perform_later(user.id, uncategorized.pluck(:id))
-
+        if result.success?
           success_response(
             "data" => {
-              "count" => uncategorized.count
+              "count" => result.data[:count]
             },
-            "message" => "Started categorizing transactions in the background!"
+            "message" => result.data[:message]
           )
         else
-          success_response(
-            "data" => { "count" => 0 },
-            "message" => "All transactions are already categorized!"
-          )
+          error_response(result.error)
         end
       end
     end

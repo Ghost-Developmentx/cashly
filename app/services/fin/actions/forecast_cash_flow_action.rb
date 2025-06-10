@@ -2,36 +2,40 @@ module Fin
   module Actions
     class ForecastCashFlowAction < BaseAction
       def perform
-        return error_response("No forecast data") unless tool_result.present?
+        days = tool_result["forecast_days"] || 30
 
-        log_info "Processing forecast with #{tool_result['forecast_days']} days"
+        result = FinancialAI::ForecastCashFlow.call(
+          user: user,
+          days: days
+        )
 
-        # Transform the forecast data to frontend format
-        forecast_data = transform_forecast_data(tool_result)
-
-        {
-          "type" => "show_forecast",
-          "success" => true,
-          "data" => forecast_data,
-          "message" => "Here's your #{tool_result['forecast_days']}-day cash flow forecast"
-        }
+        if result.success?
+          {
+            "type" => "show_forecast",
+            "success" => true,
+            "data" => transform_forecast_data(result.data[:forecast]),
+            "message" => result.data[:message]
+          }
+        else
+          error_response(result.error)
+        end
       end
 
       private
 
-      def transform_forecast_data(raw_forecast)
+      def transform_forecast_data(forecast)
         {
-          "id" => "forecast-#{Time.current.to_i}",
-          "title" => "#{raw_forecast['forecast_days']}-Day Cash Flow Forecast",
-          "dataPoints" => transform_daily_forecast(raw_forecast["daily_forecast"]),
+          "id" => forecast[:id],
+          "title" => forecast[:title],
+          "dataPoints" => transform_daily_forecast(forecast[:daily_forecast]),
           "summary" => {
-            "totalProjected" => raw_forecast.dig("summary", "projected_net") || 0,
-            "averageDaily" => calculate_daily_average(raw_forecast["daily_forecast"]),
-            "trend" => detect_trend(raw_forecast["daily_forecast"]),
-            "confidenceScore" => raw_forecast.dig("summary", "confidence_score") || 0.7,
-            "periodDays" => raw_forecast["forecast_days"]
+            "totalProjected" => forecast[:summary]["projected_net"] || 0,
+            "averageDaily" => calculate_daily_average(forecast[:daily_forecast]),
+            "trend" => detect_trend(forecast[:daily_forecast]),
+            "confidenceScore" => forecast[:confidence_score],
+            "periodDays" => forecast[:forecast_days]
           },
-          "generatedAt" => Time.current.iso8601
+          "generatedAt" => forecast[:generated_at]
         }
       end
 

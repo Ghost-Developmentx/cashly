@@ -24,6 +24,14 @@ module Cashly
     # Enable API-only mode (no view rendering, assets, etc.)
     config.api_only = true
 
+    config.autoload_paths += %W[
+  #{config.root}/app/operations
+  #{config.root}/app/domains
+  #{config.root}/app/queries
+  #{config.root}/app/presenters
+  #{config.root}/app/forms
+]
+
     # Automatically load files in lib/, excluding non-Ruby directories
     config.autoload_lib(ignore: %w[assets tasks])
 
