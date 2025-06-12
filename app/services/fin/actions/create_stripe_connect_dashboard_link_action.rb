@@ -6,37 +6,35 @@ module Fin
       end
 
       def perform
-        manager = Fin::StripeConnectManager.new(user)
-        dashboard_result = manager.create_dashboard_link
+        result = Billing::CreateStripeDashboardLink.call(user: user)
 
-        if dashboard_result[:success]
+        if result.success?
           {
             "type" => "open_stripe_dashboard",
             "success" => true,
-            "data" => dashboard_result,
-            "message" => dashboard_result[:message] || "Opening your Stripe dashboard..."
+            "data" => result.data,
+            "message" => result.data[:message]
           }
         else
-          handle_dashboard_error(dashboard_result)
+          handle_dashboard_error(result)
         end
       end
 
       private
 
       def handle_dashboard_error(result)
-        case result[:action_needed]
-        when "restart_setup"
+        if result.error.include?("No Stripe Connect account")
           {
             "type" => "stripe_connect_setup_needed",
             "success" => false,
-            "error" => result[:error],
+            "error" => result.error,
             "message" => "You need to set up Stripe Connect first. Would you like me to start the setup process?"
           }
         else
           {
             "type" => "stripe_connect_error",
             "success" => false,
-            "error" => result[:error],
+            "error" => result.error,
             "message" => "I wasn't able to open your Stripe dashboard right now."
           }
         end

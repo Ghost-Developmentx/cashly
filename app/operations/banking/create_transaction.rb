@@ -66,7 +66,7 @@ module Banking
     end
 
     def categorize_transaction(transaction)
-      CategorizeTransactionJob.perform_later(transaction.id)
+      CategorizeTransactionsJob.perform_later(transaction.id)
     end
 
     def present_transaction(transaction)

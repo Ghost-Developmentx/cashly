@@ -1,4 +1,8 @@
+# config/routes.rb
 Rails.application.routes.draw do
+  # Health check
+  get "up" => "rails/health#show", as: :rails_health_check
+
   # Authenticated Clerk user endpoint
   get "/me", to: "me#show"
   patch "/me", to: "me#update"
@@ -14,8 +18,6 @@ Rails.application.routes.draw do
         get :account_status
       end
     end
-
-    get "debug/action_registry", to: "debug#action_registry"
 
     resources :conversations, only: [ :index, :show ] do
       collection do
@@ -56,12 +58,16 @@ Rails.application.routes.draw do
       end
     end
 
-
     # Optional: legacy route to support /fin or redirect to dashboard
     get "/", to: "conversations#index"
   end
 
+  # API Documentation endpoint (optional)
   namespace :api do
+    namespace :v1 do
+      get "docs", to: "documentation#index"
+    end
+
     namespace :internal do
       resources :invoices, only: [ :create, :destroy ]
     end

@@ -2,6 +2,7 @@ class ApplicationController < ActionController::API
   include Clerk::Authenticatable
   include ApiResponses
   include ErrorHandler
+  include RequestMonitoring
 
   before_action :require_clerk_session!
   helper_method :current_user

@@ -10,14 +10,19 @@ module Banking
     end
 
     def execute
-      transactions = TransactionQuery.new(user.transactions)
-                                     .with_filters(filters)
-                                     .execute
+      cache_key = CacheKeys.user_transactions(user.id)
 
-      success(
-        transactions: present_transactions(transactions),
-        summary: calculate_summary(transactions)
-      )
+      transactions = Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
+        TransactionQuery.new(user.transactions)
+                        .with_filters(filters)
+                        .execute
+                        .to_a  # Force evaluation for caching
+      end
+
+      success({
+                transactions: present_transactions(transactions),
+                summary: calculate_summary(transactions)
+              })
     end
 
     private

@@ -65,11 +65,13 @@ class TransactionQuery
       @relation = @relation.where("amount > 0")
     when "expense"
       @relation = @relation.where("amount < 0")
+    else
+      # type code here
     end
   end
 
   def with_limit(limit)
-    limit = [limit.to_i, 100].min
+    limit = [ limit.to_i, 100 ].min
     limit = 50 if limit <= 0
     @relation = @relation.limit(limit)
   end

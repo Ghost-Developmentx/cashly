@@ -9,7 +9,11 @@ module Banking
     end
 
     def execute
-      accounts = user.accounts.includes(:transactions).order(:name)
+      cache_key = CacheKeys.user_accounts(user.id)
+
+      accounts = Rails.cache.fetch(cache_key, expires_in: 5.minutes) do
+        user.accounts.includes(:transactions).order(:name)
+      end
 
       success(
         accounts: present_accounts(accounts),

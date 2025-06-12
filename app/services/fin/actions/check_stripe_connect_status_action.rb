@@ -2,12 +2,16 @@ module Fin
   module Actions
     class CheckStripeConnectStatusAction < BaseAction
       def perform
-        manager = Fin::StripeConnectManager.new(user)
-        connect_status = manager.status
+        result = Billing::GetStripeConnectStatus.call(user: user)
 
-        success_response(
-          "data" => connect_status
-        )
+        if result.success?
+          success_response(
+            "data" => result.data,
+            "message" => result.data[:status_message]
+          )
+        else
+          error_response(result.error)
+        end
       end
     end
   end
