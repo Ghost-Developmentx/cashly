@@ -56,7 +56,7 @@ gem "attr_encrypted", "~> 4.2"
 
 gem "twilio-ruby", "~> 7.5"
 
-gem "stripe", "~> 13.5"
+gem "stripe", "~> 15.2"
 
 gem "money", "~> 6.19"
 
